@@ -14,7 +14,7 @@ config/name="Examenul"
 config/description="The Godborn Exam - Universul Coborârea, Jocul 1"
 config/version="0.1.0"
 run/main_scene="res://scenes/main_menu.tscn"
-config/features=PackedStringArray("4.3")
+config/features=PackedStringArray("4.7")
 
 [autoload]
 
