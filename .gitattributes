@@ -1,0 +1,7 @@
+# Normalize line endings so Windows and Linux diffs stay clean
+* text=auto eol=lf
+*.png binary
+*.ogg binary
+*.wav binary
+*.ttf binary
+*.otf binary

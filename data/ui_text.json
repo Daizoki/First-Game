@@ -1,0 +1,22 @@
+{
+	"game_title": {"ro": "Examenul", "en": "The Godborn Exam"},
+	"game_subtitle": {"ro": "Universul Coborârea · Jocul 1", "en": "The Descent universe · Game 1"},
+	"version": {"ro": "v{version}", "en": "v{version}"},
+
+	"menu_play": {"ro": "Joacă", "en": "Play"},
+	"menu_settings": {"ro": "Setări", "en": "Settings"},
+	"menu_quit": {"ro": "Ieșire", "en": "Quit"},
+	"menu_play_soon": {"ro": "Aeva încă pregătește sălile de examen. Revino curând.", "en": "Aeva is still preparing the exam halls. Come back soon."},
+
+	"data_errors_title": {"ro": "Erori în fișierele din data/ ({count})", "en": "Errors in the data/ files ({count})"},
+	"data_errors_close": {"ro": "Continuă oricum", "en": "Continue anyway"},
+
+	"settings_title": {"ro": "Setări", "en": "Settings"},
+	"settings_language": {"ro": "Limba", "en": "Language"},
+	"settings_volume": {"ro": "Volum", "en": "Volume"},
+	"settings_volume_value": {"ro": "{value}%", "en": "{value}%"},
+	"settings_back": {"ro": "Înapoi", "en": "Back"},
+
+	"language_ro": {"ro": "Română", "en": "Română"},
+	"language_en": {"ro": "English", "en": "English"}
+}
