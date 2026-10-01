@@ -20,6 +20,8 @@
   colțuri cu mici gravuri runice (nu noduri celtice copiate din referință).
 - Așezarea ecranului de rundă și efectele (linii care „fierb”, granulație de hârtie, pietre care se leagănă,
   animația Vrăjilor) sunt descrise în `docs/DESIGN.md` → 3.16.
+- Balatro e doar inspirație pentru **mecanică**: nu copiem interfața, aranjarea ecranului sau efectele lui vizuale
+  caracteristice.
 
 ## Paleta
 | Nume | Culoare | Folosire |
@@ -39,8 +41,6 @@ Text secundar: `#A39DB4`.
 ## Fonturi
 **Grenze Gotisch** (titluri, Vrăji, examinatori) + **Grenze** (text, interfață, cifre), ambele de pe Google Fonts,
 licență OFL, cu ă â î ș ț. **Se descarcă doar după OK-ul lui Relax**; până atunci, fontul implicit.
-- Balatro e doar inspirație pentru **mecanică**: nu copiem interfața, aranjarea ecranului sau efectele lui vizuale
-  caracteristice.
 
 ## Tehnic
 - Rezoluție de bază **1920×1080**, stretch `canvas_items`, aspect `expand`, filtru **Linear** cu mipmaps.
