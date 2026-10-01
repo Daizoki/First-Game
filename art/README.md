@@ -1,19 +1,19 @@
 # Artă
 
-Pune PNG-urile aici, cu numele egal cu `id`-ul din `data/*.json` (ex.: `art/gods/varr.png`).
-Dacă un fișier lipsește, jocul desenează singur un placeholder (dreptunghi colorat cu inițiala și numele).
-Nu trebuie scris cod nou: fișierul apare în joc la următoarea pornire.
+Ghidul complet (stil, simboluri de evitat, ordinea în care desenezi): [`docs/ARTA.md`](../docs/ARTA.md).
 
-| Ce | Mărime | Folder | Exemplu |
-|---|---|---|---|
-| Erou, semizei (Dara, Nix, Toma) | 64×64 | `characters/` | `characters/dara.png` |
-| Inamici | 64×64 | `enemies/` | `enemies/training_dummy.png` |
-| Zei (boss / hub) | 128×128 | `gods/` | `gods/kaldor.png` |
-| Portrete pentru dialog | 96×96 | `portraits/` | `portraits/aeva.png` |
-| Iconițe cărți | 32×32 | `cards/` | `cards/strike.png` |
-| Iconițe binecuvântări | 32×32 | `blessings/` | `blessings/varr_umbrella.png` |
-| Simboluri de rune (originale, nu din alfabete reale) | 32×32 | `runes/` | `runes/tor.png` |
-| Fundaluri | 640×360 | `backgrounds/` | `backgrounds/main_menu.png` |
-| Elemente de interfață | liber | `ui/` | |
+Pune PNG-urile aici, cu numele egal cu `id`-ul din `data/*.json` (ex.: `art/talismans/ilinca_chalk.png`).
+Dacă un fișier lipsește, jocul desenează singur un placeholder. Nu trebuie scris cod nou: fișierul apare în joc la
+următoarea pornire.
 
-Sfaturi: fundal transparent, fără anti-aliasing (jocul folosește filtrul Nearest, pixelii rămân clari).
+| Ce | Mărime (px) | Folder |
+|---|---|---|
+| Piatra de bază (+ variante: os, chihlimbar, aur, fier, sticlă) | 160×200 | `stones/` |
+| Rune desenate (opțional; înlocuiesc liniile din cod) | 128×128, fundal transparent | `runes/` |
+| Talismane | 300×420 | `talismans/` |
+| Lecții / Gravuri | 240×336 | `lessons/`, `engravings/` |
+| Examinatori, Aeva, Tanti Vera | 512×512 | `examiners/`, `portraits/` |
+| Fundaluri | 1920×1080 | `backgrounds/` |
+| Rame UI (9-slice) | după nevoie | `ui/` |
+
+> Folderele vechi (`characters/`, `enemies/`, `gods/`, `cards/`, `blessings/`) sunt din v2 și dispar la migrarea la v3.

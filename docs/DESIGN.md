@@ -1,233 +1,269 @@
-# Designul Jocului 1 — „Examenul” (EN: „The Godborn Exam”) — v2: cu rune
+# Designul Jocului 1 — „Examenul de Moștenire” (EN: „The Inheritance Exam”) — v3
 
 > Document viu: se actualizează când se schimbă designul. Valorile exacte stau în `data/*.json`.
+> v1 (deckbuilder cu lupte) și v2 (cercul runic) sunt **înlocuite** de v3.
 
-- Gen: **roguelite pe ture cu cărți** (deckbuilder ușor, mult mai mic decât un Slay the Spire).
-- O partidă: **15–20 de minute**.
-- Premisa: ești un semizeu de 16 ani convocat la **Examenul de Moștenire**. Dacă pici, **Aeva, zeița timpului**,
-  te întoarce în dimineața examenului. Încerci din nou, dar **păstrezi amintirile** (progresul permanent).
-- **Cei doi stâlpi ai jocului: Puterile și Runele.** Semizeul e jumătate zeu, jumătate om. Puterile divine le
-  moștenește de la părinte; runele le învață, ca orice om. Oamenii, fără puteri divine, au dus magia runelor atât de
-  departe încât zeii înșiși vin să învețe de la ei. Motto: **„Puterea o moștenești. Runele le înveți.”**
-- Ton: **epic + umor**. Zeii trăiesc la vedere printre oameni și au meserii banale.
-- Scop: un joc mic, **terminat și publicat pe itch.io** (inclusiv versiune jucabilă în browser).
+## 1. Viziunea
+- Gen: **roguelike de construit scoruri, cu rune în loc de cărți**, în spiritul Balatro.
+- În loc de un pachet de cărți ai un **Săculeț cu pietre de rune**. Tragi pietre în mână și **rostești Cuvinte**
+  (combinații de rune). Fiecare Cuvânt dă un scor. Ca să treci o rundă, atingi scorul cerut de examinator.
+- Cele **24 de rune sunt runele istorice reale (Futharkul vechi)**. **Fiecare rună are un efect („Glasul” ei)
+  inspirat din sensul ei real** — asta ne face diferiți de Balatro.
+- Premisa: ești un semizeu de 16 ani la **Examenul de Moștenire**. Dacă pici, **Aeva, zeița timpului**, te întoarce în
+  dimineața examenului. Păstrezi amintirile, adică deblocările.
+- Ton: **epic + umor**. Motto: **„Puterea o moștenești. Runele le înveți.”**
+- Stil vizual: **desenat de mână** (tuș, întuneric, rune care strălucesc) — vezi `docs/ARTA.md`.
+- Scop: un joc mic, **terminat și publicat pe itch.io**, inclusiv în browser.
+
+**Regulă:** Balatro e doar inspirație pentru *mecanică*. **Nu copiem** numele lui (Joker, Chips, Mult, Blind, Ante,
+Tarot, Planet etc.), interfața, aranjarea ecranului, textele, valorile numerice sau efectele vizuale caracteristice.
+
+| Ideea | La noi | id în cod |
+|---|---|---|
+| pachetul de cărți | **Săculețul** cu pietre de rune | `bag` |
+| o carte | o **piatră** (cu o rună pe ea) | `stone` |
+| culoarea (suit) | **Neamul** (3 neamuri) | `kin` |
+| valoarea cărții | **Poziția** runei în neamul ei (1–8) | `position` |
+| mâna de poker jucată | **Cuvântul** rostit | `word` |
+| a juca / a arunca | **a Rosti** / **a Schimba** | `cast` / `swap` |
+| baza × multiplicatorul | **Putere × Rezonanță** | `power` × `res` |
+| jokerii | **Talismanele** | `talisman` |
+| cărțile care cresc nivelul unei mâini | **Lecțiile** (de la Școala de Rune) | `lesson` |
+| cărțile care modifică alte cărți | **Gravurile** | `engraving` |
+| magazinul | **Piața de noapte** | `shop` |
+| nivelurile de dificultate | **Probele** examenului | `trial` |
+| rundele | **Întrebarea mică**, **Întrebarea mare**, **Examinatorul** | `small`, `big`, `examiner` |
+| banii | **Monede** | `money` |
 
 ## 3.1 Bucla
 ```
-Meniu → Dimineața examenului (hub) → Alegi părintele divin
-      → Proba 1 → Proba 2 → Proba 3
-      → VICTORIE (scena finală)  sau  PICAT (Aeva te întoarce)
-      → primești Amintiri → înapoi în Dimineața examenului
+Meniu → Dimineața examenului (hub) → Alegi părintele divin (= săculețul de start)
+  → Proba 1: Întrebarea mică → Piața → Întrebarea mare → Piața → Examinatorul → Piața
+  → Proba 2 … → Proba 8 (Examinatoare finală: Aeva)
+  → AI TRECUT EXAMENUL  sau  PICAT (Aeva te întoarce în timp)
+  → primești Amintiri → înapoi în Dimineața examenului
 ```
 
-## 3.2 Lupta
-- **Eroul:** HP (depinde de părinte), **3 Energie pe tur**, **trage 5 cărți pe tur**. La final de tur, cărțile rămase în mână se aruncă.
-- **Pachet → mână → teanc aruncat.** Când pachetul e gol, teancul aruncat se amestecă și devine pachet nou.
-- **Scut:** absoarbe daune și dispare la începutul turului tău următor.
-- **Intenții:** fiecare inamic arată deasupra lui ce face în tura următoare (iconiță + număr: atac 12, scut 8, aplică Slăbit etc.).
-- **Stări (doar 4 în prima versiune):**
+## 3.2 Pietrele și săculețul
+- **24 de rune** (3.5), în **3 Neamuri** a câte 8. Fiecare rună are o **Poziție** (1–8) în neamul ei.
+- **Săculețul de start: 48 de pietre — fiecare rună de două ori.**
+- O piatră are: runa, Neamul, Poziția, **Putere de bază** (pornim de la poziția + 2, deci 3–10; de balansat),
+  **Glasul** runei, opțional un **material** și opțional o **legătură** (3.7).
+- **O rundă:**
+  - Tragi **8 pietre** în mână. Ai **4 Rostiri** și **3 Schimbări**.
+  - **Rostire:** alegi 1–5 pietre; jocul recunoaște cel mai bun Cuvânt și calculează scorul; apoi tragi până ai iar 8.
+  - **Schimbare:** alegi 1–5 pietre, le dai deoparte și tragi altele.
+  - Pietrele rostite/schimbate nu se întorc în săculeț până la finalul rundei. Dacă săculețul se golește, joci cu ce
+    ai în mână.
+  - Treci runda când suma scorurilor atinge ținta; pici dacă rămâi fără Rostiri înainte.
+  - La finalul rundei toate pietrele se întorc în săculeț și se amestecă.
+- Sortare după Poziție sau după Neam (două butoane) și rearanjare cu drag. **Ordinea contează** (Gebo, Ehwaz, Tiwaz,
+  Cuvintele vechi ascunse).
 
-| Stare | id | Efect |
+## 3.3 Scorul: Putere × Rezonanță
+1. Cuvântul rostit dă **Puterea** și **Rezonanța** de bază (în funcție de nivel).
+2. **Pietrele care formează Cuvântul** punctează una câte una, de la stânga la dreapta: Puterea pietrei, apoi
+   materialul și Glasul. Pietrele rostite care nu fac parte din Cuvânt nu punctează.
+3. Efectele pietrelor rămase în mână (de ex. Isaz).
+4. **Talismanele**, de la stânga la dreapta.
+5. **Scor = Putere × Rezonanță**, adunat la scorul rundei.
+
+Animația scorului e **inima jocului**: fiecare piatră se ridică și strălucește, numerele zboară în contoare (Puterea
+în albastru, Rezonanța în roșu), la final se înmulțesc cu un efect mare. Viteză ×1, ×2, ×4.
+Scorurile pot fi foarte mari: `float`, formatate frumos („12 840”, „1,2 mil.”).
+
+## 3.4 Cuvintele (tipurile de combinații)
+| # | Cuvânt | Ce trebuie |
 |---|---|---|
-| Arsură | `burn` | primește X daune la final de tur, apoi X scade cu 1 |
-| Slăbit | `weak` | dă cu 25% mai puține daune (durată în ture) |
-| Vulnerabil | `vulnerable` | primește cu 50% mai multe daune (durată în ture) |
-| Putere | `strength` | +X daune la fiecare atac (permanent în luptă) |
+| 1 | Rună singură | nicio combinație; punctează piatra cu Poziția cea mai mare |
+| 2 | Pereche | 2 pietre cu aceeași Poziție |
+| 3 | Două perechi | 2 Perechi diferite |
+| 4 | Treime | 3 pietre cu aceeași Poziție |
+| 5 | Șir | 5 Poziții consecutive (1–8, fără întoarcere de la 8 la 1) |
+| 6 | Neam | 5 pietre din același Neam |
+| 7 | Familie | o Treime + o Pereche |
+| 8 | Patru | 4 pietre cu aceeași Poziție |
+| 9 | Descântec | un Șir în care toate pietrele sunt din același Neam |
+| 10 | Cuvântul Vechi *(ascuns până îl descoperi)* | 5 pietre cu aceeași Poziție |
 
-- **Victorie:** toți inamicii au 0 HP. **Înfrângere:** eroul are 0 HP → ecranul „Picat”.
-- **Efectele cărților sunt liste de acțiuni în JSON**, executate în ordine. O carte nouă = doar JSON, fără cod:
-  ```json
-  {"type": "damage", "value": 6, "target": "enemy"}
-  {"type": "damage", "value": 4, "target": "all_enemies"}
-  {"type": "block",  "value": 5}
-  {"type": "apply",  "status": "burn", "value": 3, "target": "enemy"}
-  {"type": "draw",   "value": 2}
-  {"type": "energy", "value": 1}
-  {"type": "heal",   "value": 4}
-  ```
-  Ținte: `enemy` (o alege jucătorul), `all_enemies`, `random_enemy`, `self`.
-- Inamicii au un **tipar de acțiuni** în JSON (secvență sau ciclu cu șanse simple), plus reguli speciale pentru boss (3.4).
-- **Cercul runic (magia oamenilor):** pe lângă cărțile de putere există **cărți-rună**. Când joci o carte-rună:
-  1. are un efect mic imediat;
-  2. **înscrie runa în Cercul runic**, care are 3 locuri.
+- 3 Neamuri × 8 Poziții ≠ poker, deci probabilitățile sunt altele. **Simulatorul** (8 pietre din 48) arată cât de des
+  apare fiecare Cuvânt; ordinea și valorile de bază se fixează după tabel: **mai rar = mai puternic**.
+  Punct de plecare: Rună singură ≈ 5 Putere × 1 Rezonanță. **Tabelul se arată lui Relax înainte de a fixa valorile.**
+- Fiecare Cuvânt are **nivel** (de la 1). O Lecție îi crește nivelul: + Putere și + Rezonanță.
+- Easter egg: un Descântec din Neamul lui Fehu de la Poziția 1 scrie **F-U-Þ-A-R** → mesaj special.
 
-  Când cercul are 3 rune, ele se **rostesc ca un Cuvânt**, iar cercul se golește. Combinația celor 3 rune decide ce
-  Cuvânt iese (3.11). În prima versiune **ordinea runelor nu contează**. Runele rămân în cerc de la un tur la altul și
-  dispar doar la finalul luptei.
-- Cercul se vede mereu pe ecran. UI-ul arată ce Cuvinte poți încă forma cu runele deja puse, dar **doar pe cele deja
-  descoperite** (3.11).
+## 3.5 Cele 24 de rune (Futharkul vechi)
+Datele istorice sunt verificate de Relax. **Nu inventăm alte sensuri „istorice”.** În Cartea de rune fiecare rună are
+două texte: **„Sens istoric”** și **„În joc”** (Glasul). Numele sunt reconstruite de lingviști; sensurile vin din
+nume și din poemele runice medievale (englez, norvegian, islandez). Multe sensuri „mistice” de pe internet sunt
+interpretări moderne (secolul XX).
 
-## 3.3 Părinții divini (alegi unul la începutul partidei)
-| id | Zeu | Domeniu | HP start | Stil de joc | Cartea semnătură | Runa de afinitate |
-|---|---|---|---|---|---|---|
-| `varr` | Varr | furtună, fulger | 55 | daune mari, lovește mai mulți inamici | **Fulgerul lui Varr** — cost 2: 8 daune tuturor inamicilor | **Tor** |
-| `selvia` | Selvia | mări, ape | 65 | scut + vindecare, luptă lungă | **Valul** — cost 1: 8 scut, vindecă 3 | **Ul** |
-| `ignar` | Ignar | foc, forjă | 60 | Arsură care se adună în timp | **Jarul** — cost 1: aplică 4 Arsură | **Ar** |
-
-- **Deblocare:** Varr de la început. Selvia după prima încercare, indiferent de rezultat. Ignar costă 30 de Amintiri.
-- **Runa de afinitate** e în pachetul de start și apare mai des la recompense.
-- **Pachet de start (10 cărți):** 4× Lovitură (cost 1, 6 daune), 3× Apărare (cost 1, 5 scut), 1× cartea semnătură,
-  1× runa de afinitate, 1× **Gar** (runa apărării).
-- **Cărți pentru recompense:** 6 pentru fiecare părinte + 4 neutre (22 de cărți de putere), plus cărțile-rună (3.11).
-  Direcție:
-  - Varr: *Tunet* (cost 1: 5 daune, aplică 1 Vulnerabil), *Linia 22* (cost 0: trage 2 cărți; Varr conduce troleibuzul 22).
-  - Selvia: *Maree* (cost 1: 6 scut, trage 1 carte), *Adâncul* (cost 2: 14 scut).
-  - Ignar: *Shaorma de foc* (cost 1: vindecă 4, aplică 2 Arsură), *Forja* (cost 1: +2 Putere).
-  - Neutre: *Respiră* (cost 0: +1 Energie tura asta), *Pumn de semizeu* (cost 2: 14 daune).
-- La recompense, **1 din cele 3 cărți oferite e de obicei o carte-rună**. Dintre cărțile de putere, cele ale părintelui
-  tău apar mai des (aprox. 60%).
-- Fiecare carte poate fi **îmbunătățită o dată** (la Odihnă): versiunea `+` are valori mai mari (câmpul `upgrade`).
-
-## 3.4 Examenul: 3 probe
-Fiecare probă are un fundal, inamici tematici și un **examinator** ca boss: **doi zei și un om**.
-
-**Structura unei probe (5 pași):**
-1. Luptă
-2. Alegere: **Luptă grea** (recompensă mai bună) sau **Eveniment**
-3. Luptă
-4. Alegere: **Odihnă** (vindecă 30% HP sau îmbunătățește o carte) sau **Rival** (luptă de elită, dă o binecuvântare)
-5. **Examinatorul** (boss)
-
-Între probe eroul își reface 25% din HP.
-
-| Probă | Examinator | Loc | Inamici | Rival |
+**Neamul lui Fehu** (avere, forță, drum) — auriu, semn: monedă
+| Poz. | Rună | Nume | Sens istoric | Glasul (orientativ) |
 |---|---|---|---|---|
-| 1. Proba Forței | **Kaldor** | arena de nisip a sălii de box | Manechin de antrenament, Câine de bronz, Soldat de lut | Dara |
-| 2. Proba Runelor | **Maestra Ilinca** (om!) | sala de curs a Școlii de Rune | Ucenic runic (înscrie și el rune), Stâlp runic (nu atacă; o dată la 2 ture dă scut tuturor inamicilor), Ecou de cerneală | Nix |
-| 3. Proba Umbrei | **Morrah** | Biblioteca Sufletelor | Carte blestemată, Umbră, Paznic de os | Toma (eveniment de alianță, nu luptă) |
+| 1 | ᚠ | Fehu | vite, avere | +1 Monedă când punctează |
+| 2 | ᚢ | Uruz | bourul (taurul sălbatic dispărut) | Puterea ei de bază e dublă |
+| 3 | ᚦ | Thurisaz | uriaș, monstru; în poemul englez: spin | +4 Rezonanță |
+| 4 | ᚨ | Ansuz | „un zeu”; în poemul englez: gura | Cuvântul punctează ca și cum ar avea +1 nivel |
+| 5 | ᚱ | Raidho | călărie, călătorie | +1 Schimbare în runda asta |
+| 6 | ᚲ | Kenaz | în poemul englez: făclie; în cele nordice: bubă, rană | Cât timp e în mână, vezi următoarele 3 pietre din săculeț |
+| 7 | ᚷ | Gebo | dar, cadou | Copiază Glasul pietrei din stânga ei |
+| 8 | ᚹ | Wunjo | bucurie | +1 Rezonanță pentru fiecare piatră din Cuvânt |
 
-**Reguli speciale pentru examinatori:**
-- **Kaldor:** atacuri mari; +1 Putere în fiecare tur. Sub 50% HP strigă „Garda sus!” și primește scut mare o dată.
-- **Maestra Ilinca:** fără puteri divine, doar rune. Are propriul **Cerc runic**, vizibil pe ecran. În fiecare tur
-  înscrie o rună (intenția ei arată runa), iar la 3 rune rostește un Cuvânt mare. Jucătorul vede ce Cuvânt se formează
-  și se pregătește — așa învață sistemul runelor văzându-l la ea. Sub 50% HP înscrie câte 2 rune pe tur. Când o
-  învingi, **Cuvântul ei preferat intră în Cartea ta de rune**.
-- **Lunet** nu mai e examinatoare în v2. Apare în evenimentul cu radioul și e părintele lui Nix (poate fi examinatoare
-  într-un joc viitor).
-- **Morrah:** atacul ei crește cu fiecare tur („Liniștea se adună”) — jucătorul trebuie să termine repede; aplică Vulnerabil.
+**Neamul lui Hagalaz** (forțele naturii, încercări) — albastru-gheață, semn: fulg de grindină
+| Poz. | Rună | Nume | Sens istoric | Glasul |
+|---|---|---|---|---|
+| 1 | ᚺ | Hagalaz | grindină | Punctează de două ori |
+| 2 | ᚾ | Naudiz | nevoie, lipsă, suferință | ×2 Rezonanță dacă e ultima Rostire a rundei |
+| 3 | ᛁ | Isaz | gheață | Dacă rămâne în mână (nerostită), +3 Rezonanță la fiecare Rostire |
+| 4 | ᛃ | Jera | an, an bun, recoltă | La finalul rundei, +2 Monede pentru fiecare Jera rostită în rundă |
+| 5 | ᛇ | Eihwaz | tisa (copac care trăiește sute de ani) | Crește: +3 Putere permanent de fiecare dată când punctează |
+| 6 | ᛈ | Perthro | sens necunoscut; poemul englez vorbește de joc și distracție (poate o cupă de zaruri) | 1 șansă din 4: ×3 Rezonanță |
+| 7 | ᛉ | Algiz | elan (numele original e nesigur) | Regula Examinatorului nu se aplică acestei Rostiri |
+| 8 | ᛊ | Sowilo | soare | ×1,5 Rezonanță |
 
-**Recompense:**
-- după luptă normală: alegi 1 carte din 3 (sau sari peste);
-- după elită/rival: o binecuvântare + alegere de carte;
-- după examinator: o binecuvântare + o carte rară.
+**Neamul lui Tiwaz** (oameni, comunitate, moștenire) — roșu-cărămiziu, semn: stea
+| Poz. | Rună | Nume | Sens istoric | Glasul |
+|---|---|---|---|---|
+| 1 | ᛏ | Tiwaz | numele unui zeu al cerului și al dreptății; în poemul englez: o stea călăuzitoare | ×2 Rezonanță dacă e prima piatră din stânga în Cuvânt |
+| 2 | ᛒ | Berkanan | mesteacăn | O dată pe rundă, după ce punctează, adaugă în săculeț o copie a unei pietre din Cuvânt |
+| 3 | ᛖ | Ehwaz | cal | Piatra din dreapta ei punctează încă o dată |
+| 4 | ᛗ | Mannaz | om, ființă umană | Runa oamenilor: +2 Rezonanță pentru fiecare Lecție folosită în acest examen |
+| 5 | ᛚ | Laguz | apă, lac, mare | Curge: contează ca piatră din orice Neam |
+| 6 | ᛜ | Ingwaz | Ing, numele unui zeu sau erou | Sămânța: dacă rămâne în mână la finalul rundei, primește +10 Putere permanent |
+| 7 | ᛞ | Dagaz | zi | ×2 Rezonanță dacă e prima Rostire a rundei |
+| 8 | ᛟ | Othala | moștenire, pământul și casa familiei | Moștenirea: +2 Rezonanță pentru fiecare Talisman deținut |
 
-## 3.5 Binecuvântări (efecte pasive, 9 în prima versiune)
-| id | Nume | Efect |
+- Ordinea tradițională: Dagaz pe 23 și Othala pe 24 (pe unele obiecte vechi sunt inversate; păstrăm ordinea tradițională).
+- **Glasurile sunt o propunere** — se testează, se balansează și se raportează ce s-a schimbat.
+- Opțiune în `data/`: `rune_voices_start_awake: true/false`. Dacă jocul pare prea încărcat, pornim cu pietrele
+  „adormite” (fără Glas), iar o Gravură specială le **trezește**.
+- **Cuvinte vechi ascunse (Etapa 5):** dacă pietrele punctate scriu, de la stânga la dreapta, unul dintre ele → bonus
+  secret + mesaj de descoperire:
+  - **ALU** (ᚨᛚᚢ) — cel mai des întâlnit; sens disputat (băutură rituală, amuletă sau ceva sacru);
+  - **LAÞU** (ᛚᚨᚦᚢ) — tradus de obicei „chemare, invitație”;
+  - **AUJA** (ᚨᚢᛃᚨ) — tradus de obicei „noroc”.
+  Bonusurile: de propus.
+
+## 3.6 Talismanele (5 locuri)
+- Efecte pasive, ordonate de la stânga la dreapta (rearanjabile). Se cumpără din Piață și se vând pe jumătate din preț.
+- Raritate: Comun, Rar, Legendar. **Prima versiune: ~30.** Talismanele sunt **ilustrațiile principale ale jocului**.
+
+| Talisman | Raritate | Efect |
 |---|---|---|
-| `kaldor_whistle` | Fluierul lui Kaldor | +1 Putere la începutul fiecărei lupte |
-| `lunet_coffee` | Cafeaua de noapte a lui Lunet | +2 cărți trase în primul tur |
-| `varr_umbrella` | Umbrela lui Varr | primul atac primit în fiecare luptă face 0 daune |
-| `selvia_shell` | Scoica Selviei | vindecă 3 HP după fiecare luptă |
-| `ignar_lighter` | Bricheta lui Ignar | orice Arsură aplicată primește +1 |
-| `morrah_bookmark` | Semnul de carte al Morrei | la începutul luptei, alegi 1 carte din pachet s-o ai în mână |
-| `gronn_helmet` | Casca de șantier a lui Gronn | +8 scut în primul tur |
-| `aeva_hourglass` | Clepsidra Aevei | o dată pe examen, când ai muri, rămâi la 1 HP |
-| `ilinca_chalk` | Creta Maestrei Ilinca | primul Cuvânt rostit în fiecare luptă are efect dublu |
+| Creta Maestrei Ilinca | Comun | +4 Rezonanță |
+| Casca de șantier a lui Gronn | Comun | +40 Putere |
+| Umbrela lui Varr | Comun | pietrele din Neamul lui Hagalaz dau +3 Rezonanță când punctează |
+| Scoica Selviei | Comun | +1 Schimbare în fiecare rundă |
+| Cafeaua de noapte a lui Lunet | Comun | +1 piatră în mână (9) |
+| Shaorma lui Ignar | Comun | +20 Rezonanță; scade cu 1 după fiecare Rostire și dispare la 0 |
+| Biletul pe troleibuzul 22 | Comun | +1 Monedă de fiecare dată când rostești un Șir |
+| Bunica din piață | Comun | totul în Piață costă cu 1 Monedă mai puțin |
+| Mănușile lui Kaldor | Rar | ×2 Rezonanță dacă Cuvântul are exact 5 pietre |
+| Bricheta lui Ignar | Rar | prima piatră punctată în fiecare Rostire punctează de două ori |
+| Semnul de carte al Morrei | Rar | +1 Rezonanță permanent pentru fiecare tip de Cuvânt nou rostit în examen |
+| Toma, fiul lui Gronn | Rar | + Putere egală cu numărul de pietre rămase în săculeț |
+| Nix, copilul lui Lunet | Rar | copiază efectul Talismanului din dreapta lui |
+| Dara, fiica lui Kaldor | Rar | ×1,5 Rezonanță; crește cu +0,25 după fiecare Examinator învins |
+| Clepsidra Aevei | Legendar | o dată pe examen: dacă pici o rundă, o iei de la capăt; apoi Clepsidra se sparge |
+| Pecetea Curții Moștenirii | Legendar | ×3 Rezonanță |
 
-În `blessings.json`, fiecare are `effect.trigger` (`combat_start`, `first_turn`, `combat_end`, `passive`) și fie
-`actions` (aceleași acțiuni ca la cărți), fie o `rule` specială tratată de cod.
+(Restul până la ~30: de propus, în același stil.)
 
-## 3.6 Rivalii și evenimentele
-- **Dialoguri scurte** (2–4 replici) înainte și după fiecare întâlnire cu un rival sau zeu, cu portret, nume și text
-  care apare literă cu literă. Replicile stau în `dialogs.json`.
-- **Dara** (fiica lui Kaldor): elită în Proba 1. Competitivă și arogantă, dar corectă.
-- **Nix** (copilul lui Lunet): elită în Proba 2. Glumeț și mincinos; nu știi niciodată de partea cui e.
-- **Toma** (fiul lui Gronn): eveniment în Proba 3. Îl ajuți (pierzi 8 HP, primești *Umărul lui Toma*: cost 1, 12 scut) sau îl lași.
-- **Evenimente (3–4 în prima versiune)**, fiecare cu text și 2–3 alegeri. Exemple:
-  - *Automatul de cafea al zeilor:* plătești 6 HP pentru o carte la alegere.
-  - *Un turist vrea selfie cu tine:* accepți (+1 carte aleatorie) sau refuzi (vindecă 5).
-  - *Radioul lui Lunet la difuzor:* ghicești următorul cântec; dacă ghicești → o binecuvântare, dacă nu → 1 Slăbit la următoarea luptă.
-  - *Zeu la meditații:* îl găsești pe Kaldor chinuindu-se cu tema de rune. Îl ajuți (descoperi un Cuvânt nou) sau
-    râzi de el (+1 Putere la următoarea luptă, dar Kaldor ține minte asta în Proba 1 data viitoare).
+## 3.7 Lecții, Gravuri, materiale și legături
+- **2 locuri pentru consumabile** (Lecții și Gravuri).
+- **Lecții (10):** câte una pe Cuvânt; fiecare îi crește nivelul cu 1. Text cu umor (ex. „Lecția despre Perechi.
+  Kaldor a picat-o de două ori.”).
+- **Gravuri (~10)** modifică pietrele din mână:
+  - **Materiale** (cel mult unul pe piatră): **Os** (+20 Putere); **Chihlimbar** (+4 Rezonanță); **Aur** (+3 Monede
+    dacă rămâne în mână la finalul rundei); **Fier** (×1,5 Rezonanță dacă rămâne în mână); **Sticlă** (×2 Rezonanță,
+    1 șansă din 4 să se spargă și să dispară).
+  - **Legătura** (mecanica noastră): leagă 2 pietre într-o **legătură runică** cu ambele rune; la formarea Cuvântului
+    contează ca oricare dintre cele două (jocul alege varianta cea mai bună); când punctează, se declanșează **ambele
+    Glasuri**. Istoric, runele legate chiar existau.
+  - **Prefacerea:** schimbă runa unei pietre într-o rună la alegere din același Neam.
+  - **Dublura:** adaugă în săculeț o copie a unei pietre.
+  - **Sfărâmarea:** scoate definitiv până la 2 pietre din săculeț.
+  - **Strămutarea:** mută până la 3 pietre în alt Neam (runa rămâne; se schimbă culoarea și Neamul).
+- **Săculețe în Piață** (pachete): alegi 1 din 3 (sau 2 din 5 la cele mari). Tipuri: Lecții, Gravuri, Talismane,
+  Pietre (uneori cu materiale).
 
-## 3.7 Amintirile (progres permanent)
-- La finalul fiecărei partide, pierdute sau câștigate: **+2** pentru fiecare luptă câștigată, **+5** pentru o elită,
-  **+10** pentru un examinator.
-- În **Dimineața examenului** (hub) cheltui Amintiri pe:
-  - deblocare Ignar (30);
-  - +5 HP maxim (20; de maximum 3 ori);
-  - înlocuirea unei Lovituri de start cu o carte mai bună (25).
-- **Cartea de rune e și ea progres permanent.** Cuvintele descoperite rămân descoperite după fiecare întoarcere în
-  timp. Runele sunt cunoaștere, iar cunoașterea e exact ce supraviețuiește buclei Aevei.
-- În hub există **Cursul de seară al Maestrei Ilinca**: plătești **10 Amintiri** ca să înveți un Cuvânt dinainte. În
-  ultima bancă stau Kaldor și Varr, care repetă cursul (replici de umor în `dialogs.json`).
-- Descoperirea unui Cuvânt nou în luptă dă **+3 Amintiri**.
-- **Aeva** apare în hub la fiecare repetare cu o replică nouă, care depinde de numărul de încercări (`dialogs.json`).
-  Ex.: *„Iar tu? A {n}-a oară în dimineața asta.”*
-- La prima pornire, jucătorul își scrie numele (maximum 12 caractere).
-- **Salvare** în `user://save.json` prin `SaveManager`: nume, Amintiri, deblocări, **Cuvinte descoperite**, număr de
-  încercări, cea mai bună probă atinsă, setări (limbă, volum). Partida în curs nu se salvează la ieșire în prima versiune.
+## 3.8 Probele și Examinatorii
+- **8 Probe** × 3 runde: **Întrebarea mică** (ținta de bază), **Întrebarea mare** (×1,5), **Examinatorul** (×2 + regulă).
+- Curba țintelor: de propus și verificat cu simulatorul (fără valori din Balatro).
+- **Monede:** recompensă după fiecare rundă câștigată + mic bonus pentru Rostirile rămase + mică dobândă la economii
+  (cu plafon). Valori în `economy.json`. Economie simplă.
+- Examinatorii Probelor 1–7: ordine aleatorie, fără repetări. **Aeva e mereu ultima (Proba 8).**
+- Replică înainte de rundă și replică la înfrângerea lui (`dialogs.json`).
 
-## 3.8 Ecrane
-Meniu principal (Joacă / Setări / Ieșire) · Dimineața examenului (hub) · Alegere părinte · Harta probei · Luptă ·
-Recompensă · Odihnă · Eveniment · Dialog · Vizualizare pachet · **Cartea de rune** · **Cursul de seară** · Pauză ·
-Picat · Victorie (scena finală scurtă).
-
-## 3.9 Senzația (Etapa 6)
-- Numere de daune care sar, tremur de ecran la lovituri mari, cărți care se măresc la hover, tranziții scurte între ecrane.
-- **Rostirea unui Cuvânt e cel mai important moment vizual din joc:** runele se aprind una câte una, cercul se rotește
-  și strălucește, iar numele Cuvântului apare mare pe ecran.
-- Hook-uri pentru sunete (SFX + muzică), cu placeholder-uri deocamdată.
-- **Momentele mari (apariția unui examinator, victoria, întoarcerea în timp) trebuie să arate bine filmate** — pentru clipuri TikTok/Shorts.
-
-## 3.10 Ținte de dificultate (orientativ)
-- Un jucător nou trece Proba 1 în aproximativ 70% din încercări.
-- Examenul complet la prima încercare: aproximativ 15–25%.
-- După câteva deblocări: aproximativ 50%.
-
-## 3.11 Runele (detalii)
-**Cele 6 rune.** Numele sunt provizorii. Simbolurile le desenează Relax și sunt originale, **nu litere din alfabete
-runice reale**. Fișiere: `data/runes.json`, simboluri în `art/runes/<id>.png` (32×32).
-
-| id | Rună | Sens | Efect imediat când o joci |
-|---|---|---|---|
-| `ar` | Ar | foc | aplică 2 Arsură |
-| `ul` | Ul | apă, viață | vindecă 2 |
-| `tor` | Tor | lovitură, fulger | 3 daune |
-| `gar` | Gar | piatră, apărare | 4 scut |
-| `nox` | Nox | umbră | aplică 1 Slăbit |
-| `ve` | Ve | clipă, timp | trage 1 carte |
-
-- Cărțile-rună costă 0 sau 1 Energie. Pot exista mai multe cărți pentru aceeași rună, de ex. *Tor* și *Tor apăsat*
-  (înscrie Tor și face 5 daune în loc de 3).
-
-**Cuvintele** sunt combinații de 3 rune (aprox. **12** în `data/words.json`, inclusiv câteva cu 3 rune diferite). Exemple:
-
-| Rune | Cuvânt | Efect |
+| Examinator | Cine e | Regula (orientativ) |
 |---|---|---|
-| Tor + Tor + Tor | Furtuna | 15 daune tuturor inamicilor |
-| Gar + Gar + Ul | Zidul | 15 scut, vindecă 3 |
-| Ar + Ar + Tor | Explozia | 10 daune, aplică 4 Arsură |
-| Nox + Nox + Tor | Lama umbrei | aplică 2 Vulnerabil, apoi 8 daune |
-| Ve + Ve + oricare | Clipa | +2 Energie, trage 2 cărți |
-| Ar + Ul + Gar | Forja vie | +2 Putere, 6 scut |
+| Kaldor | zeul războiului, antrenor de box | „Garda sus!”: trebuie să rostești exact 5 pietre |
+| Selvia | zeița mărilor, salvamar | „Fluxul”: după fiecare Rostire, pietrele din mână se întorc în săculeț și tragi altele |
+| Varr | zeul furtunii, șofer pe troleibuzul 22 | „Fulgerul”: la fiecare Rostire, o piatră aleatorie din Cuvânt nu punctează |
+| Ignar | zeul focului, are o shaormerie | „Taxa”: fiecare Schimbare costă 1 Monedă |
+| Lunet | zeul viselor, DJ de noapte | „Visul”: primele 3 pietre trase de fiecare dată vin cu fața în jos |
+| Gronn | zeul pământului, șef de șantier | „Greutatea”: runele cu Poziția 1–3 nu punctează |
+| Morrah | zeița morții și a amintirilor, bibliotecară | „Ține minte”: un tip de Cuvânt deja rostit în runda asta nu mai punctează |
+| Maestra Ilinca | om, cea mai mare maestră de rune | „Corectura”: Rună singură și Pereche dau scor 0 |
+| Dara | semizeiță rivală | „Competiția”: ținta crește cu 10% după fiecare Rostire |
+| Nix | semizeu rival | „Păcăleala”: Talismanul din stânga e dezactivat în runda asta |
+| **Aeva** | zeița timpului, Directoarea Examenului | **„Clepsidra”** (finală): o singură Rostire, dar Schimbări nelimitate (după a treia, fiecare costă 1 Monedă). De balansat |
 
-- O combinație care nu e un Cuvânt devine **„Cuvânt bâlbâit”**, cu efect mic (de ex. 3 daune unui inamic aleatoriu).
-- **Descoperire:** prima dată când rostești un Cuvânt valid, are **doar jumătate din putere** (încă nu știi să-l
-  pronunți bine). Apare mesajul „Ai descoperit: Furtuna!”, iar Cuvântul intră pentru totdeauna în **Cartea de rune**.
-  De atunci încolo are putere întreagă.
-- Cuvinte se mai învață din evenimente, de la Maestra Ilinca (după ce o învingi) și la Cursul de seară din hub.
-- Efectele Cuvintelor folosesc același format de acțiuni ca și cărțile (3.2).
+## 3.9 Piața de noapte
+- Între runde: **Piața de noapte** din Orașul Pragului (tarabe, becuri, aburi de la shaorma).
+- Vânzătoarea: **Tanti Vera**, vinde rune de 40 de ani, are o replică pentru orice.
+- La fiecare vizită: 2 Talismane, 2 consumabile (Lecții sau Gravuri), 2 Săculețe și **„Rearanjează taraba”**
+  (reîmprospătează; prețul crește la fiecare apăsare). Prețuri în `economy.json`.
+
+## 3.10 Părinții divini (= săculețul de start)
+| Părinte | Bonus | Deblocare |
+|---|---|---|
+| Varr | +1 Rostire în fiecare rundă | de la început |
+| Selvia | +1 Schimbare în fiecare rundă | după prima încercare |
+| Ignar | începi examenul cu 2 Gravuri aleatorii | Amintiri |
+| Gronn | +1 loc de Talisman, dar −1 piatră în mână | Amintiri |
+| Morrah | săculeț de doar 24 de pietre (câte una din fiecare rună); mai greu, dar fiecare piatră contează (Patru și Cuvântul Vechi devin imposibile fără Dubluri) | Amintiri, pentru jucători avansați |
+
+## 3.11 Bucla Aevei, Amintirile și colecția
+- La finalul fiecărui examen (câștigat sau pierdut): **Amintiri** după proba atinsă, Examinatorii învinși și descoperiri.
+- **Dimineața examenului** (hub): Aeva te întâmpină cu o replică ce depinde de numărul de încercări
+  („Iar tu? A {n}-a oară în dimineața asta.”). Cheltui Amintiri pe: deblocarea părinților; adăugarea de Talismane noi
+  în ofertele Pieței (la început doar o parte sunt disponibile).
+- **Cartea de rune:** cele 24 de rune (forma, sensul istoric, Glasul); Cuvintele (cu nivelurile maxime atinse);
+  Cuvintele vechi ascunse (cu semn de întrebare până le descoperi).
+- **Colecția:** Talismane, Gravuri și Examinatori văzuți.
+- La prima pornire, jucătorul își scrie numele (max. 12 caractere).
+- **Salvare** în `user://save.json` (`SaveManager`): nume, Amintiri, deblocări, colecție, descoperiri, statistici (cel
+  mai mare scor dintr-o Rostire, cea mai bună probă), setări. **Examenul în curs se salvează după fiecare rundă.**
+- **RNG cu seed:** fiecare examen are un seed afișat în meniul de pauză, ca o partidă să poată fi repetată exact.
+
+## 3.12 Povestea (scurtă)
+- **Intro de 4–5 cadre:** 1) Coborârea zeilor; 2) oamenii găsesc 24 de semne vechi pe pietre, mai vechi decât orice
+  zeu; 3) Orașul Pragului azi; 4) convocarea la Examenul de Moștenire; 5) prima întâlnire cu Aeva.
+- Replicile examinatorilor, ale Aevei și ale lui Tanti Vera.
+- **Finalul**, după Aeva: o scenă scurtă cu Pecetea și un indiciu despre misterul runelor.
+
+## 3.13 Senzația
+- Pietrele se înclină ușor sub mouse și „respiră” când sunt selectate. Runele pulsează cu lumină.
+- Scorul crește cu cifre care se rotesc. La multiplicatori mari: tremur de ecran, flash, cifre mari.
+- Fundal animat cu shader (ceață de noapte, paleta din `docs/ARTA.md`).
+- Hook-uri pentru sunete (SFX + muzică), placeholder-uri deocamdată.
+- **Momentele mari arată bine filmate** (TikTok/Shorts): o Rostire uriașă, deschiderea unui Săculeț legendar,
+  apariția unui Examinator, întoarcerea în timp.
+
+## 3.14 Ținte de dificultate (orientativ)
+- Un jucător nou trece Proba 1 aproape mereu, iar Proba 3 în ~50% din încercări.
+- Primul examen complet reușit: după câteva ore de joc.
+- O partidă completă: 30–45 de minute.
+
+## Sistemul de efecte (2.2)
+Un efect = **declanșator** + **condiții** + **acțiuni**.
+- Declanșatori: `on_score` (piatra punctează), `on_held` (piatra stă în mână când rostești), `on_round_end`,
+  `on_cast`, `passive`.
+- Acțiuni: `add_power`, `add_res`, `mul_res`, `add_money`, `retrigger`, `add_discard` etc.
+- Efecte prea speciale pentru JSON: handler numit în cod (`"special": "gebo_copy_left"`), ținuți într-o listă scurtă.
 
 ## Jurnal de decizii
-- **Etapa 1:** randare `gl_compatibility` (necesară pentru exportul Web). Textul descrierii unei cărți va fi generat
-  automat din `effects` (în Etapa 2), ca un număr schimbat în JSON să schimbe și textul; câmpul `description` rămâne
-  opțional, pentru cărți cu text special.
-- **v2 (rune):** designul a primit al doilea stâlp, Runele. Proba 2 devine Proba Runelor (Maestra Ilinca în loc de
-  Lunet); pachetul de start se schimbă (4 Lovituri, 3 Apărări, semnătură, runa de afinitate, Gar); binecuvântarea nr. 9:
-  Creta Maestrei Ilinca.
-- **v2, adaptarea Etapei 1 (propuneri acceptate implicit, Relax le poate schimba):**
-  - `data/characters.json` (nou) pentru oamenii și semizeii cu nume: Maestra Ilinca, Dara, Nix, Toma.
-  - Cărțile-rună au `"type": "rune"` și `"rune": "<id>"`; efectul imediat stă în `effects` ale cărții (așa pot exista
-    variante ca *Tor apăsat*). Costuri: Tor, Ul, Ar, Gar = 1 (versiunea `+` costă 0); Nox, Ve = 0 (versiunea `+` are
-    efect mai mare).
-  - `words.json` are 12 Cuvinte + Cuvântul bâlbâit (`"fallback": true`, `"runes": []`). `"any"` = orice rună.
-    Validatorul refuză două Cuvinte cu aceleași rune (ordinea nu contează).
-  - **Potrivirea exactă câștigă** în fața unei combinații cu `"any"` (Ve+Ve+oricare = Clipa doar dacă nu există un
-    Cuvânt exact pentru acele rune).
-  - Creta Ilincăi + Cuvânt nou descoperit: ½ × 2 = putere întreagă.
-  - Cuvântul preferat al Ilincăi, dacă îl ai deja: +3 Amintiri în schimb.
-  - Ilinca folosește aceleași Cuvinte din `words.json`, cu țintele inversate (daunele merg spre erou); regula
-    „jumătate din putere” nu se aplică inamicilor.
-  - „Kaldor ține minte”: indicator permanent în `save.json` → `flags`; în Proba 1 următoare Kaldor începe cu +2 Putere
-    și are o replică în plus.
+- **v3:** jocul devine roguelike de scoruri cu pietre de rune (stil Balatro, termeni proprii). Folosim runele reale
+  ale Futharkului vechi (regula din v2 „fără alfabete runice reale” e anulată). Grafică desenată, 1920×1080.
