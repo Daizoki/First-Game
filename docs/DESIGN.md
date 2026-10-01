@@ -366,3 +366,9 @@ Un efect = **declanșator** + **condiții** + **acțiuni**.
     Relax le verifică în ecranul „Cele 24 de rune”.
 - **v4:** au intrat Vrăjile (3.15), stilul vizual al ecranului de rundă (3.16), paleta și fonturile propuse (Grenze
   Gotisch + Grenze, OFL, se descarcă doar cu OK-ul lui Relax). Culorile Neamurilor se iau din paleta din `docs/ARTA.md`.
+- **Etapa 1 pe v4 (decizii propuse de Claude):**
+  - Fiecare Vrajă din `spells.json` are o **categorie** (Țintă, Economie, Săculeț, Acțiuni, Talismane, Examinator, Risc,
+    Permanent, Scor) și o **culoare** pentru strălucirea cercului. Le-am ales eu; se pot schimba din JSON.
+  - Categorii alese: Drumul și Potopul = Acțiuni; Făclia și Focul = Săculeț; Sacrificiul și Zarurile = Risc;
+    Lecția și Pădurea = Permanent.
+  - Titlurile folosesc culoarea Lumânare (`#FFB347`), motto-ul culoarea Hagalaz, restul textului culoarea Os.

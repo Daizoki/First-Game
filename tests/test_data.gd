@@ -26,6 +26,8 @@ func test_real_data_loads_without_errors() -> void:
 	check_eq(game_data.kins.size(), 3, "kins:")
 	check_eq(game_data.runes.size(), 24, "runes:")
 	check_eq(game_data.words.size(), 10, "words:")
+	check_eq(game_data.spells.size(), 17, "spells:")
+	check(game_data.spells.has("winter"), "spells.json should contain winter (Iarna)")
 	check(game_data.characters.has("ilinca"), "characters.json should contain ilinca")
 	check(game_data.characters.has("vera"), "characters.json should contain vera")
 	check_eq(game_data.rule("hand_size"), 8, "hand size:")
@@ -144,3 +146,40 @@ func test_normalize_numbers() -> void:
 	var list: Array = dict["b"]
 	check(list[0] is int, "2.0 should become int")
 	check(list[1] is float, "0.5 should stay float")
+
+
+func _spell(id: String, runes: Array) -> Dictionary:
+	return {
+		"id": id,
+		"name": {"ro": id, "en": id},
+		"runes": runes,
+		"logic": {"ro": "a + b", "en": "a + b"},
+		"effect": {"ro": "+6 Monede.", "en": "+6 Coins."},
+		"moment": "after_score",
+		"category": "economy",
+	}
+
+
+func test_spell_rune_count_and_moment_are_checked() -> void:
+	var bad: Dictionary = _spell("solo", ["fehu"])
+	bad["moment"] = "later"
+	var validator: DataValidator = DataValidator.new()
+	validator.validate_collection("spells.json", [bad, _spell("big", ["fehu", "gebo", "isaz", "jera"])], "spell")
+	check(has_error(validator.errors, ["[solo]", "must have 2 or 3 runes (got 1)"]), "1-rune spell not reported")
+	check(has_error(validator.errors, ["[big]", "(got 4)"]), "4-rune spell not reported")
+	check(has_error(validator.errors, ["[solo]", "\"moment\" must be one of"]), "bad moment not reported")
+
+
+func test_spells_with_same_runes_are_reported() -> void:
+	var validator: DataValidator = DataValidator.new()
+	var spells: Dictionary = validator.validate_collection("spells.json",
+		[_spell("market", ["fehu", "gebo"]), _spell("copy", ["gebo", "fehu"])], "spell")
+	validator.check_spells("spells.json", spells)
+	check(has_error(validator.errors, ["[copy]", "same runes as spell \"market\""]), "duplicate spell not reported")
+
+
+func test_spell_unknown_rune_is_reported() -> void:
+	var validator: DataValidator = DataValidator.new()
+	var spells: Dictionary = validator.validate_collection("spells.json", [_spell("odd", ["fehu", "zap"])], "spell")
+	validator.check_references({"spells": spells, "runes": {"fehu": {}}})
+	check(has_error(validator.errors, ["[odd]", "zap", "runes.json"]), "unknown rune not reported")

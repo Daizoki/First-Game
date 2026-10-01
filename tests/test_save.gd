@@ -88,6 +88,7 @@ func test_discoveries_are_saved() -> void:
 	other.load_game()
 	check(other.has_discovery("old_words", "alu"), "discovery should survive a reload")
 	check(not other.has_discovery("words", "alu"), "categories are separate")
+	check(manager.add_discovery("spells", "winter"), "spells are a discovery category")
 	manager.free()
 	other.free()
 	_cleanup()

@@ -8,8 +8,9 @@
 Citește asta la începutul fiecărei sesiuni. Design: `docs/DESIGN.md`. Lume și personaje: `docs/UNIVERS.md`.
 Artă: `docs/ARTA.md`.
 
-> **Starea codului:** Etapa 1 e pe v3 (1920×1080, cele 24 de rune desenate din cod, scena de verificare). Ajustările
-> pentru v4 (paleta, runa în 3 straturi, schema pentru `spells.json`) se fac **doar după OK-ul lui Relax**.
+> **Starea codului:** Etapa 1 e făcută pe v4: 1920×1080, paleta din `docs/ARTA.md`, fonturile Grenze (în `fonts/`,
+> cu licențele OFL), cele 24 de rune desenate din cod în 3 straturi, `spells.json` cu primele 17 Vrăji (doar date;
+> efectele vin în Etapa 2). Verificat cu Godot 4.7.2: fără erori, 28 de teste trec.
 
 ## Cum lucrăm
 - Utilizatorul e **Relax** (18 ani, Chișinău; desenează, TikTok/YouTube). **Scrie-i în română.**
@@ -76,8 +77,10 @@ Artă: `docs/ARTA.md`.
 - **Placeholder-uri:** dacă lipsește `art/<categorie>/<id>.png`, ramă închisă + nume + iconiță simplă; pietrele sunt o
   formă de piatră procedurală cu runa strălucind. Dimensiuni: `docs/ARTA.md`.
 - **Paleta** (Noapte `#0A0C18`, Os `#E9E3D2`, Jar `#FF6A3D`, Neamurile etc.) e în `docs/ARTA.md`; folosește-o peste tot.
-- **Fonturi propuse:** Grenze Gotisch (titluri, Vrăji) + Grenze (text, cifre), Google Fonts, OFL. **Nu le descărca
-  fără OK-ul lui Relax**; până atunci, fontul implicit.
+- **Tema UI:** `scenes/theme/main_theme.tres` — fontul Grenze, butoane și panouri în paletă. Variante de etichetă:
+  `TitleLabel` (Grenze Gotisch, culoarea Lumânare) și `SecondaryLabel` (text secundar). Folosește-le în loc de culori
+  puse de mână.
+- **Fonturi:** Grenze Gotisch + Grenze sunt în `fonts/` (descărcate cu OK-ul lui Relax, licențe OFL lângă ele).
 - **Vrăjile** (`data/spells.json`): 2–3 rune, ordinea nu contează, verificate pe toate pietrele rostite; Laguz nu e
   joker pentru Vrăji; moment `before_score` / `after_score` / `next_cast`; ascunse până la prima rostire.
 
@@ -89,6 +92,8 @@ Artă: `docs/ARTA.md`.
 4. `RunState` — `scripts/autoload/run_state.gd` — examenul în curs.
 
 ## Verificare după fiecare etapă (nu raporta etapa gata dacă sunt erori)
+În sesiunile din cloud, Godot 4.7.2 pentru Linux se poate descărca în scratchpad (Relax a fost de acord); capturile de
+ecran se fac cu `xvfb-run` + `--rendering-driver opengl3`. Pe calculatorul lui Relax, Godot e pe Windows.
 ```bash
 godot --headless --editor --quit          # prima dată pe un clone nou: importă proiectul (.godot/)
 godot --headless --path . --quit          # prinde erorile de parsare
@@ -101,8 +106,9 @@ adăugat în lista `TEST_FILES` din `tests/run_tests.gd`.
 ## Structura (țintă v3)
 ```
 docs/        UNIVERS.md, DESIGN.md, ARTA.md
-data/        kins, runes, words, characters, rules, dialogs, ui_text (.json) — există deja
-             spells, talismans, lessons, engravings, examiners, trials, parents, economy — vin în etapele lor
+data/        kins, runes, words, spells, characters, rules, dialogs, ui_text (.json) — există deja
+             talismans, lessons, engravings, examiners, trials, parents, economy — vin în etapele lor
+fonts/       Grenze, Grenze Gotisch + licențe OFL
 art/         stones/ runes/ talismans/ lessons/ engravings/ examiners/ portraits/ backgrounds/ ui/
 scenes/      main_menu, rune_check, settings, theme/main_theme.tres — există deja
              morning (hub), parent_select, trial_select, round, scoring_popup, shop, pack_open,
@@ -116,7 +122,7 @@ tests/       run_tests.gd, test_case.gd, test_words.gd, test_scoring.gd, simulat
 ## Etapele
 | # | Etapa | Stare |
 |---|---|---|
-| 1 | Scheletul: Compatibility + 1920×1080, foldere, autoload-uri, JSON + validare, meniu, setări cu limba, docs, **scena de verificare a celor 24 de rune desenate din cod** | făcută pe v3; ajustări mici pentru v4 după OK |
+| 1 | Scheletul: Compatibility + 1920×1080, foldere, autoload-uri, JSON + validare, meniu, setări cu limba, docs, **scena de verificare a celor 24 de rune desenate din cod** | făcută pe v4, verificată cu Godot 4.7.2 (așteaptă testul lui Relax) |
 | 2 | Miezul — o rundă: săculețul de 48, mâna de 8, Rostire/Schimbare, sortare/rearanjare, recunoașterea Cuvintelor (cu Laguz și ordinea), Putere × Rezonanță animat, cele 24 de Glasuri, rundă de test; teste; simulatorul + tabelul de probabilități; **primele 8 Vrăji** (detectare, efecte, descoperire, animație simplă); ecranul de rundă așezat ca în 3.16 | — |
 | 3 | Examenul complet: 8 Probe × 3 runde, Examinatorii, Monede, Piața de noapte, primele 15 Talismane, Lecții, Gravuri, materiale, legături runice, Săculețe, Picat / Examen trecut | — |
 | 4 | Bucla Aevei: Dimineața, alegerea părintelui, Amintiri, deblocări, salvare (inclusiv examenul în curs), Cartea de rune (cu Vrăjile descoperite), Colecția, numele jucătorului, Paginile rupte în Piață | — |

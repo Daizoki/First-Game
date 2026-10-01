@@ -2,19 +2,19 @@
 	{
 		"id": "fehu",
 		"name": {"ro": "Neamul lui Fehu", "en": "Kin of Fehu"},
-		"color": "#e8b84a",
+		"color": "#ebaa3c",
 		"sign": "coin"
 	},
 	{
 		"id": "hagalaz",
 		"name": {"ro": "Neamul lui Hagalaz", "en": "Kin of Hagalaz"},
-		"color": "#8fd3ff",
+		"color": "#63c6f2",
 		"sign": "hail"
 	},
 	{
 		"id": "tiwaz",
 		"name": {"ro": "Neamul lui Tiwaz", "en": "Kin of Tiwaz"},
-		"color": "#c4553b",
+		"color": "#e8573f",
 		"sign": "star"
 	}
 ]

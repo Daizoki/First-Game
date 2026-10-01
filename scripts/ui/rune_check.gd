@@ -4,7 +4,7 @@ extends Control
 
 const MAIN_MENU_SCENE: String = "res://scenes/main_menu.tscn"
 const RuneGlyphScript = preload("res://scripts/ui/rune_glyph.gd")
-const GLYPH_SIZE: Vector2 = Vector2(150, 150)
+const GLYPH_SIZE: Vector2 = Vector2(124, 124)
 
 @onready var _title: Label = %Title
 @onready var _hint: Label = %Hint
@@ -39,16 +39,17 @@ func _refresh() -> void:
 func _make_kin_row(kin_id: String) -> Control:
 	var kin: Dictionary = GameData.kins[kin_id]
 	var row: VBoxContainer = VBoxContainer.new()
-	row.add_theme_constant_override("separation", 6)
+	row.add_theme_constant_override("separation", 2)
 
 	var kin_label: Label = Label.new()
 	kin_label.text = Loc.text(kin["name"])
 	kin_label.add_theme_color_override("font_color", GameData.kin_color(kin_id))
-	kin_label.add_theme_font_size_override("font_size", 34)
+	kin_label.theme_type_variation = &"TitleLabel"
+	kin_label.add_theme_font_size_override("font_size", 36)
 	row.add_child(kin_label)
 
 	var runes_box: HBoxContainer = HBoxContainer.new()
-	runes_box.add_theme_constant_override("separation", 34)
+	runes_box.add_theme_constant_override("separation", 56)
 	for rune: Dictionary in GameData.runes_in_kin(kin_id):
 		runes_box.add_child(_make_rune_cell(rune))
 	row.add_child(runes_box)
@@ -57,7 +58,7 @@ func _make_kin_row(kin_id: String) -> Control:
 
 func _make_rune_cell(rune: Dictionary) -> Control:
 	var cell: VBoxContainer = VBoxContainer.new()
-	cell.add_theme_constant_override("separation", 2)
+	cell.add_theme_constant_override("separation", 0)
 
 	var glyph: RuneGlyphScript = RuneGlyphScript.new()
 	glyph.custom_minimum_size = GLYPH_SIZE
@@ -71,13 +72,14 @@ func _make_rune_cell(rune: Dictionary) -> Control:
 	var name_label: Label = Label.new()
 	name_label.text = Loc.text(rune["name"])
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_label.add_theme_font_size_override("font_size", 28)
 	cell.add_child(name_label)
 
 	var position_label: Label = Label.new()
 	position_label.text = Loc.t("rune_position", {"n": rune["position"], "power": rune["base_power"]})
 	position_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	position_label.theme_type_variation = &"SecondaryLabel"
 	position_label.add_theme_font_size_override("font_size", 22)
-	position_label.add_theme_color_override("font_color", Color(0.62, 0.64, 0.75))
 	cell.add_child(position_label)
 	return cell
 

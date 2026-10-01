@@ -17,6 +17,7 @@ const COLLECTIONS: Dictionary = {
 	"kins": ["kins.json", "kin"],
 	"runes": ["runes.json", "rune"],
 	"words": ["words.json", "word"],
+	"spells": ["spells.json", "spell"],
 	"characters": ["characters.json", "character"],
 	"dialogs": ["dialogs.json", "dialog"],
 }
@@ -30,6 +31,8 @@ var kins: Dictionary = {}
 var runes: Dictionary = {}
 ## Word types (Pereche, Șir, ...).
 var words: Dictionary = {}
+## Secret rune combinations with unique effects.
+var spells: Dictionary = {}
 ## Every named god, human and demigod.
 var characters: Dictionary = {}
 var dialogs: Dictionary = {}
@@ -63,10 +66,12 @@ func load_all(data_dir: String) -> bool:
 
 	validator.check_references(loaded)
 	validator.check_runes(COLLECTIONS["runes"][0], loaded["runes"], loaded["kins"])
+	validator.check_spells(COLLECTIONS["spells"][0], loaded["spells"])
 
 	kins = loaded["kins"]
 	runes = loaded["runes"]
 	words = loaded["words"]
+	spells = loaded["spells"]
 	characters = loaded["characters"]
 	dialogs = loaded["dialogs"]
 	errors = validator.errors
@@ -91,6 +96,10 @@ func get_rune(id: String) -> Dictionary:
 
 func get_word(id: String) -> Dictionary:
 	return _get_entry(words, "words", id)
+
+
+func get_spell(id: String) -> Dictionary:
+	return _get_entry(spells, "spells", id)
 
 
 func get_character(id: String) -> Dictionary:

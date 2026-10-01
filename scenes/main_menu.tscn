@@ -18,7 +18,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.043, 0.047, 0.098, 1)
+color = Color(0.0392157, 0.0470588, 0.0941176, 1)
 
 [node name="Center" type="CenterContainer" parent="."]
 layout_mode = 1
@@ -35,7 +35,7 @@ theme_override_constants/separation = 18
 [node name="Title" type="Label" parent="Center/Menu"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(0.93, 0.78, 0.38, 1)
+theme_type_variation = &"TitleLabel"
 theme_override_font_sizes/font_size = 96
 text = "Examenul de Moștenire"
 horizontal_alignment = 1
@@ -43,7 +43,7 @@ horizontal_alignment = 1
 [node name="Subtitle" type="Label" parent="Center/Menu"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(0.62, 0.64, 0.75, 1)
+theme_type_variation = &"SecondaryLabel"
 theme_override_font_sizes/font_size = 30
 text = "subtitle"
 horizontal_alignment = 1
@@ -51,7 +51,7 @@ horizontal_alignment = 1
 [node name="Motto" type="Label" parent="Center/Menu"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(0.56, 0.83, 1, 1)
+theme_override_colors/font_color = Color(0.388235, 0.776471, 0.94902, 1)
 theme_override_font_sizes/font_size = 34
 text = "motto"
 horizontal_alignment = 1
@@ -92,7 +92,7 @@ text = "Quit"
 unique_name_in_owner = true
 custom_minimum_size = Vector2(700, 0)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.62, 0.64, 0.75, 1)
+theme_type_variation = &"SecondaryLabel"
 theme_override_font_sizes/font_size = 26
 text = "notice"
 horizontal_alignment = 1
@@ -101,6 +101,7 @@ autowrap_mode = 3
 [node name="VersionLabel" type="Label" parent="."]
 unique_name_in_owner = true
 layout_mode = 1
+theme_type_variation = &"SecondaryLabel"
 anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
@@ -112,7 +113,6 @@ offset_right = -20.0
 offset_bottom = -14.0
 grow_horizontal = 0
 grow_vertical = 0
-theme_override_colors/font_color = Color(0.38, 0.4, 0.5, 1)
 theme_override_font_sizes/font_size = 22
 text = "v0.2.0"
 horizontal_alignment = 2
@@ -138,7 +138,7 @@ theme_override_constants/separation = 16
 [node name="ErrorTitle" type="Label" parent="ErrorPanel/ErrorBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.45, 0.4, 1)
+theme_override_colors/font_color = Color(1, 0.415686, 0.239216, 1)
 theme_override_font_sizes/font_size = 40
 text = "Data errors"
 

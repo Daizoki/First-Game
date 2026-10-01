@@ -7,15 +7,20 @@ const LANGUAGES: Array = ["ro", "en"]
 
 ## Positions inside a kin go from 1 to this number.
 const KIN_SIZE: int = 8
+## A Spell is made of this many runes (inclusive range).
+const SPELL_MIN_RUNES: int = 2
+const SPELL_MAX_RUNES: int = 3
 
 ## Allowed values for "enum:<name>" fields.
 const ENUMS: Dictionary = {
 	"kin_sign": ["coin", "hail", "star"],
 	"character_kind": ["god", "human", "demigod"],
+	"spell_moment": ["before_score", "after_score", "next_cast"],
+	"spell_category": ["target", "economy", "bag", "actions", "talismans", "examiner", "risk", "permanent", "score"],
 }
 
 ## Field kinds:
-##   id, string, int, number, bool, loc, color, dict, array, segments,
+##   id, string, int, number, bool, loc, color, dict, array, segments, spell_runes,
 ##   enum:<name>, ref:<collection>, object:<schema>, array:<schema>
 const SCHEMAS: Dictionary = {
 	"kin": {
@@ -32,6 +37,13 @@ const SCHEMAS: Dictionary = {
 	"word": {
 		"required": {"id": "id", "name": "loc", "description": "loc"},
 		"optional": {"hidden": "bool"},
+	},
+	"spell": {
+		"required": {
+			"id": "id", "name": "loc", "runes": "spell_runes", "logic": "loc", "effect": "loc",
+			"moment": "enum:spell_moment", "category": "enum:spell_category",
+		},
+		"optional": {"curse": "bool", "color": "color"},
 	},
 	"character": {
 		"required": {"id": "id", "name": "loc", "kind": "enum:character_kind", "description": "loc", "color": "color"},
@@ -220,8 +232,28 @@ func check_value(file_name: String, label: String, path: String, value: Variant,
 				add_error(file_name, label, "\"%s\" must be a list [ ... ]" % path)
 		"segments":
 			_check_segments(file_name, label, path, value)
+		"spell_runes":
+			_check_spell_runes(file_name, label, path, value)
 		_:
 			add_error(file_name, label, "internal: unknown field kind \"%s\" for \"%s\"" % [kind, path])
+
+
+## Call after spells.json is loaded: no two Spells may use the same runes (order does not matter).
+func check_spells(file_name: String, spells: Dictionary) -> void:
+	var seen: Dictionary = {}
+	for id: String in spells:
+		var runes: Variant = (spells[id] as Dictionary).get("runes")
+		if not (runes is Array):
+			continue
+		var names: PackedStringArray = []
+		for rune: Variant in runes:
+			names.append(str(rune))
+		names.sort()
+		var key: String = "+".join(names)
+		if seen.has(key):
+			add_error(file_name, id, "same runes as spell \"%s\" (%s)" % [seen[key], key])
+		else:
+			seen[key] = id
 
 
 ## JSON numbers arrive as floats; whole numbers become ints so code can use them directly.
@@ -277,6 +309,22 @@ func _check_segments(file_name: String, label: String, path: String, value: Vari
 				add_error(file_name, label, "\"%s\" numbers must be between 0 and 1 (got %s)" % [
 					line_path, JSON.stringify(number)])
 				break
+
+
+func _check_spell_runes(file_name: String, label: String, path: String, value: Variant) -> void:
+	if not (value is Array):
+		add_error(file_name, label, "\"%s\" must be a list of rune ids, e.g. [\"isaz\", \"hagalaz\"]" % path)
+		return
+	var runes: Array = value
+	if runes.size() < SPELL_MIN_RUNES or runes.size() > SPELL_MAX_RUNES:
+		add_error(file_name, label, "\"%s\" must have %d or %d runes (got %d)" % [
+			path, SPELL_MIN_RUNES, SPELL_MAX_RUNES, runes.size()])
+	for i: int in runes.size():
+		var rune_path: String = "%s[%d]" % [path, i]
+		if not (runes[i] is String):
+			add_error(file_name, label, "\"%s\" must be a rune id" % rune_path)
+		else:
+			_add_ref(file_name, label, rune_path, "runes", runes[i])
 
 
 func _check_loc(file_name: String, label: String, path: String, value: Variant) -> void:

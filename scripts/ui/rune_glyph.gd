@@ -1,10 +1,12 @@
 extends Control
-## Draws one rune from the line segments in data/runes.json: thick strokes with a glow
-## in the color of the rune's kin, gently pulsing. If Relax adds art/runes/<id>.png,
-## that drawing is shown instead.
+## Draws one rune from the line segments in data/runes.json, in three layers: a soft glow,
+## the carved stroke in the kin color and a white-hot core. It pulses gently.
+## If Relax adds art/runes/<id>.png, that drawing is shown instead.
 
 ## Stroke width as a fraction of the glyph size.
 const STROKE: float = 0.075
+## The white core is this fraction of the stroke width.
+const CORE: float = 0.38
 ## Glow halo: how many soft layers and how far they spread (multiples of the stroke).
 const GLOW_LAYERS: int = 5
 const GLOW_SPREAD: float = 3.2
@@ -51,13 +53,16 @@ func _draw() -> void:
 		return
 
 	var stroke: float = side * STROKE
-	# Soft halo: wide, faint layers first, narrower ones on top.
+	# 1. Soft glow: wide, faint layers first, narrower ones on top.
 	for layer: int in range(GLOW_LAYERS, 0, -1):
 		var width: float = stroke * (1.0 + GLOW_SPREAD * float(layer) / float(GLOW_LAYERS))
 		var halo: Color = Color(_color, GLOW_ALPHA * glow * pulse)
 		_draw_strokes(origin, side, width, halo)
-	# The carved stroke itself, a bit lighter than the kin color.
-	_draw_strokes(origin, side, stroke, _color.lightened(0.35))
+	# 2. The carved stroke in the kin color.
+	_draw_strokes(origin, side, stroke, _color)
+	# 3. White-hot core, slightly tinted, brightening with the pulse.
+	var core: Color = Color.WHITE.lerp(_color, 0.25 - 0.15 * pulse)
+	_draw_strokes(origin, side, stroke * CORE, core)
 
 
 func _draw_strokes(origin: Vector2, side: float, width: float, color: Color) -> void:
