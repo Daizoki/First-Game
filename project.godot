@@ -10,9 +10,9 @@ config_version=5
 
 [application]
 
-config/name="Examenul"
-config/description="The Godborn Exam - Universul Coborârea, Jocul 1"
-config/version="0.1.0"
+config/name="Examenul de Moștenire"
+config/description="The Inheritance Exam - Universul Coborârea, Jocul 1"
+config/version="0.2.0"
 run/main_scene="res://scenes/main_menu.tscn"
 config/features=PackedStringArray("4.7")
 
@@ -29,16 +29,25 @@ gdscript/warnings/untyped_declaration=1
 
 [display]
 
-window/size/viewport_width=640
-window/size/viewport_height=360
-window/size/window_width_override=1280
-window/size/window_height_override=720
-window/stretch/mode="viewport"
-window/stretch/aspect="keep"
-window/stretch/scale_mode="integer"
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/size/window_width_override=1600
+window/size/window_height_override=900
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[gui]
+
+theme/custom="res://scenes/theme/main_theme.tres"
+
+[importer_defaults]
+
+texture={
+"mipmaps/generate": true
+}
 
 [rendering]
 
-textures/canvas_textures/default_texture_filter=0
+textures/canvas_textures/default_texture_filter=3
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"

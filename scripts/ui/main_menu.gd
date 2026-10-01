@@ -1,12 +1,14 @@
 extends Control
-## Main menu: Play / Settings / Quit. Also shows data errors found at startup.
+## Main menu: Play / Runes / Settings / Quit. Also shows data errors found at startup.
 
 const SETTINGS_SCENE: String = "res://scenes/settings.tscn"
+const RUNE_CHECK_SCENE: String = "res://scenes/rune_check.tscn"
 
 @onready var _title: Label = %Title
 @onready var _subtitle: Label = %Subtitle
 @onready var _motto: Label = %Motto
 @onready var _play_button: Button = %PlayButton
+@onready var _runes_button: Button = %RunesButton
 @onready var _settings_button: Button = %SettingsButton
 @onready var _quit_button: Button = %QuitButton
 @onready var _notice: Label = %Notice
@@ -19,6 +21,7 @@ const SETTINGS_SCENE: String = "res://scenes/settings.tscn"
 
 func _ready() -> void:
 	_play_button.pressed.connect(_on_play_pressed)
+	_runes_button.pressed.connect(_on_runes_pressed)
 	_settings_button.pressed.connect(_on_settings_pressed)
 	_quit_button.pressed.connect(_on_quit_pressed)
 	_error_close_button.pressed.connect(_on_error_close_pressed)
@@ -42,6 +45,7 @@ func _refresh_texts() -> void:
 	_subtitle.text = Loc.t("game_subtitle")
 	_motto.text = Loc.t("game_motto")
 	_play_button.text = Loc.t("menu_play")
+	_runes_button.text = Loc.t("menu_runes")
 	_settings_button.text = Loc.t("menu_settings")
 	_quit_button.text = Loc.t("menu_quit")
 	_notice.text = Loc.t("menu_play_soon")
@@ -51,8 +55,12 @@ func _refresh_texts() -> void:
 
 
 func _on_play_pressed() -> void:
-	# The exam itself arrives in Stage 2-3.
+	# The round arrives in Stage 2, the full exam in Stage 3.
 	_notice.visible = true
+
+
+func _on_runes_pressed() -> void:
+	get_tree().change_scene_to_file(RUNE_CHECK_SCENE)
 
 
 func _on_settings_pressed() -> void:

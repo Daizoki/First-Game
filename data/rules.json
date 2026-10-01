@@ -1,0 +1,8 @@
+{
+	"hand_size": 8,
+	"casts_per_round": 4,
+	"swaps_per_round": 3,
+	"max_stones_per_action": 5,
+	"copies_per_rune": 2,
+	"rune_voices_start_awake": true
+}

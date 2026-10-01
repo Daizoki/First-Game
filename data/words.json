@@ -1,117 +1,53 @@
 [
 	{
-		"id": "storm",
-		"name": {"ro": "Furtuna", "en": "The Storm"},
-		"runes": ["tor", "tor", "tor"],
-		"effects": [
-			{"type": "damage", "value": 15, "target": "all_enemies"}
-		]
+		"id": "single",
+		"name": {"ro": "Rună singură", "en": "Single Rune"},
+		"description": {"ro": "Nicio combinație: punctează piatra cu Poziția cea mai mare.", "en": "No combination: the stone with the highest Position scores."}
 	},
 	{
-		"id": "wall",
-		"name": {"ro": "Zidul", "en": "The Wall"},
-		"runes": ["gar", "gar", "ul"],
-		"effects": [
-			{"type": "block", "value": 15},
-			{"type": "heal", "value": 3}
-		]
+		"id": "pair",
+		"name": {"ro": "Pereche", "en": "Pair"},
+		"description": {"ro": "2 pietre cu aceeași Poziție.", "en": "2 stones with the same Position."}
 	},
 	{
-		"id": "explosion",
-		"name": {"ro": "Explozia", "en": "The Explosion"},
-		"runes": ["ar", "ar", "tor"],
-		"effects": [
-			{"type": "damage", "value": 10, "target": "enemy"},
-			{"type": "apply", "status": "burn", "value": 4, "target": "enemy"}
-		]
+		"id": "two_pairs",
+		"name": {"ro": "Două perechi", "en": "Two Pairs"},
+		"description": {"ro": "2 Perechi diferite.", "en": "2 different Pairs."}
 	},
 	{
-		"id": "shadow_blade",
-		"name": {"ro": "Lama umbrei", "en": "Shadow Blade"},
-		"runes": ["nox", "nox", "tor"],
-		"effects": [
-			{"type": "apply", "status": "vulnerable", "value": 2, "target": "enemy"},
-			{"type": "damage", "value": 8, "target": "enemy"}
-		]
+		"id": "triad",
+		"name": {"ro": "Treime", "en": "Triad"},
+		"description": {"ro": "3 pietre cu aceeași Poziție.", "en": "3 stones with the same Position."}
 	},
 	{
-		"id": "moment",
-		"name": {"ro": "Clipa", "en": "The Moment"},
-		"runes": ["ve", "ve", "any"],
-		"effects": [
-			{"type": "energy", "value": 2},
-			{"type": "draw", "value": 2}
-		]
+		"id": "row",
+		"name": {"ro": "Șir", "en": "Row"},
+		"description": {"ro": "5 Poziții consecutive (1–8, fără întoarcere de la 8 la 1).", "en": "5 consecutive Positions (1–8, no wrapping from 8 to 1)."}
 	},
 	{
-		"id": "living_forge",
-		"name": {"ro": "Forja vie", "en": "The Living Forge"},
-		"runes": ["ar", "ul", "gar"],
-		"effects": [
-			{"type": "apply", "status": "strength", "value": 2, "target": "self"},
-			{"type": "block", "value": 6}
-		]
+		"id": "kin",
+		"name": {"ro": "Neam", "en": "Kin"},
+		"description": {"ro": "5 pietre din același Neam.", "en": "5 stones of the same Kin."}
 	},
 	{
-		"id": "inferno",
-		"name": {"ro": "Pârjolul", "en": "The Blaze"},
-		"runes": ["ar", "ar", "ar"],
-		"effects": [
-			{"type": "apply", "status": "burn", "value": 6, "target": "all_enemies"}
-		]
+		"id": "family",
+		"name": {"ro": "Familie", "en": "Family"},
+		"description": {"ro": "o Treime + o Pereche.", "en": "a Triad + a Pair."}
 	},
 	{
-		"id": "spring",
-		"name": {"ro": "Izvorul", "en": "The Spring"},
-		"runes": ["ul", "ul", "ul"],
-		"effects": [
-			{"type": "heal", "value": 10}
-		]
+		"id": "four",
+		"name": {"ro": "Patru", "en": "Four"},
+		"description": {"ro": "4 pietre cu aceeași Poziție.", "en": "4 stones with the same Position."}
 	},
 	{
-		"id": "fortress",
-		"name": {"ro": "Cetatea", "en": "The Fortress"},
-		"runes": ["gar", "gar", "gar"],
-		"effects": [
-			{"type": "block", "value": 22}
-		]
+		"id": "chant",
+		"name": {"ro": "Descântec", "en": "Chant"},
+		"description": {"ro": "un Șir în care toate pietrele sunt din același Neam.", "en": "a Row in which all stones are of the same Kin."}
 	},
 	{
-		"id": "eclipse",
-		"name": {"ro": "Eclipsa", "en": "The Eclipse"},
-		"runes": ["nox", "nox", "nox"],
-		"effects": [
-			{"type": "apply", "status": "weak", "value": 2, "target": "all_enemies"},
-			{"type": "apply", "status": "vulnerable", "value": 2, "target": "all_enemies"}
-		]
-	},
-	{
-		"id": "summer_rain",
-		"name": {"ro": "Ploaia de vară", "en": "Summer Rain"},
-		"runes": ["tor", "ul", "ve"],
-		"effects": [
-			{"type": "damage", "value": 6, "target": "all_enemies"},
-			{"type": "heal", "value": 4},
-			{"type": "draw", "value": 1}
-		]
-	},
-	{
-		"id": "ash",
-		"name": {"ro": "Cenușa", "en": "The Ash"},
-		"runes": ["ar", "nox", "ve"],
-		"effects": [
-			{"type": "apply", "status": "burn", "value": 3, "target": "all_enemies"},
-			{"type": "apply", "status": "weak", "value": 1, "target": "all_enemies"},
-			{"type": "draw", "value": 1}
-		]
-	},
-	{
-		"id": "mumble",
-		"name": {"ro": "Cuvânt bâlbâit", "en": "Mumbled Word"},
-		"fallback": true,
-		"runes": [],
-		"effects": [
-			{"type": "damage", "value": 3, "target": "random_enemy"}
-		]
+		"id": "ancient_word",
+		"name": {"ro": "Cuvântul Vechi", "en": "The Ancient Word"},
+		"description": {"ro": "5 pietre cu aceeași Poziție.", "en": "5 stones with the same Position."},
+		"hidden": true
 	}
 ]

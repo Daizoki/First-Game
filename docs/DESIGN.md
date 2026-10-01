@@ -267,3 +267,13 @@ Un efect = **declanșator** + **condiții** + **acțiuni**.
 ## Jurnal de decizii
 - **v3:** jocul devine roguelike de scoruri cu pietre de rune (stil Balatro, termeni proprii). Folosim runele reale
   ale Futharkului vechi (regula din v2 „fără alfabete runice reale” e anulată). Grafică desenată, 1920×1080.
+- **Etapa 1 pe v3 (decizii propuse de Claude, acceptate implicit):**
+  - `data/characters.json` = „cine e cine” (zeii, oamenii, semizeii: nume, descriere, culoare); celelalte fișiere
+    trimit la el prin `id`.
+  - Efectele „permanente” ale pietrelor (Eihwaz, Ingwaz, copia lui Berkanan) țin **până la finalul examenului**.
+  - Fișiere mici în plus față de lista din 2.6: `data/kins.json` (cele 3 Neamuri: nume, culoare, semn) și
+    `data/rules.json` (mâna de 8, 4 Rostiri, 3 Schimbări, max. 5 pietre, 2 copii din fiecare rună,
+    `rune_voices_start_awake`).
+  - Fereastra pornește la 1600×900 (baza rămâne 1920×1080), ca să încapă pe laptopuri.
+  - Formele runelor (`segments` în `runes.json`) sunt scrise de Claude după formele standard ale Futharkului vechi;
+    Relax le verifică în ecranul „Cele 24 de rune”.

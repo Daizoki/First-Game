@@ -1,29 +1,114 @@
 [
 	{
+		"id": "aeva",
+		"name": {"ro": "Aeva", "en": "Aeva"},
+		"kind": "god",
+		"domain": {"ro": "timpul", "en": "time"},
+		"job": {"ro": "Directoarea Examenului", "en": "Head of the Exam"},
+		"description": {"ro": "Elegantă, obosită, a văzut totul de o mie de ori.", "en": "Elegant, tired, has seen everything a thousand times."},
+		"color": "#b59be0"
+	},
+	{
+		"id": "varr",
+		"name": {"ro": "Varr", "en": "Varr"},
+		"kind": "god",
+		"domain": {"ro": "furtuna, fulgerul", "en": "storm, lightning"},
+		"job": {"ro": "Șofer pe troleibuzul 22", "en": "Driver of trolleybus 22"},
+		"description": {"ro": "Zgomotos, generos, întârzie mereu.", "en": "Loud, generous, always late."},
+		"color": "#e8c547"
+	},
+	{
+		"id": "selvia",
+		"name": {"ro": "Selvia", "en": "Selvia"},
+		"kind": "god",
+		"domain": {"ro": "mările, apele", "en": "seas, waters"},
+		"job": {"ro": "Salvamar la ștrand vara, vinde pește la piață iarna", "en": "Lifeguard at the pool in summer, fishmonger at the market in winter"},
+		"description": {"ro": "Calmă, dar teribilă când se supără.", "en": "Calm, but terrible when angered."},
+		"color": "#3f7fd9"
+	},
+	{
+		"id": "ignar",
+		"name": {"ro": "Ignar", "en": "Ignar"},
+		"kind": "god",
+		"domain": {"ro": "focul, forja", "en": "fire, the forge"},
+		"job": {"ro": "Are o shaormerie", "en": "Runs a shawarma shop"},
+		"description": {"ro": "Perfecționist, mândru de meseria lui.", "en": "A perfectionist, proud of his craft."},
+		"color": "#e8772e"
+	},
+	{
+		"id": "kaldor",
+		"name": {"ro": "Kaldor", "en": "Kaldor"},
+		"kind": "god",
+		"domain": {"ro": "războiul", "en": "war"},
+		"job": {"ro": "Antrenor de box", "en": "Boxing coach"},
+		"description": {"ro": "Strict, dar îi respectă pe cei care nu renunță.", "en": "Strict, but respects those who never give up."},
+		"color": "#c0392b"
+	},
+	{
+		"id": "lunet",
+		"name": {"ro": "Lunet", "en": "Lunet"},
+		"kind": "god",
+		"domain": {"ro": "visele, iluziile", "en": "dreams, illusions"},
+		"job": {"ro": "DJ la o emisiune de radio de noapte", "en": "DJ on a late-night radio show"},
+		"description": {"ro": "Nu știi niciodată dacă glumește.", "en": "You never know if they are joking."},
+		"color": "#7b68ee"
+	},
+	{
+		"id": "morrah",
+		"name": {"ro": "Morrah", "en": "Morrah"},
+		"kind": "god",
+		"domain": {"ro": "moartea, amintirile", "en": "death, memories"},
+		"job": {"ro": "Bibliotecară", "en": "Librarian"},
+		"description": {"ro": "Cea mai blândă dintre zei, deși toți se tem de ea.", "en": "The gentlest of the gods, though everyone fears her."},
+		"color": "#5c7a80"
+	},
+	{
+		"id": "gronn",
+		"name": {"ro": "Gronn", "en": "Gronn"},
+		"kind": "god",
+		"domain": {"ro": "pământul, munții", "en": "earth, mountains"},
+		"job": {"ro": "Șef de șantier", "en": "Construction site foreman"},
+		"description": {"ro": "Vorbește puțin, construiește mult.", "en": "Says little, builds a lot."},
+		"color": "#8a6a3e"
+	},
+	{
 		"id": "ilinca",
 		"name": {"ro": "Maestra Ilinca", "en": "Master Ilinca"},
-		"description": {"ro": "Om, aproape 70 de ani, cea mai mare maestră de rune din Orașul Pragului. Severă, ironică, nu se teme de niciun zeu.", "en": "Human, almost 70, the greatest rune master in the City of the Threshold. Stern, ironic, afraid of no god."},
+		"kind": "human",
+		"job": {"ro": "Maestră de rune", "en": "Rune master"},
+		"description": {"ro": "Aproape 70 de ani, cea mai mare maestră de rune din Orașul Pragului. Severă, ironică, nu se teme de niciun zeu.", "en": "Almost 70, the greatest rune master in the City of the Threshold. Stern, ironic, afraid of no god."},
 		"color": "#d9cfa8"
+	},
+	{
+		"id": "vera",
+		"name": {"ro": "Tanti Vera", "en": "Auntie Vera"},
+		"kind": "human",
+		"job": {"ro": "Vinde pietre de rune în Piața de noapte", "en": "Sells rune stones at the Night Market"},
+		"description": {"ro": "Vinde rune de 40 de ani și știe toate bârfele zeilor.", "en": "Has sold runes for 40 years and knows all the gods' gossip."},
+		"color": "#c98a5a"
 	},
 	{
 		"id": "dara",
 		"name": {"ro": "Dara", "en": "Dara"},
+		"kind": "demigod",
 		"description": {"ro": "Fiica lui Kaldor. Vrea să fie cea mai bună și nu suportă să piardă.", "en": "Kaldor's daughter. Wants to be the best and hates losing."},
-		"color": "#c0392b",
+		"color": "#d4544a",
 		"parent": "kaldor"
 	},
 	{
 		"id": "nix",
 		"name": {"ro": "Nix", "en": "Nix"},
+		"kind": "demigod",
 		"description": {"ro": "Copilul lui Lunet. Glume, minciuni, trucuri; loial doar lui însuși… poate.", "en": "Lunet's child. Jokes, lies, tricks; loyal only to himself… maybe."},
-		"color": "#7b68ee",
+		"color": "#9a8cf0",
 		"parent": "lunet"
 	},
 	{
 		"id": "toma",
 		"name": {"ro": "Toma", "en": "Toma"},
+		"kind": "demigod",
 		"description": {"ro": "Fiul lui Gronn. Uriaș, calm, cel mai bun prieten pe care nu știi că îl ai.", "en": "Gronn's son. Huge, calm, the best friend you didn't know you had."},
-		"color": "#8a6a3e",
+		"color": "#a07d4e",
 		"parent": "gronn"
 	}
 ]

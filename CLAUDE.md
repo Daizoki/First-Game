@@ -7,8 +7,8 @@
 Citește asta la începutul fiecărei sesiuni. Design: `docs/DESIGN.md`. Lume și personaje: `docs/UNIVERS.md`.
 Artă: `docs/ARTA.md`.
 
-> **Starea codului:** codul din repo e încă scheletul din v2 (lupte, cercul runic). Migrarea la v3 se face **doar
-> după OK-ul lui Relax** (lista „ce păstrăm” e în PR-ul Daizoki/First-Game#1).
+> **Starea codului:** Etapa 1 e migrată la v3 (1920×1080, cele 24 de rune desenate din cod, scena de verificare).
+> Codul din v1/v2 (lupte, cărți, cercul runic) a fost șters.
 
 ## Cum lucrăm
 - Utilizatorul e **Relax** (18 ani, Chișinău; desenează, TikTok/YouTube). **Scrie-i în română.**
@@ -95,21 +95,22 @@ adăugat în lista `TEST_FILES` din `tests/run_tests.gd`.
 ## Structura (țintă v3)
 ```
 docs/        UNIVERS.md, DESIGN.md, ARTA.md
-data/        runes, words, talismans, lessons, engravings, examiners, trials, parents, economy,
-             dialogs, ui_text (.json)
+data/        kins, runes, words, characters, rules, dialogs, ui_text (.json) — există deja
+             talismans, lessons, engravings, examiners, trials, parents, economy — vin în etapele lor
 art/         stones/ runes/ talismans/ lessons/ engravings/ examiners/ portraits/ backgrounds/ ui/
-scenes/      main_menu, morning (hub), parent_select, trial_select, round, scoring_popup, shop, pack_open,
-             result, rune_book, collection, settings, intro, dialog
+scenes/      main_menu, rune_check, settings, theme/main_theme.tres — există deja
+             morning (hub), parent_select, trial_select, round, scoring_popup, shop, pack_open,
+             result, rune_book, collection, intro, dialog — vin în etapele lor
 scripts/     autoload/ (game_data, run_state, save_manager, loc)
              core/ (bag, stone, word_detector, scorer, effects, examiner_rules, shop_logic, data_validator)
-             ui/
+             ui/ (main_menu, settings, rune_check, rune_glyph = desenează o rună din segmente)
 tests/       run_tests.gd, test_case.gd, test_words.gd, test_scoring.gd, simulate.gd
 ```
 
 ## Etapele
 | # | Etapa | Stare |
 |---|---|---|
-| 1 | Scheletul: Compatibility + 1920×1080, foldere, autoload-uri, JSON + validare, meniu, setări cu limba, docs, **scena de verificare a celor 24 de rune desenate din cod** | făcută pe v2; de migrat la v3 după OK |
+| 1 | Scheletul: Compatibility + 1920×1080, foldere, autoload-uri, JSON + validare, meniu, setări cu limba, docs, **scena de verificare a celor 24 de rune desenate din cod** | făcută pe v3 (așteaptă testul lui Relax) |
 | 2 | Miezul — o rundă: săculețul de 48, mâna de 8, Rostire/Schimbare, sortare/rearanjare, recunoașterea Cuvintelor (cu Laguz și ordinea), Putere × Rezonanță animat, cele 24 de Glasuri, rundă de test; teste; simulatorul + tabelul de probabilități | — |
 | 3 | Examenul complet: 8 Probe × 3 runde, Examinatorii, Monede, Piața de noapte, primele 15 Talismane, Lecții, Gravuri, materiale, legături runice, Săculețe, Picat / Examen trecut | — |
 | 4 | Bucla Aevei: Dimineața, alegerea părintelui, Amintiri, deblocări, salvare (inclusiv examenul în curs), Cartea de rune, Colecția, numele jucătorului | — |

@@ -21,14 +21,18 @@ static func default_data() -> Dictionary:
 		"player_name": "",
 		"memories": 0,
 		"attempts": 0,
-		"best_trial": 0,
-		"unlocked_gods": ["varr"],
-		## upgrade id -> how many times it was bought
-		"upgrades": {},
-		## Rune Book: ids of Words already discovered (permanent, survives Aeva's time loop).
-		"discovered_words": [],
-		## Story memory across attempts, e.g. "kaldor_mocked": true.
+		"unlocked_parents": ["varr"],
+		## Free keys, e.g. Talismans unlocked for the Night Market.
+		"unlocks": {},
+		## What the player has seen at least once.
+		"collection": {"talismans": [], "engravings": [], "examiners": []},
+		## Permanent discoveries: hidden Words, old words (ALU, LAÞU, AUJA), ...
+		"discoveries": {"words": [], "old_words": []},
+		"stats": {"best_cast_score": 0.0, "best_trial": 0, "exams_passed": 0},
+		## Story memory across attempts.
 		"flags": {},
+		## The exam in progress, saved after every round (empty = none).
+		"current_exam": {},
 		"settings": {
 			"language": "ro",
 			"volume": DEFAULT_VOLUME,
@@ -56,19 +60,23 @@ func save_game() -> bool:
 	return _write_text(save_path, JSON.stringify(data, "\t"))
 
 
-func is_word_discovered(word_id: String) -> bool:
-	var discovered: Array = data.get("discovered_words", [])
-	return discovered.has(word_id)
+func has_discovery(category: String, id: String) -> bool:
+	var discoveries: Dictionary = data.get("discoveries", {})
+	var list: Variant = discoveries.get(category, [])
+	return list is Array and (list as Array).has(id)
 
 
-## Adds a Word to the Rune Book and saves. Returns false if it was already known.
-func discover_word(word_id: String) -> bool:
-	if is_word_discovered(word_id):
+## Records a permanent discovery and saves. Returns false if it was already known.
+func add_discovery(category: String, id: String) -> bool:
+	if has_discovery(category, id):
 		return false
-	if not (data.get("discovered_words") is Array):
-		data["discovered_words"] = []
-	var discovered: Array = data["discovered_words"]
-	discovered.append(word_id)
+	if not (data.get("discoveries") is Dictionary):
+		data["discoveries"] = {}
+	var discoveries: Dictionary = data["discoveries"]
+	if not (discoveries.get(category) is Array):
+		discoveries[category] = []
+	var list: Array = discoveries[category]
+	list.append(id)
 	save_game()
 	return true
 

@@ -5,101 +5,53 @@ extends RefCounted
 
 const LANGUAGES: Array = ["ro", "en"]
 
+## Positions inside a kin go from 1 to this number.
+const KIN_SIZE: int = 8
+
 ## Allowed values for "enum:<name>" fields.
 const ENUMS: Dictionary = {
-	"target": ["enemy", "all_enemies", "random_enemy", "self"],
-	"status": ["burn", "weak", "vulnerable", "strength"],
-	"card_type": ["attack", "skill", "power", "rune"],
-	"rarity": ["starter", "common", "uncommon", "rare", "special"],
-	"unlock_type": ["default", "after_attempts", "memories"],
-	"blessing_trigger": ["combat_start", "first_turn", "combat_end", "passive"],
-	"blessing_rule": ["negate_first_hit", "burn_bonus", "choose_card_from_deck", "cheat_death", "first_word_double"],
+	"kin_sign": ["coin", "hail", "star"],
+	"character_kind": ["god", "human", "demigod"],
 }
 
-## Rune combo wildcard in words.json: matches any rune.
-const ANY_RUNE: String = "any"
-## Number of runes the Rune Circle holds before they are spoken as a Word.
-const CIRCLE_SIZE: int = 3
-
 ## Field kinds:
-##   id, string, int, number, bool, loc, color, dict, array, pool, effects, rune_combo,
+##   id, string, int, number, bool, loc, color, dict, array, segments,
 ##   enum:<name>, ref:<collection>, object:<schema>, array:<schema>
 const SCHEMAS: Dictionary = {
-	"god": {
-		"required": {
-			"id": "id", "name": "loc", "domain": "loc", "job": "loc",
-			"personality": "loc", "color": "color",
-		},
-		"optional": {
-			"playable": "bool", "starting_hp": "int", "signature_card": "ref:cards",
-			"affinity_rune": "ref:runes", "playstyle": "loc", "unlock": "object:unlock",
-		},
-	},
-	"unlock": {
-		"required": {"type": "enum:unlock_type"},
-		"optional": {"value": "int"},
-	},
-	"card": {
-		"required": {
-			"id": "id", "name": "loc", "cost": "int", "type": "enum:card_type",
-			"rarity": "enum:rarity", "pool": "pool", "effects": "effects",
-		},
-		"optional": {"description": "loc", "rune": "ref:runes", "upgrade": "object:card_upgrade"},
-	},
-	"card_upgrade": {
-		"required": {},
-		"optional": {"cost": "int", "effects": "effects", "description": "loc"},
-	},
-	"character": {
-		"required": {"id": "id", "name": "loc", "description": "loc", "color": "color"},
-		"optional": {"parent": "ref:gods"},
+	"kin": {
+		"required": {"id": "id", "name": "loc", "color": "color", "sign": "enum:kin_sign"},
+		"optional": {},
 	},
 	"rune": {
-		"required": {"id": "id", "name": "loc", "meaning": "loc", "color": "color"},
+		"required": {
+			"id": "id", "name": "loc", "glyph": "string", "kin": "ref:kins", "position": "int",
+			"base_power": "int", "meaning": "loc", "voice": "loc", "segments": "segments",
+		},
 		"optional": {},
 	},
 	"word": {
-		"required": {"id": "id", "name": "loc", "runes": "rune_combo", "effects": "effects"},
-		"optional": {"description": "loc", "fallback": "bool"},
+		"required": {"id": "id", "name": "loc", "description": "loc"},
+		"optional": {"hidden": "bool"},
 	},
-	"enemy": {
-		"required": {"id": "id", "name": "loc", "hp": "int"},
-		"optional": {},
-	},
-	"blessing": {
-		"required": {"id": "id", "name": "loc", "description": "loc", "effect": "object:blessing_effect"},
-		"optional": {},
-	},
-	"blessing_effect": {
-		"required": {"trigger": "enum:blessing_trigger"},
-		"optional": {"actions": "effects", "rule": "enum:blessing_rule", "value": "int"},
-	},
-	"trial": {
-		"required": {"id": "id", "name": "loc"},
-		"optional": {},
-	},
-	"event": {
-		"required": {"id": "id", "name": "loc"},
-		"optional": {},
+	"character": {
+		"required": {"id": "id", "name": "loc", "kind": "enum:character_kind", "description": "loc", "color": "color"},
+		"optional": {"domain": "loc", "job": "loc", "parent": "ref:characters"},
 	},
 	"dialog": {
 		"required": {"id": "id", "lines": "array:dialog_line"},
 		"optional": {},
 	},
 	"dialog_line": {
-		"required": {"speaker": "string", "text": "loc"},
+		"required": {"speaker": "ref:characters", "text": "loc"},
 		"optional": {},
 	},
-}
-
-## Actions used by cards and blessings: "type" -> schema of the other fields.
-const EFFECTS: Dictionary = {
-	"damage": {"required": {"value": "int", "target": "enum:target"}, "optional": {"times": "int"}},
-	"block": {"required": {"value": "int"}, "optional": {}},
-	"apply": {"required": {"status": "enum:status", "value": "int", "target": "enum:target"}, "optional": {}},
-	"draw": {"required": {"value": "int"}, "optional": {}},
-	"energy": {"required": {"value": "int"}, "optional": {}},
-	"heal": {"required": {"value": "int"}, "optional": {}},
+	"rules": {
+		"required": {
+			"hand_size": "int", "casts_per_round": "int", "swaps_per_round": "int",
+			"max_stones_per_action": "int", "copies_per_rune": "int", "rune_voices_start_awake": "bool",
+		},
+		"optional": {},
+	},
 }
 
 var errors: Array[String] = []
@@ -148,6 +100,15 @@ func validate_collection(file_name: String, raw: Variant, schema_name: String) -
 	return result
 
 
+## Validates a file that holds a single object (e.g. rules.json).
+func validate_single(file_name: String, raw: Variant, schema_name: String) -> Dictionary:
+	if not (raw is Dictionary):
+		add_error(file_name, "", "the file must contain one object { ... }")
+		return {}
+	validate_object(file_name, "", "", raw, schema_name)
+	return raw
+
+
 ## Validates ui_text.json: {"key": {"ro": "...", "en": "..."}}.
 func validate_text_table(file_name: String, raw: Variant) -> Dictionary:
 	var result: Dictionary = {}
@@ -176,6 +137,26 @@ func check_references(loaded: Dictionary) -> void:
 		if not table.has(ref["id"]):
 			add_error(ref["file"], ref["label"], "\"%s\" points to \"%s\", which does not exist in %s.json" % [
 				ref["path"], ref["id"], collection])
+
+
+## Call after runes.json is loaded: every kin must hold exactly one rune on each position 1..8.
+func check_runes(file_name: String, runes: Dictionary, kins: Dictionary) -> void:
+	var taken: Dictionary = {}
+	for id: String in runes:
+		var rune: Dictionary = runes[id]
+		var kin: Variant = rune.get("kin")
+		var position: Variant = rune.get("position")
+		if not (kin is String) or not (position is int):
+			continue
+		var key: String = "%s:%d" % [kin, position]
+		if taken.has(key):
+			add_error(file_name, id, "kin \"%s\" already has a rune on position %d (%s)" % [kin, position, taken[key]])
+		else:
+			taken[key] = id
+	for kin_id: String in kins:
+		for position: int in range(1, KIN_SIZE + 1):
+			if not taken.has("%s:%d" % [kin_id, position]):
+				add_error(file_name, "", "kin \"%s\" has no rune on position %d" % [kin_id, position])
 
 
 func check_value(file_name: String, label: String, path: String, value: Variant, kind: String) -> void:
@@ -230,53 +211,17 @@ func check_value(file_name: String, label: String, path: String, value: Variant,
 			_check_loc(file_name, label, path, value)
 		"color":
 			if not (value is String) or not Color.html_is_valid(value):
-				add_error(file_name, label, "\"%s\" must be a color like \"#e8c547\"" % path)
+				add_error(file_name, label, "\"%s\" must be a color like \"#e8b84a\"" % path)
 		"dict":
 			if not (value is Dictionary):
 				add_error(file_name, label, "\"%s\" must be an object { ... }" % path)
 		"array":
 			if not (value is Array):
 				add_error(file_name, label, "\"%s\" must be a list [ ... ]" % path)
-		"pool":
-			if not (value is String):
-				add_error(file_name, label, "\"%s\" must be \"neutral\" or a god id" % path)
-			elif value != "neutral":
-				_add_ref(file_name, label, path, "gods", value)
-		"effects":
-			_check_effects(file_name, label, path, value)
-		"rune_combo":
-			_check_rune_combo(file_name, label, path, value)
+		"segments":
+			_check_segments(file_name, label, path, value)
 		_:
 			add_error(file_name, label, "internal: unknown field kind \"%s\" for \"%s\"" % [kind, path])
-
-
-## Call after words.json is loaded: no two Words may use the same rune combination
-## (order does not matter) and there must be exactly one fallback ("mumble") Word.
-func check_words(file_name: String, words: Dictionary) -> void:
-	var seen: Dictionary = {}
-	var fallback_count: int = 0
-	for id: String in words:
-		var word: Dictionary = words[id]
-		var fallback: Variant = word.get("fallback", false)
-		if fallback is bool and fallback:
-			fallback_count += 1
-			continue
-		if not _is_string_list(word.get("runes")):
-			continue
-		var key: String = combo_key(word["runes"])
-		if seen.has(key):
-			add_error(file_name, id, "same runes as word \"%s\" (%s)" % [seen[key], key])
-		else:
-			seen[key] = id
-	if not words.is_empty() and fallback_count != 1:
-		add_error(file_name, "", "there must be exactly one word with \"fallback\": true (the mumbled word), found %d" % fallback_count)
-
-
-## Order-independent key for a rune combination, e.g. ["tor", "ar", "tor"] -> "ar+tor+tor".
-static func combo_key(runes: Array) -> String:
-	var names: PackedStringArray = PackedStringArray(runes)
-	names.sort()
-	return "+".join(names)
 
 
 ## JSON numbers arrive as floats; whole numbers become ints so code can use them directly.
@@ -316,40 +261,22 @@ func _check_fields(file_name: String, label: String, path: String, dict: Diction
 			add_error(file_name, label, "unknown field \"%s\" (typo?)" % (path + field))
 
 
-func _check_effects(file_name: String, label: String, path: String, value: Variant) -> void:
-	if not (value is Array):
-		add_error(file_name, label, "\"%s\" must be a list of actions [ {\"type\": ...} ]" % path)
+## Rune shapes: a list of line segments [x1, y1, x2, y2] inside the 0..1 square (y grows downward).
+func _check_segments(file_name: String, label: String, path: String, value: Variant) -> void:
+	if not (value is Array) or (value as Array).is_empty():
+		add_error(file_name, label, "\"%s\" must be a non-empty list of lines [x1, y1, x2, y2]" % path)
 		return
-	var actions: Array = value
-	for i: int in actions.size():
-		var action_path: String = "%s[%d]" % [path, i]
-		if not (actions[i] is Dictionary):
-			add_error(file_name, label, "\"%s\" must be an object {\"type\": ...}" % action_path)
+	var lines: Array = value
+	for i: int in lines.size():
+		var line_path: String = "%s[%d]" % [path, i]
+		if not (lines[i] is Array) or (lines[i] as Array).size() != 4:
+			add_error(file_name, label, "\"%s\" must have exactly 4 numbers [x1, y1, x2, y2]" % line_path)
 			continue
-		var action: Dictionary = actions[i]
-		var type_value: Variant = action.get("type")
-		if not (type_value is String) or not EFFECTS.has(type_value):
-			add_error(file_name, label, "\"%s.type\" must be one of: %s (got %s)" % [
-				action_path, ", ".join(PackedStringArray(EFFECTS.keys())), JSON.stringify(type_value)])
-			continue
-		var schema: Dictionary = EFFECTS[type_value]
-		var optional: Dictionary = (schema["optional"] as Dictionary).duplicate()
-		optional["type"] = "string"
-		_check_fields(file_name, label, action_path + ".", action, schema["required"], optional)
-
-
-func _check_rune_combo(file_name: String, label: String, path: String, value: Variant) -> void:
-	if not (value is Array):
-		add_error(file_name, label, "\"%s\" must be a list of rune ids, e.g. [\"tor\", \"tor\", \"tor\"]" % path)
-		return
-	var runes: Array = value
-	for i: int in runes.size():
-		var rune: Variant = runes[i]
-		var rune_path: String = "%s[%d]" % [path, i]
-		if not (rune is String):
-			add_error(file_name, label, "\"%s\" must be a rune id or \"%s\"" % [rune_path, ANY_RUNE])
-		elif rune != ANY_RUNE:
-			_add_ref(file_name, label, rune_path, "runes", rune)
+		for number: Variant in lines[i]:
+			if not (number is int or number is float) or float(number) < 0.0 or float(number) > 1.0:
+				add_error(file_name, label, "\"%s\" numbers must be between 0 and 1 (got %s)" % [
+					line_path, JSON.stringify(number)])
+				break
 
 
 func _check_loc(file_name: String, label: String, path: String, value: Variant) -> void:
@@ -368,42 +295,22 @@ func _check_loc(file_name: String, label: String, path: String, value: Variant) 
 
 func _extra_checks(file_name: String, label: String, dict: Dictionary, schema_name: String) -> void:
 	match schema_name:
-		"god":
-			var playable: Variant = dict.get("playable", false)
-			if playable is bool and playable:
-				for field: String in ["starting_hp", "signature_card", "affinity_rune", "unlock"]:
-					if not dict.has(field):
-						add_error(file_name, label, "playable god is missing field \"%s\"" % field)
-		"card":
-			var cost: Variant = dict.get("cost")
-			if cost is int and cost < 0:
-				add_error(file_name, label, "\"cost\" cannot be negative")
-			var type_value: Variant = dict.get("type")
-			var is_rune_card: bool = type_value is String and type_value == "rune"
-			if is_rune_card != dict.has("rune"):
-				add_error(file_name, label, "rune cards need type \"rune\" and a \"rune\" field (both or neither)")
-		"word":
-			var fallback: Variant = dict.get("fallback", false)
-			var runes: Variant = dict.get("runes")
-			if runes is Array:
-				var size: int = (runes as Array).size()
-				if fallback is bool and fallback and size != 0:
-					add_error(file_name, label, "the fallback word (mumble) must have \"runes\": []")
-				elif not (fallback is bool and fallback) and size != CIRCLE_SIZE:
-					add_error(file_name, label, "\"runes\" must list exactly %d runes (got %d)" % [CIRCLE_SIZE, size])
+		"rune":
+			var position: Variant = dict.get("position")
+			if position is int and (position < 1 or position > KIN_SIZE):
+				add_error(file_name, label, "\"position\" must be between 1 and %d" % KIN_SIZE)
+			var power: Variant = dict.get("base_power")
+			if power is int and power < 0:
+				add_error(file_name, label, "\"base_power\" cannot be negative")
+		"rules":
+			for field: String in ["hand_size", "casts_per_round", "max_stones_per_action", "copies_per_rune"]:
+				var number: Variant = dict.get(field)
+				if number is int and number < 1:
+					add_error(file_name, label, "\"%s\" must be at least 1" % field)
 
 
 func _add_ref(file_name: String, label: String, path: String, collection: String, id_value: String) -> void:
 	_refs.append({"file": file_name, "label": label, "path": path, "collection": collection, "id": id_value})
-
-
-func _is_string_list(value: Variant) -> bool:
-	if not (value is Array):
-		return false
-	for item: Variant in value:
-		if not (item is String):
-			return false
-	return true
 
 
 func _is_integer(value: Variant) -> bool:

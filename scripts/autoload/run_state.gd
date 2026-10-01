@@ -1,46 +1,41 @@
 extends Node
-## State of the current exam attempt (one run). Lives only in memory:
-## in the first version a run is not saved when the game closes.
-## Filled in during Stage 3 (exam) and Stage 4 (loop and memories).
+## State of the exam in progress. Every random choice of the exam goes through `rng`,
+## so an exam can be replayed exactly from its seed (shown in the pause menu).
+## Filled in during Stage 2 (round) and Stage 3 (full exam).
 
-signal run_started
-signal run_ended(won: bool)
+signal exam_started
+signal exam_ended(passed: bool)
 
 var active: bool = false
+var exam_seed: int = 0
+var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var parent_id: String = ""
-var max_hp: int = 0
-var hp: int = 0
-## Card ids in the deck (duplicates allowed).
-var deck: Array[String] = []
-var blessings: Array[String] = []
+## 0-based: trial 0..7, round 0..2 (small question, big question, examiner).
 var trial_index: int = 0
-var step_index: int = 0
-## Counters used to award memories at the end: fights, elites, examiners won.
-var stats: Dictionary = {}
+var round_index: int = 0
+var money: int = 0
 
 
 func reset() -> void:
 	active = false
+	exam_seed = 0
+	rng = RandomNumberGenerator.new()
 	parent_id = ""
-	max_hp = 0
-	hp = 0
-	deck.clear()
-	blessings.clear()
 	trial_index = 0
-	step_index = 0
-	stats = {"fights_won": 0, "elites_won": 0, "examiners_won": 0}
+	round_index = 0
+	money = 0
 
 
-func start_run(god_id: String, starting_hp: int, starting_deck: Array[String]) -> void:
+## Starts a new exam. A seed of 0 picks a random one.
+func start_exam(chosen_parent_id: String, chosen_seed: int = 0) -> void:
 	reset()
 	active = true
-	parent_id = god_id
-	max_hp = starting_hp
-	hp = starting_hp
-	deck.assign(starting_deck)
-	run_started.emit()
+	parent_id = chosen_parent_id
+	exam_seed = chosen_seed if chosen_seed != 0 else randi()
+	rng.seed = exam_seed
+	exam_started.emit()
 
 
-func end_run(won: bool) -> void:
+func end_exam(passed: bool) -> void:
 	active = false
-	run_ended.emit(won)
+	exam_ended.emit(passed)

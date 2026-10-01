@@ -5,15 +5,17 @@ const GameDataScript = preload("res://scripts/autoload/game_data.gd")
 const DataValidator = preload("res://scripts/core/data_validator.gd")
 
 
-func _valid_card() -> Dictionary:
+func _valid_rune() -> Dictionary:
 	return {
-		"id": "strike",
-		"name": {"ro": "Lovitură", "en": "Strike"},
-		"cost": 1,
-		"type": "attack",
-		"rarity": "starter",
-		"pool": "neutral",
-		"effects": [{"type": "damage", "value": 6, "target": "enemy"}],
+		"id": "fehu",
+		"name": {"ro": "Fehu", "en": "Fehu"},
+		"glyph": "ᚠ",
+		"kin": "fehu",
+		"position": 1,
+		"base_power": 3,
+		"meaning": {"ro": "vite, avere", "en": "cattle, wealth"},
+		"voice": {"ro": "+1 Monedă când punctează.", "en": "+1 Coin when it scores."},
+		"segments": [[0.35, 0.05, 0.35, 0.95], [0.35, 0.3, 0.7, 0.08]],
 	}
 
 
@@ -21,120 +23,118 @@ func test_real_data_loads_without_errors() -> void:
 	var game_data: GameDataScript = GameDataScript.new()
 	var ok: bool = game_data.load_all("res://data/")
 	check(ok, "data/ has errors:\n" + "\n".join(PackedStringArray(game_data.errors)))
-	check(game_data.gods.has("varr"), "gods.json should contain varr")
-	check(game_data.cards.has("strike"), "cards.json should contain strike")
-	check_eq(game_data.playable_gods().size(), 3, "playable gods:")
-	check(game_data.ui_text.has("menu_play"), "ui_text.json should contain menu_play")
-	check_eq(game_data.runes.size(), 6, "runes:")
-	check(game_data.words.size() >= 12, "words.json should have at least 12 words")
+	check_eq(game_data.kins.size(), 3, "kins:")
+	check_eq(game_data.runes.size(), 24, "runes:")
+	check_eq(game_data.words.size(), 10, "words:")
 	check(game_data.characters.has("ilinca"), "characters.json should contain ilinca")
-	check_eq(game_data.blessings.size(), 9, "blessings:")
-	for god: Dictionary in game_data.playable_gods():
-		var rune_card: String = "rune_" + str(god["affinity_rune"])
-		check(game_data.cards.has(rune_card), "affinity rune card %s should exist" % rune_card)
+	check(game_data.characters.has("vera"), "characters.json should contain vera")
+	check_eq(game_data.rule("hand_size"), 8, "hand size:")
+	check(game_data.ui_text.has("menu_play"), "ui_text.json should contain menu_play")
+	game_data.free()
+
+
+func test_each_kin_has_eight_runes_in_order() -> void:
+	var game_data: GameDataScript = GameDataScript.new()
+	game_data.load_all("res://data/")
+	for kin_id: String in game_data.kins:
+		var runes: Array[Dictionary] = game_data.runes_in_kin(kin_id)
+		check_eq(runes.size(), 8, "%s runes:" % kin_id)
+		for i: int in runes.size():
+			check_eq(runes[i]["position"], i + 1, "%s position:" % kin_id)
+	var fehu_row: Array[Dictionary] = game_data.runes_in_kin("fehu")
+	var first_five: String = ""
+	for i: int in 5:
+		first_five += str(fehu_row[i]["glyph"])
+	check_eq(first_five, "ᚠᚢᚦᚨᚱ", "the Fehu kin should start with F-U-Þ-A-R:")
 	game_data.free()
 
 
 func test_numbers_become_ints() -> void:
 	var game_data: GameDataScript = GameDataScript.new()
 	game_data.load_all("res://data/")
-	var varr: Dictionary = game_data.gods["varr"]
-	check(varr["starting_hp"] is int, "starting_hp should be an int after loading")
+	var fehu: Dictionary = game_data.runes["fehu"]
+	check(fehu["position"] is int, "position should be an int after loading")
 	game_data.free()
 
 
-func test_valid_card_has_no_errors() -> void:
+func test_valid_rune_has_no_errors() -> void:
 	var validator: DataValidator = DataValidator.new()
-	validator.validate_collection("cards.json", [_valid_card()], "card")
+	validator.validate_collection("runes.json", [_valid_rune()], "rune")
 	check(validator.errors.is_empty(), "unexpected: " + "\n".join(PackedStringArray(validator.errors)))
 
 
 func test_missing_field_is_reported() -> void:
-	var card: Dictionary = _valid_card()
-	card.erase("cost")
+	var rune: Dictionary = _valid_rune()
+	rune.erase("base_power")
 	var validator: DataValidator = DataValidator.new()
-	validator.validate_collection("cards.json", [card], "card")
-	check(has_error(validator.errors, ["data/cards.json", "[strike]", "missing field \"cost\""]),
-		"missing cost not reported: %s" % [validator.errors])
+	validator.validate_collection("runes.json", [rune], "rune")
+	check(has_error(validator.errors, ["data/runes.json", "[fehu]", "missing field \"base_power\""]),
+		"missing base_power not reported: %s" % [validator.errors])
 
 
 func test_missing_language_is_reported() -> void:
-	var card: Dictionary = _valid_card()
-	card["name"] = {"ro": "Lovitură"}
+	var rune: Dictionary = _valid_rune()
+	rune["voice"] = {"ro": "+1 Monedă"}
 	var validator: DataValidator = DataValidator.new()
-	validator.validate_collection("cards.json", [card], "card")
-	check(has_error(validator.errors, ["[strike]", "\"name\"", "\"en\""]),
+	validator.validate_collection("runes.json", [rune], "rune")
+	check(has_error(validator.errors, ["[fehu]", "\"voice\"", "\"en\""]),
 		"missing en text not reported: %s" % [validator.errors])
 
 
 func test_duplicate_and_bad_ids_are_reported() -> void:
-	var bad: Dictionary = _valid_card()
+	var bad: Dictionary = _valid_rune()
 	bad["id"] = "Bad Id"
 	var validator: DataValidator = DataValidator.new()
-	var result: Dictionary = validator.validate_collection("cards.json", [_valid_card(), _valid_card(), bad], "card")
-	check(has_error(validator.errors, ["[strike]", "duplicate id"]), "duplicate not reported")
+	var result: Dictionary = validator.validate_collection("runes.json", [_valid_rune(), _valid_rune(), bad], "rune")
+	check(has_error(validator.errors, ["[fehu]", "duplicate id"]), "duplicate not reported")
 	check(has_error(validator.errors, ["[Bad Id]", "a-z"]), "bad id not reported")
 	check_eq(result.size(), 1, "valid entries:")
 
 
-func test_bad_effect_is_reported() -> void:
-	var card: Dictionary = _valid_card()
-	card["effects"] = [
-		{"type": "explode", "value": 3},
-		{"type": "damage", "value": 3, "target": "everyone"},
-		{"type": "block"},
-	]
+func test_bad_segments_are_reported() -> void:
+	var rune: Dictionary = _valid_rune()
+	rune["segments"] = [[0.1, 0.2, 0.3], [0.0, 0.0, 1.5, 0.5]]
 	var validator: DataValidator = DataValidator.new()
-	validator.validate_collection("cards.json", [card], "card")
-	check(has_error(validator.errors, ["effects[0].type", "explode"]), "unknown effect type not reported")
-	check(has_error(validator.errors, ["effects[1].target", "everyone"]), "bad target not reported")
-	check(has_error(validator.errors, ["missing field \"effects[2].value\""]), "missing value not reported")
+	validator.validate_collection("runes.json", [rune], "rune")
+	check(has_error(validator.errors, ["segments[0]", "exactly 4 numbers"]), "3-number line not reported")
+	check(has_error(validator.errors, ["segments[1]", "between 0 and 1"]), "out-of-range line not reported")
 
 
-func test_unknown_field_and_non_integer_are_reported() -> void:
-	var card: Dictionary = _valid_card()
-	card["cots"] = 1
-	card["cost"] = 1.5
+func test_position_out_of_range_and_unknown_field() -> void:
+	var rune: Dictionary = _valid_rune()
+	rune["position"] = 9
+	rune["powr"] = 3
 	var validator: DataValidator = DataValidator.new()
-	validator.validate_collection("cards.json", [card], "card")
-	check(has_error(validator.errors, ["unknown field \"cots\""]), "typo field not reported")
-	check(has_error(validator.errors, ["\"cost\" must be a whole number"]), "1.5 cost not reported")
+	validator.validate_collection("runes.json", [rune], "rune")
+	check(has_error(validator.errors, ["\"position\" must be between 1 and 8"]), "position 9 not reported")
+	check(has_error(validator.errors, ["unknown field \"powr\""]), "typo field not reported")
 
 
 func test_broken_reference_is_reported() -> void:
-	var god: Dictionary = {
-		"id": "varr",
-		"name": {"ro": "Varr", "en": "Varr"},
-		"domain": {"ro": "furtuna", "en": "storm"},
-		"job": {"ro": "șofer", "en": "driver"},
-		"personality": {"ro": "zgomotos", "en": "loud"},
-		"color": "#e8c547",
-		"playable": true,
-		"starting_hp": 55,
-		"signature_card": "no_such_card",
-		"unlock": {"type": "default"},
-	}
+	var rune: Dictionary = _valid_rune()
+	rune["kin"] = "nope"
 	var validator: DataValidator = DataValidator.new()
-	var gods: Dictionary = validator.validate_collection("gods.json", [god], "god")
-	check(validator.errors.is_empty(), "god itself should be valid: %s" % [validator.errors])
-	validator.check_references({"gods": gods, "cards": {}})
-	check(has_error(validator.errors, ["data/gods.json", "[varr]", "no_such_card", "cards.json"]),
-		"broken signature_card not reported: %s" % [validator.errors])
+	var runes: Dictionary = validator.validate_collection("runes.json", [rune], "rune")
+	validator.check_references({"runes": runes, "kins": {"fehu": {}}})
+	check(has_error(validator.errors, ["data/runes.json", "[fehu]", "nope", "kins.json"]),
+		"broken kin reference not reported: %s" % [validator.errors])
 
 
-func test_playable_god_needs_hp() -> void:
-	var god: Dictionary = {
-		"id": "selvia",
-		"name": {"ro": "Selvia", "en": "Selvia"},
-		"domain": {"ro": "mările", "en": "seas"},
-		"job": {"ro": "salvamar", "en": "lifeguard"},
-		"personality": {"ro": "calmă", "en": "calm"},
-		"color": "#3f7fd9",
-		"playable": true,
-	}
+func test_kin_gaps_and_clashes_are_reported() -> void:
+	var second: Dictionary = _valid_rune()
+	second["id"] = "copy"
 	var validator: DataValidator = DataValidator.new()
-	validator.validate_collection("gods.json", [god], "god")
-	check(has_error(validator.errors, ["[selvia]", "starting_hp"]), "missing starting_hp not reported")
+	var runes: Dictionary = validator.validate_collection("runes.json", [_valid_rune(), second], "rune")
+	validator.check_runes("runes.json", runes, {"fehu": {}})
+	check(has_error(validator.errors, ["[copy]", "already has a rune on position 1"]), "position clash not reported")
+	check(has_error(validator.errors, ["no rune on position 2"]), "missing position not reported")
+
+
+func test_rules_file_is_checked() -> void:
+	var validator: DataValidator = DataValidator.new()
+	validator.validate_single("rules.json", {"hand_size": 0}, "rules")
+	check(has_error(validator.errors, ["data/rules.json", "missing field \"casts_per_round\""]), "missing rule not reported")
+	check(has_error(validator.errors, ["\"hand_size\" must be at least 1"]), "hand_size 0 not reported")
 
 
 func test_normalize_numbers() -> void:
@@ -144,61 +144,3 @@ func test_normalize_numbers() -> void:
 	var list: Array = dict["b"]
 	check(list[0] is int, "2.0 should become int")
 	check(list[1] is float, "0.5 should stay float")
-
-
-func _word(id: String, runes: Array) -> Dictionary:
-	return {
-		"id": id,
-		"name": {"ro": id, "en": id},
-		"runes": runes,
-		"effects": [{"type": "block", "value": 5}],
-	}
-
-
-func _mumble() -> Dictionary:
-	var word: Dictionary = _word("mumble", [])
-	word["fallback"] = true
-	return word
-
-
-func test_rune_card_needs_rune_field() -> void:
-	var card: Dictionary = _valid_card()
-	card["type"] = "rune"
-	var validator: DataValidator = DataValidator.new()
-	validator.validate_collection("cards.json", [card], "card")
-	check(has_error(validator.errors, ["[strike]", "rune cards need"]), "rune card without rune not reported")
-
-
-func test_word_combo_must_have_three_runes() -> void:
-	var validator: DataValidator = DataValidator.new()
-	validator.validate_collection("words.json", [_word("short", ["tor", "tor"])], "word")
-	check(has_error(validator.errors, ["[short]", "exactly 3 runes"]), "2-rune word not reported")
-
-
-func test_word_unknown_rune_is_reported() -> void:
-	var validator: DataValidator = DataValidator.new()
-	var words: Dictionary = validator.validate_collection("words.json",
-		[_word("odd", ["tor", "zap", "any"]), _mumble()], "word")
-	validator.check_references({"words": words, "runes": {"tor": {}}})
-	check(has_error(validator.errors, ["[odd]", "zap", "runes.json"]), "unknown rune not reported: %s" % [validator.errors])
-	check(not has_error(validator.errors, ["\"any\""]), "\"any\" wildcard should be accepted")
-
-
-func test_duplicate_combo_ignores_order() -> void:
-	var validator: DataValidator = DataValidator.new()
-	var words: Dictionary = validator.validate_collection("words.json",
-		[_word("explosion", ["ar", "ar", "tor"]), _word("copy", ["tor", "ar", "ar"]), _mumble()], "word")
-	validator.check_words("words.json", words)
-	check(has_error(validator.errors, ["[copy]", "explosion", "ar+ar+tor"]), "duplicate combo not reported: %s" % [validator.errors])
-
-
-func test_exactly_one_fallback_word() -> void:
-	var validator: DataValidator = DataValidator.new()
-	var words: Dictionary = validator.validate_collection("words.json", [_word("storm", ["tor", "tor", "tor"])], "word")
-	validator.check_words("words.json", words)
-	check(has_error(validator.errors, ["fallback", "found 0"]), "missing mumble word not reported")
-
-
-func test_combo_key_is_order_independent() -> void:
-	check_eq(DataValidator.combo_key(["tor", "ar", "ar"]), "ar+ar+tor", "combo key:")
-	check_eq(DataValidator.combo_key(["ve", "any", "ve"]), DataValidator.combo_key(["any", "ve", "ve"]), "wildcard key:")

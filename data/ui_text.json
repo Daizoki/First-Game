@@ -1,10 +1,11 @@
 {
-	"game_title": {"ro": "Examenul", "en": "The Godborn Exam"},
+	"game_title": {"ro": "Examenul de Moștenire", "en": "The Inheritance Exam"},
 	"game_subtitle": {"ro": "Universul Coborârea · Jocul 1", "en": "The Descent universe · Game 1"},
 	"game_motto": {"ro": "Puterea o moștenești. Runele le înveți.", "en": "Power is inherited. Runes are learned."},
 	"version": {"ro": "v{version}", "en": "v{version}"},
 
 	"menu_play": {"ro": "Joacă", "en": "Play"},
+	"menu_runes": {"ro": "Cele 24 de rune", "en": "The 24 runes"},
 	"menu_settings": {"ro": "Setări", "en": "Settings"},
 	"menu_quit": {"ro": "Ieșire", "en": "Quit"},
 	"menu_play_soon": {"ro": "Aeva încă pregătește sălile de examen. Revino curând.", "en": "Aeva is still preparing the exam halls. Come back soon."},
@@ -19,5 +20,10 @@
 	"settings_back": {"ro": "Înapoi", "en": "Back"},
 
 	"language_ro": {"ro": "Română", "en": "Română"},
-	"language_en": {"ro": "English", "en": "English"}
+	"language_en": {"ro": "English", "en": "English"},
+
+	"rune_check_title": {"ro": "Cele 24 de rune ale Futharkului vechi", "en": "The 24 runes of the Elder Futhark"},
+	"rune_check_hint": {"ro": "Ține mouse-ul pe o rună ca să vezi sensul și Glasul ei.", "en": "Hover a rune to see its meaning and Voice."},
+	"rune_position": {"ro": "Poz. {n} · Putere {power}", "en": "Pos. {n} · Power {power}"},
+	"rune_tooltip": {"ro": "Sens istoric: {meaning}\nÎn joc: {voice}", "en": "Historical meaning: {meaning}\nIn game: {voice}"}
 }
