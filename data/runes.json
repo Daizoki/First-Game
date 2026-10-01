@@ -1,0 +1,38 @@
+[
+	{
+		"id": "ar",
+		"name": {"ro": "Ar", "en": "Ar"},
+		"meaning": {"ro": "foc", "en": "fire"},
+		"color": "#e8772e"
+	},
+	{
+		"id": "ul",
+		"name": {"ro": "Ul", "en": "Ul"},
+		"meaning": {"ro": "apă, viață", "en": "water, life"},
+		"color": "#3f9fd9"
+	},
+	{
+		"id": "tor",
+		"name": {"ro": "Tor", "en": "Tor"},
+		"meaning": {"ro": "lovitură, fulger", "en": "strike, lightning"},
+		"color": "#e8c547"
+	},
+	{
+		"id": "gar",
+		"name": {"ro": "Gar", "en": "Gar"},
+		"meaning": {"ro": "piatră, apărare", "en": "stone, defense"},
+		"color": "#9a8a6e"
+	},
+	{
+		"id": "nox",
+		"name": {"ro": "Nox", "en": "Nox"},
+		"meaning": {"ro": "umbră", "en": "shadow"},
+		"color": "#6a4c93"
+	},
+	{
+		"id": "ve",
+		"name": {"ro": "Ve", "en": "Ve"},
+		"meaning": {"ro": "clipă, timp", "en": "moment, time"},
+		"color": "#b59be0"
+	}
+]

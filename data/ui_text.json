@@ -1,6 +1,7 @@
 {
 	"game_title": {"ro": "Examenul", "en": "The Godborn Exam"},
 	"game_subtitle": {"ro": "Universul Coborârea · Jocul 1", "en": "The Descent universe · Game 1"},
+	"game_motto": {"ro": "Puterea o moștenești. Runele le înveți.", "en": "Power is inherited. Runes are learned."},
 	"version": {"ro": "v{version}", "en": "v{version}"},
 
 	"menu_play": {"ro": "Joacă", "en": "Play"},

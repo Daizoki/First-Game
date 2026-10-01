@@ -80,5 +80,111 @@
 				{"type": "apply", "status": "burn", "value": 6, "target": "enemy"}
 			]
 		}
+	},
+	{
+		"id": "rune_tor",
+		"name": {"ro": "Tor", "en": "Tor"},
+		"cost": 1,
+		"type": "rune",
+		"rarity": "starter",
+		"pool": "neutral",
+		"rune": "tor",
+		"effects": [
+			{"type": "damage", "value": 3, "target": "enemy"}
+		],
+		"upgrade": {
+			"cost": 0,
+			"effects": [
+				{"type": "damage", "value": 3, "target": "enemy"}
+			]
+		}
+	},
+	{
+		"id": "rune_ul",
+		"name": {"ro": "Ul", "en": "Ul"},
+		"cost": 1,
+		"type": "rune",
+		"rarity": "starter",
+		"pool": "neutral",
+		"rune": "ul",
+		"effects": [
+			{"type": "heal", "value": 2}
+		],
+		"upgrade": {
+			"cost": 0,
+			"effects": [
+				{"type": "heal", "value": 2}
+			]
+		}
+	},
+	{
+		"id": "rune_ar",
+		"name": {"ro": "Ar", "en": "Ar"},
+		"cost": 1,
+		"type": "rune",
+		"rarity": "starter",
+		"pool": "neutral",
+		"rune": "ar",
+		"effects": [
+			{"type": "apply", "status": "burn", "value": 2, "target": "enemy"}
+		],
+		"upgrade": {
+			"cost": 0,
+			"effects": [
+				{"type": "apply", "status": "burn", "value": 2, "target": "enemy"}
+			]
+		}
+	},
+	{
+		"id": "rune_gar",
+		"name": {"ro": "Gar", "en": "Gar"},
+		"cost": 1,
+		"type": "rune",
+		"rarity": "starter",
+		"pool": "neutral",
+		"rune": "gar",
+		"effects": [
+			{"type": "block", "value": 4}
+		],
+		"upgrade": {
+			"cost": 0,
+			"effects": [
+				{"type": "block", "value": 4}
+			]
+		}
+	},
+	{
+		"id": "rune_nox",
+		"name": {"ro": "Nox", "en": "Nox"},
+		"cost": 0,
+		"type": "rune",
+		"rarity": "common",
+		"pool": "neutral",
+		"rune": "nox",
+		"effects": [
+			{"type": "apply", "status": "weak", "value": 1, "target": "enemy"}
+		],
+		"upgrade": {
+			"effects": [
+				{"type": "apply", "status": "weak", "value": 2, "target": "enemy"}
+			]
+		}
+	},
+	{
+		"id": "rune_ve",
+		"name": {"ro": "Ve", "en": "Ve"},
+		"cost": 0,
+		"type": "rune",
+		"rarity": "common",
+		"pool": "neutral",
+		"rune": "ve",
+		"effects": [
+			{"type": "draw", "value": 1}
+		],
+		"upgrade": {
+			"effects": [
+				{"type": "draw", "value": 2}
+			]
+		}
 	}
 ]

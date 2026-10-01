@@ -17,6 +17,7 @@
 		"playable": true,
 		"starting_hp": 55,
 		"signature_card": "varr_lightning",
+		"affinity_rune": "tor",
 		"playstyle": {"ro": "Daune mari, lovește mai mulți inamici.", "en": "Big damage, hits several enemies."},
 		"unlock": {"type": "default"}
 	},
@@ -30,6 +31,7 @@
 		"playable": true,
 		"starting_hp": 65,
 		"signature_card": "selvia_wave",
+		"affinity_rune": "ul",
 		"playstyle": {"ro": "Scut și vindecare, luptă lungă.", "en": "Block and healing, long fights."},
 		"unlock": {"type": "after_attempts", "value": 1}
 	},
@@ -43,6 +45,7 @@
 		"playable": true,
 		"starting_hp": 60,
 		"signature_card": "ignar_ember",
+		"affinity_rune": "ar",
 		"playstyle": {"ro": "Arsură care se adună în timp.", "en": "Burn that stacks up over time."},
 		"unlock": {"type": "memories", "value": 30}
 	},

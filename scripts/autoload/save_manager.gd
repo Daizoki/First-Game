@@ -25,6 +25,10 @@ static func default_data() -> Dictionary:
 		"unlocked_gods": ["varr"],
 		## upgrade id -> how many times it was bought
 		"upgrades": {},
+		## Rune Book: ids of Words already discovered (permanent, survives Aeva's time loop).
+		"discovered_words": [],
+		## Story memory across attempts, e.g. "kaldor_mocked": true.
+		"flags": {},
 		"settings": {
 			"language": "ro",
 			"volume": DEFAULT_VOLUME,
@@ -50,6 +54,23 @@ func load_game() -> bool:
 
 func save_game() -> bool:
 	return _write_text(save_path, JSON.stringify(data, "\t"))
+
+
+func is_word_discovered(word_id: String) -> bool:
+	var discovered: Array = data.get("discovered_words", [])
+	return discovered.has(word_id)
+
+
+## Adds a Word to the Rune Book and saves. Returns false if it was already known.
+func discover_word(word_id: String) -> bool:
+	if is_word_discovered(word_id):
+		return false
+	if not (data.get("discovered_words") is Array):
+		data["discovered_words"] = []
+	var discovered: Array = data["discovered_words"]
+	discovered.append(word_id)
+	save_game()
+	return true
 
 
 func backup_path() -> String:

@@ -1,0 +1,117 @@
+[
+	{
+		"id": "storm",
+		"name": {"ro": "Furtuna", "en": "The Storm"},
+		"runes": ["tor", "tor", "tor"],
+		"effects": [
+			{"type": "damage", "value": 15, "target": "all_enemies"}
+		]
+	},
+	{
+		"id": "wall",
+		"name": {"ro": "Zidul", "en": "The Wall"},
+		"runes": ["gar", "gar", "ul"],
+		"effects": [
+			{"type": "block", "value": 15},
+			{"type": "heal", "value": 3}
+		]
+	},
+	{
+		"id": "explosion",
+		"name": {"ro": "Explozia", "en": "The Explosion"},
+		"runes": ["ar", "ar", "tor"],
+		"effects": [
+			{"type": "damage", "value": 10, "target": "enemy"},
+			{"type": "apply", "status": "burn", "value": 4, "target": "enemy"}
+		]
+	},
+	{
+		"id": "shadow_blade",
+		"name": {"ro": "Lama umbrei", "en": "Shadow Blade"},
+		"runes": ["nox", "nox", "tor"],
+		"effects": [
+			{"type": "apply", "status": "vulnerable", "value": 2, "target": "enemy"},
+			{"type": "damage", "value": 8, "target": "enemy"}
+		]
+	},
+	{
+		"id": "moment",
+		"name": {"ro": "Clipa", "en": "The Moment"},
+		"runes": ["ve", "ve", "any"],
+		"effects": [
+			{"type": "energy", "value": 2},
+			{"type": "draw", "value": 2}
+		]
+	},
+	{
+		"id": "living_forge",
+		"name": {"ro": "Forja vie", "en": "The Living Forge"},
+		"runes": ["ar", "ul", "gar"],
+		"effects": [
+			{"type": "apply", "status": "strength", "value": 2, "target": "self"},
+			{"type": "block", "value": 6}
+		]
+	},
+	{
+		"id": "inferno",
+		"name": {"ro": "Pârjolul", "en": "The Blaze"},
+		"runes": ["ar", "ar", "ar"],
+		"effects": [
+			{"type": "apply", "status": "burn", "value": 6, "target": "all_enemies"}
+		]
+	},
+	{
+		"id": "spring",
+		"name": {"ro": "Izvorul", "en": "The Spring"},
+		"runes": ["ul", "ul", "ul"],
+		"effects": [
+			{"type": "heal", "value": 10}
+		]
+	},
+	{
+		"id": "fortress",
+		"name": {"ro": "Cetatea", "en": "The Fortress"},
+		"runes": ["gar", "gar", "gar"],
+		"effects": [
+			{"type": "block", "value": 22}
+		]
+	},
+	{
+		"id": "eclipse",
+		"name": {"ro": "Eclipsa", "en": "The Eclipse"},
+		"runes": ["nox", "nox", "nox"],
+		"effects": [
+			{"type": "apply", "status": "weak", "value": 2, "target": "all_enemies"},
+			{"type": "apply", "status": "vulnerable", "value": 2, "target": "all_enemies"}
+		]
+	},
+	{
+		"id": "summer_rain",
+		"name": {"ro": "Ploaia de vară", "en": "Summer Rain"},
+		"runes": ["tor", "ul", "ve"],
+		"effects": [
+			{"type": "damage", "value": 6, "target": "all_enemies"},
+			{"type": "heal", "value": 4},
+			{"type": "draw", "value": 1}
+		]
+	},
+	{
+		"id": "ash",
+		"name": {"ro": "Cenușa", "en": "The Ash"},
+		"runes": ["ar", "nox", "ve"],
+		"effects": [
+			{"type": "apply", "status": "burn", "value": 3, "target": "all_enemies"},
+			{"type": "apply", "status": "weak", "value": 1, "target": "all_enemies"},
+			{"type": "draw", "value": 1}
+		]
+	},
+	{
+		"id": "mumble",
+		"name": {"ro": "Cuvânt bâlbâit", "en": "Mumbled Word"},
+		"fallback": true,
+		"runes": [],
+		"effects": [
+			{"type": "damage", "value": 3, "target": "random_enemy"}
+		]
+	}
+]

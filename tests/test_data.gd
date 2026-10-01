@@ -25,6 +25,13 @@ func test_real_data_loads_without_errors() -> void:
 	check(game_data.cards.has("strike"), "cards.json should contain strike")
 	check_eq(game_data.playable_gods().size(), 3, "playable gods:")
 	check(game_data.ui_text.has("menu_play"), "ui_text.json should contain menu_play")
+	check_eq(game_data.runes.size(), 6, "runes:")
+	check(game_data.words.size() >= 12, "words.json should have at least 12 words")
+	check(game_data.characters.has("ilinca"), "characters.json should contain ilinca")
+	check_eq(game_data.blessings.size(), 9, "blessings:")
+	for god: Dictionary in game_data.playable_gods():
+		var rune_card: String = "rune_" + str(god["affinity_rune"])
+		check(game_data.cards.has(rune_card), "affinity rune card %s should exist" % rune_card)
 	game_data.free()
 
 
@@ -137,3 +144,61 @@ func test_normalize_numbers() -> void:
 	var list: Array = dict["b"]
 	check(list[0] is int, "2.0 should become int")
 	check(list[1] is float, "0.5 should stay float")
+
+
+func _word(id: String, runes: Array) -> Dictionary:
+	return {
+		"id": id,
+		"name": {"ro": id, "en": id},
+		"runes": runes,
+		"effects": [{"type": "block", "value": 5}],
+	}
+
+
+func _mumble() -> Dictionary:
+	var word: Dictionary = _word("mumble", [])
+	word["fallback"] = true
+	return word
+
+
+func test_rune_card_needs_rune_field() -> void:
+	var card: Dictionary = _valid_card()
+	card["type"] = "rune"
+	var validator: DataValidator = DataValidator.new()
+	validator.validate_collection("cards.json", [card], "card")
+	check(has_error(validator.errors, ["[strike]", "rune cards need"]), "rune card without rune not reported")
+
+
+func test_word_combo_must_have_three_runes() -> void:
+	var validator: DataValidator = DataValidator.new()
+	validator.validate_collection("words.json", [_word("short", ["tor", "tor"])], "word")
+	check(has_error(validator.errors, ["[short]", "exactly 3 runes"]), "2-rune word not reported")
+
+
+func test_word_unknown_rune_is_reported() -> void:
+	var validator: DataValidator = DataValidator.new()
+	var words: Dictionary = validator.validate_collection("words.json",
+		[_word("odd", ["tor", "zap", "any"]), _mumble()], "word")
+	validator.check_references({"words": words, "runes": {"tor": {}}})
+	check(has_error(validator.errors, ["[odd]", "zap", "runes.json"]), "unknown rune not reported: %s" % [validator.errors])
+	check(not has_error(validator.errors, ["\"any\""]), "\"any\" wildcard should be accepted")
+
+
+func test_duplicate_combo_ignores_order() -> void:
+	var validator: DataValidator = DataValidator.new()
+	var words: Dictionary = validator.validate_collection("words.json",
+		[_word("explosion", ["ar", "ar", "tor"]), _word("copy", ["tor", "ar", "ar"]), _mumble()], "word")
+	validator.check_words("words.json", words)
+	check(has_error(validator.errors, ["[copy]", "explosion", "ar+ar+tor"]), "duplicate combo not reported: %s" % [validator.errors])
+
+
+func test_exactly_one_fallback_word() -> void:
+	var validator: DataValidator = DataValidator.new()
+	var words: Dictionary = validator.validate_collection("words.json", [_word("storm", ["tor", "tor", "tor"])], "word")
+	validator.check_words("words.json", words)
+	check(has_error(validator.errors, ["fallback", "found 0"]), "missing mumble word not reported")
+
+
+func test_combo_key_is_order_independent() -> void:
+	check_eq(DataValidator.combo_key(["tor", "ar", "ar"]), "ar+ar+tor", "combo key:")
+	check_eq(DataValidator.combo_key(["ve", "any", "ve"]), DataValidator.combo_key(["any", "ve", "ve"]), "wildcard key:")

@@ -1,0 +1,29 @@
+[
+	{
+		"id": "ilinca",
+		"name": {"ro": "Maestra Ilinca", "en": "Master Ilinca"},
+		"description": {"ro": "Om, aproape 70 de ani, cea mai mare maestră de rune din Orașul Pragului. Severă, ironică, nu se teme de niciun zeu.", "en": "Human, almost 70, the greatest rune master in the City of the Threshold. Stern, ironic, afraid of no god."},
+		"color": "#d9cfa8"
+	},
+	{
+		"id": "dara",
+		"name": {"ro": "Dara", "en": "Dara"},
+		"description": {"ro": "Fiica lui Kaldor. Vrea să fie cea mai bună și nu suportă să piardă.", "en": "Kaldor's daughter. Wants to be the best and hates losing."},
+		"color": "#c0392b",
+		"parent": "kaldor"
+	},
+	{
+		"id": "nix",
+		"name": {"ro": "Nix", "en": "Nix"},
+		"description": {"ro": "Copilul lui Lunet. Glume, minciuni, trucuri; loial doar lui însuși… poate.", "en": "Lunet's child. Jokes, lies, tricks; loyal only to himself… maybe."},
+		"color": "#7b68ee",
+		"parent": "lunet"
+	},
+	{
+		"id": "toma",
+		"name": {"ro": "Toma", "en": "Toma"},
+		"description": {"ro": "Fiul lui Gronn. Uriaș, calm, cel mai bun prieten pe care nu știi că îl ai.", "en": "Gronn's son. Huge, calm, the best friend you didn't know you had."},
+		"color": "#8a6a3e",
+		"parent": "gronn"
+	}
+]

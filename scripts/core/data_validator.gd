@@ -9,15 +9,20 @@ const LANGUAGES: Array = ["ro", "en"]
 const ENUMS: Dictionary = {
 	"target": ["enemy", "all_enemies", "random_enemy", "self"],
 	"status": ["burn", "weak", "vulnerable", "strength"],
-	"card_type": ["attack", "skill", "power"],
+	"card_type": ["attack", "skill", "power", "rune"],
 	"rarity": ["starter", "common", "uncommon", "rare", "special"],
 	"unlock_type": ["default", "after_attempts", "memories"],
 	"blessing_trigger": ["combat_start", "first_turn", "combat_end", "passive"],
-	"blessing_rule": ["negate_first_hit", "burn_bonus", "choose_card_from_deck", "cheat_death"],
+	"blessing_rule": ["negate_first_hit", "burn_bonus", "choose_card_from_deck", "cheat_death", "first_word_double"],
 }
 
+## Rune combo wildcard in words.json: matches any rune.
+const ANY_RUNE: String = "any"
+## Number of runes the Rune Circle holds before they are spoken as a Word.
+const CIRCLE_SIZE: int = 3
+
 ## Field kinds:
-##   id, string, int, number, bool, loc, color, dict, array, pool, effects,
+##   id, string, int, number, bool, loc, color, dict, array, pool, effects, rune_combo,
 ##   enum:<name>, ref:<collection>, object:<schema>, array:<schema>
 const SCHEMAS: Dictionary = {
 	"god": {
@@ -27,7 +32,7 @@ const SCHEMAS: Dictionary = {
 		},
 		"optional": {
 			"playable": "bool", "starting_hp": "int", "signature_card": "ref:cards",
-			"playstyle": "loc", "unlock": "object:unlock",
+			"affinity_rune": "ref:runes", "playstyle": "loc", "unlock": "object:unlock",
 		},
 	},
 	"unlock": {
@@ -39,11 +44,23 @@ const SCHEMAS: Dictionary = {
 			"id": "id", "name": "loc", "cost": "int", "type": "enum:card_type",
 			"rarity": "enum:rarity", "pool": "pool", "effects": "effects",
 		},
-		"optional": {"description": "loc", "upgrade": "object:card_upgrade"},
+		"optional": {"description": "loc", "rune": "ref:runes", "upgrade": "object:card_upgrade"},
 	},
 	"card_upgrade": {
 		"required": {},
 		"optional": {"cost": "int", "effects": "effects", "description": "loc"},
+	},
+	"character": {
+		"required": {"id": "id", "name": "loc", "description": "loc", "color": "color"},
+		"optional": {"parent": "ref:gods"},
+	},
+	"rune": {
+		"required": {"id": "id", "name": "loc", "meaning": "loc", "color": "color"},
+		"optional": {},
+	},
+	"word": {
+		"required": {"id": "id", "name": "loc", "runes": "rune_combo", "effects": "effects"},
+		"optional": {"description": "loc", "fallback": "bool"},
 	},
 	"enemy": {
 		"required": {"id": "id", "name": "loc", "hp": "int"},
@@ -227,8 +244,39 @@ func check_value(file_name: String, label: String, path: String, value: Variant,
 				_add_ref(file_name, label, path, "gods", value)
 		"effects":
 			_check_effects(file_name, label, path, value)
+		"rune_combo":
+			_check_rune_combo(file_name, label, path, value)
 		_:
 			add_error(file_name, label, "internal: unknown field kind \"%s\" for \"%s\"" % [kind, path])
+
+
+## Call after words.json is loaded: no two Words may use the same rune combination
+## (order does not matter) and there must be exactly one fallback ("mumble") Word.
+func check_words(file_name: String, words: Dictionary) -> void:
+	var seen: Dictionary = {}
+	var fallback_count: int = 0
+	for id: String in words:
+		var word: Dictionary = words[id]
+		var fallback: Variant = word.get("fallback", false)
+		if fallback is bool and fallback:
+			fallback_count += 1
+			continue
+		if not _is_string_list(word.get("runes")):
+			continue
+		var key: String = combo_key(word["runes"])
+		if seen.has(key):
+			add_error(file_name, id, "same runes as word \"%s\" (%s)" % [seen[key], key])
+		else:
+			seen[key] = id
+	if not words.is_empty() and fallback_count != 1:
+		add_error(file_name, "", "there must be exactly one word with \"fallback\": true (the mumbled word), found %d" % fallback_count)
+
+
+## Order-independent key for a rune combination, e.g. ["tor", "ar", "tor"] -> "ar+tor+tor".
+static func combo_key(runes: Array) -> String:
+	var names: PackedStringArray = PackedStringArray(runes)
+	names.sort()
+	return "+".join(names)
 
 
 ## JSON numbers arrive as floats; whole numbers become ints so code can use them directly.
@@ -290,6 +338,20 @@ func _check_effects(file_name: String, label: String, path: String, value: Varia
 		_check_fields(file_name, label, action_path + ".", action, schema["required"], optional)
 
 
+func _check_rune_combo(file_name: String, label: String, path: String, value: Variant) -> void:
+	if not (value is Array):
+		add_error(file_name, label, "\"%s\" must be a list of rune ids, e.g. [\"tor\", \"tor\", \"tor\"]" % path)
+		return
+	var runes: Array = value
+	for i: int in runes.size():
+		var rune: Variant = runes[i]
+		var rune_path: String = "%s[%d]" % [path, i]
+		if not (rune is String):
+			add_error(file_name, label, "\"%s\" must be a rune id or \"%s\"" % [rune_path, ANY_RUNE])
+		elif rune != ANY_RUNE:
+			_add_ref(file_name, label, rune_path, "runes", rune)
+
+
 func _check_loc(file_name: String, label: String, path: String, value: Variant) -> void:
 	if not (value is Dictionary):
 		add_error(file_name, label, "\"%s\" must be a text in both languages: {\"ro\": \"...\", \"en\": \"...\"}" % path)
@@ -309,17 +371,39 @@ func _extra_checks(file_name: String, label: String, dict: Dictionary, schema_na
 		"god":
 			var playable: Variant = dict.get("playable", false)
 			if playable is bool and playable:
-				for field: String in ["starting_hp", "signature_card", "unlock"]:
+				for field: String in ["starting_hp", "signature_card", "affinity_rune", "unlock"]:
 					if not dict.has(field):
 						add_error(file_name, label, "playable god is missing field \"%s\"" % field)
 		"card":
 			var cost: Variant = dict.get("cost")
 			if cost is int and cost < 0:
 				add_error(file_name, label, "\"cost\" cannot be negative")
+			var type_value: Variant = dict.get("type")
+			var is_rune_card: bool = type_value is String and type_value == "rune"
+			if is_rune_card != dict.has("rune"):
+				add_error(file_name, label, "rune cards need type \"rune\" and a \"rune\" field (both or neither)")
+		"word":
+			var fallback: Variant = dict.get("fallback", false)
+			var runes: Variant = dict.get("runes")
+			if runes is Array:
+				var size: int = (runes as Array).size()
+				if fallback is bool and fallback and size != 0:
+					add_error(file_name, label, "the fallback word (mumble) must have \"runes\": []")
+				elif not (fallback is bool and fallback) and size != CIRCLE_SIZE:
+					add_error(file_name, label, "\"runes\" must list exactly %d runes (got %d)" % [CIRCLE_SIZE, size])
 
 
 func _add_ref(file_name: String, label: String, path: String, collection: String, id_value: String) -> void:
 	_refs.append({"file": file_name, "label": label, "path": path, "collection": collection, "id": id_value})
+
+
+func _is_string_list(value: Variant) -> bool:
+	if not (value is Array):
+		return false
+	for item: Variant in value:
+		if not (item is String):
+			return false
+	return true
 
 
 func _is_integer(value: Variant) -> bool:

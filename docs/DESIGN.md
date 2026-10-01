@@ -216,3 +216,18 @@ runice reale**. Fișiere: `data/runes.json`, simboluri în `art/runes/<id>.png` 
 - **v2 (rune):** designul a primit al doilea stâlp, Runele. Proba 2 devine Proba Runelor (Maestra Ilinca în loc de
   Lunet); pachetul de start se schimbă (4 Lovituri, 3 Apărări, semnătură, runa de afinitate, Gar); binecuvântarea nr. 9:
   Creta Maestrei Ilinca.
+- **v2, adaptarea Etapei 1 (propuneri acceptate implicit, Relax le poate schimba):**
+  - `data/characters.json` (nou) pentru oamenii și semizeii cu nume: Maestra Ilinca, Dara, Nix, Toma.
+  - Cărțile-rună au `"type": "rune"` și `"rune": "<id>"`; efectul imediat stă în `effects` ale cărții (așa pot exista
+    variante ca *Tor apăsat*). Costuri: Tor, Ul, Ar, Gar = 1 (versiunea `+` costă 0); Nox, Ve = 0 (versiunea `+` are
+    efect mai mare).
+  - `words.json` are 12 Cuvinte + Cuvântul bâlbâit (`"fallback": true`, `"runes": []`). `"any"` = orice rună.
+    Validatorul refuză două Cuvinte cu aceleași rune (ordinea nu contează).
+  - **Potrivirea exactă câștigă** în fața unei combinații cu `"any"` (Ve+Ve+oricare = Clipa doar dacă nu există un
+    Cuvânt exact pentru acele rune).
+  - Creta Ilincăi + Cuvânt nou descoperit: ½ × 2 = putere întreagă.
+  - Cuvântul preferat al Ilincăi, dacă îl ai deja: +3 Amintiri în schimb.
+  - Ilinca folosește aceleași Cuvinte din `words.json`, cu țintele inversate (daunele merg spre erou); regula
+    „jumătate din putere” nu se aplică inamicilor.
+  - „Kaldor ține minte”: indicator permanent în `save.json` → `flags`; în Proba 1 următoare Kaldor începe cu +2 Putere
+    și are o replică în plus.

@@ -13,6 +13,9 @@ const UI_TEXT_FILE: String = "ui_text.json"
 ## Collection name -> [file name, schema name]
 const COLLECTIONS: Dictionary = {
 	"gods": ["gods.json", "god"],
+	"characters": ["characters.json", "character"],
+	"runes": ["runes.json", "rune"],
+	"words": ["words.json", "word"],
 	"cards": ["cards.json", "card"],
 	"enemies": ["enemies.json", "enemy"],
 	"blessings": ["blessings.json", "blessing"],
@@ -25,6 +28,11 @@ var errors: Array[String] = []
 
 ## Each collection maps id -> entry (Dictionary), in the same order as in the file.
 var gods: Dictionary = {}
+## Named humans and demigods (Maestra Ilinca, Dara, Nix, Toma).
+var characters: Dictionary = {}
+var runes: Dictionary = {}
+## Words spoken by the Rune Circle; one of them has "fallback": true (the mumbled word).
+var words: Dictionary = {}
 var cards: Dictionary = {}
 var enemies: Dictionary = {}
 var blessings: Dictionary = {}
@@ -55,8 +63,12 @@ func load_all(data_dir: String) -> bool:
 	ui_text = {} if raw_ui == null else validator.validate_text_table(UI_TEXT_FILE, raw_ui)
 
 	validator.check_references(loaded)
+	validator.check_words(COLLECTIONS["words"][0], loaded["words"])
 
 	gods = loaded["gods"]
+	characters = loaded["characters"]
+	runes = loaded["runes"]
+	words = loaded["words"]
 	cards = loaded["cards"]
 	enemies = loaded["enemies"]
 	blessings = loaded["blessings"]
@@ -77,6 +89,18 @@ func has_errors() -> bool:
 
 func get_god(id: String) -> Dictionary:
 	return _get_entry(gods, "gods", id)
+
+
+func get_character(id: String) -> Dictionary:
+	return _get_entry(characters, "characters", id)
+
+
+func get_rune(id: String) -> Dictionary:
+	return _get_entry(runes, "runes", id)
+
+
+func get_word(id: String) -> Dictionary:
+	return _get_entry(words, "words", id)
 
 
 func get_card(id: String) -> Dictionary:

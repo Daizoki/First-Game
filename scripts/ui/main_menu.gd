@@ -5,6 +5,7 @@ const SETTINGS_SCENE: String = "res://scenes/settings.tscn"
 
 @onready var _title: Label = %Title
 @onready var _subtitle: Label = %Subtitle
+@onready var _motto: Label = %Motto
 @onready var _play_button: Button = %PlayButton
 @onready var _settings_button: Button = %SettingsButton
 @onready var _quit_button: Button = %QuitButton
@@ -39,6 +40,7 @@ func _ready() -> void:
 func _refresh_texts() -> void:
 	_title.text = Loc.t("game_title")
 	_subtitle.text = Loc.t("game_subtitle")
+	_motto.text = Loc.t("game_motto")
 	_play_button.text = Loc.t("menu_play")
 	_settings_button.text = Loc.t("menu_settings")
 	_quit_button.text = Loc.t("menu_quit")

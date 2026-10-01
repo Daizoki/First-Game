@@ -71,5 +71,14 @@
 			"trigger": "passive",
 			"rule": "cheat_death"
 		}
+	},
+	{
+		"id": "ilinca_chalk",
+		"name": {"ro": "Creta Maestrei Ilinca", "en": "Master Ilinca's Chalk"},
+		"description": {"ro": "Primul Cuvânt rostit în fiecare luptă are efect dublu.", "en": "The first Word you speak in each fight has double effect."},
+		"effect": {
+			"trigger": "passive",
+			"rule": "first_word_double"
+		}
 	}
 ]

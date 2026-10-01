@@ -74,3 +74,20 @@ func test_merge_fixes_types_and_keeps_new_defaults() -> void:
 	check_eq(merged["settings"]["volume"], SaveManagerScript.DEFAULT_VOLUME, "missing volume gets default:")
 	check(merged["upgrades"].has("max_hp"), "free-key dictionaries are kept")
 	check(not merged.has("old_field"), "unknown fields are dropped")
+
+
+func test_rune_book_is_saved() -> void:
+	var manager: SaveManagerScript = _make()
+	manager.load_game()
+	check(not manager.is_word_discovered("storm"), "storm should not be known at start")
+	check(manager.discover_word("storm"), "first discovery should return true")
+	check(not manager.discover_word("storm"), "second discovery should return false")
+
+	var other: SaveManagerScript = SaveManagerScript.new()
+	other.save_path = TEST_PATH
+	other.load_game()
+	check(other.is_word_discovered("storm"), "discovered word should survive a reload")
+	check_eq(other.data["discovered_words"].size(), 1, "discovered words:")
+	manager.free()
+	other.free()
+	_cleanup()

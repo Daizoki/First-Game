@@ -61,7 +61,7 @@ adăugat în lista `TEST_FILES` din `tests/run_tests.gd`.
 
 ## Structura
 ```
-data/        gods, cards, enemies, blessings, runes, words, trials, events, dialogs, ui_text (.json)
+data/        gods, characters, cards, enemies, blessings, runes, words, trials, events, dialogs, ui_text (.json)
 art/         characters/ enemies/ gods/ portraits/ cards/ blessings/ runes/ backgrounds/ ui/
 scenes/      câte o scenă .tscn pe ecran (main_menu, hub, parent_select, trial_map, combat, reward, rest,
              event, dialog, result, deck_view, rune_book, evening_class, settings)
