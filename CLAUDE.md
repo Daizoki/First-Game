@@ -1,14 +1,15 @@
 # CLAUDE.md — reguli pentru „Examenul de Moștenire” (Universul „Coborârea”, Jocul 1)
 
-> Versiunea de design: **v3 — rune în stil Balatro, grafică desenată.** Roguelike de construit scoruri: un Săculeț cu
-> pietre de rune (cele 24 de rune reale ale Futharkului vechi), Cuvinte rostite, scor = Putere × Rezonanță.
+> Versiunea de design: **v4 — rune în stil Balatro + Vrăji + stil desenat.** Roguelike de construit scoruri: un Săculeț
+> cu pietre de rune (cele 24 de rune reale ale Futharkului vechi), Cuvinte rostite, scor = Putere × Rezonanță, plus
+> **Vrăji** (combinații secrete de 2–3 rune cu efecte unice, ghicibile din sensul runelor).
 > Motto: „Puterea o moștenești. Runele le înveți.”
 
 Citește asta la începutul fiecărei sesiuni. Design: `docs/DESIGN.md`. Lume și personaje: `docs/UNIVERS.md`.
 Artă: `docs/ARTA.md`.
 
-> **Starea codului:** Etapa 1 e migrată la v3 (1920×1080, cele 24 de rune desenate din cod, scena de verificare).
-> Codul din v1/v2 (lupte, cărți, cercul runic) a fost șters.
+> **Starea codului:** Etapa 1 e pe v3 (1920×1080, cele 24 de rune desenate din cod, scena de verificare). Ajustările
+> pentru v4 (paleta, runa în 3 straturi, schema pentru `spells.json`) se fac **doar după OK-ul lui Relax**.
 
 ## Cum lucrăm
 - Utilizatorul e **Relax** (18 ani, Chișinău; desenează, TikTok/YouTube). **Scrie-i în română.**
@@ -43,9 +44,10 @@ Artă: `docs/ARTA.md`.
 | nivelurile de dificultate | **Probele** examenului | `trial` |
 | rundele | **Întrebarea mică / mare**, **Examinatorul** | `small` / `big` / `examiner` |
 | banii | **Monede** | `money` |
+| *(nu există la Balatro)* | **Vrăjile** (combinații secrete de rune) | `spell` |
 
 ## Reguli tehnice
-- **Godot 4.x (Relax are 4.7), GDScript.** Renderer **Compatibility** de la început (exportul Web). Strălucirea și
+- **Godot 4.x (Relax are 4.7.2 pe Windows), GDScript.** Renderer **Compatibility** de la început (exportul Web). Strălucirea și
   fundalul animat: shadere proprii pe `CanvasItem` sau sprite-uri aditive, **nu** glow din `WorldEnvironment`.
 - **Tipuri statice peste tot.** Fiecare funcție are tip de return explicit; funcțiile care pot întoarce `null` sau
   tipuri mixte folosesc `-> Variant`. Variabilele de buclă au tip (`for id: String in ...`).
@@ -73,7 +75,11 @@ Artă: `docs/ARTA.md`.
   groase și strălucire în culoarea Neamului. `art/runes/<id>.png` le înlocuiește dacă există.
 - **Placeholder-uri:** dacă lipsește `art/<categorie>/<id>.png`, ramă închisă + nume + iconiță simplă; pietrele sunt o
   formă de piatră procedurală cu runa strălucind. Dimensiuni: `docs/ARTA.md`.
-- Fontul: deocamdată cel implicit; un font desenat/medieval (OFL, **cu ă â î ș ț**) se alege în Etapa 6.
+- **Paleta** (Noapte `#0A0C18`, Os `#E9E3D2`, Jar `#FF6A3D`, Neamurile etc.) e în `docs/ARTA.md`; folosește-o peste tot.
+- **Fonturi propuse:** Grenze Gotisch (titluri, Vrăji) + Grenze (text, cifre), Google Fonts, OFL. **Nu le descărca
+  fără OK-ul lui Relax**; până atunci, fontul implicit.
+- **Vrăjile** (`data/spells.json`): 2–3 rune, ordinea nu contează, verificate pe toate pietrele rostite; Laguz nu e
+  joker pentru Vrăji; moment `before_score` / `after_score` / `next_cast`; ascunse până la prima rostire.
 
 ## Autoload-uri (ordinea contează)
 1. `GameData` — `scripts/autoload/game_data.gd` — date din `data/`, `errors`.
@@ -96,7 +102,7 @@ adăugat în lista `TEST_FILES` din `tests/run_tests.gd`.
 ```
 docs/        UNIVERS.md, DESIGN.md, ARTA.md
 data/        kins, runes, words, characters, rules, dialogs, ui_text (.json) — există deja
-             talismans, lessons, engravings, examiners, trials, parents, economy — vin în etapele lor
+             spells, talismans, lessons, engravings, examiners, trials, parents, economy — vin în etapele lor
 art/         stones/ runes/ talismans/ lessons/ engravings/ examiners/ portraits/ backgrounds/ ui/
 scenes/      main_menu, rune_check, settings, theme/main_theme.tres — există deja
              morning (hub), parent_select, trial_select, round, scoring_popup, shop, pack_open,
@@ -110,9 +116,9 @@ tests/       run_tests.gd, test_case.gd, test_words.gd, test_scoring.gd, simulat
 ## Etapele
 | # | Etapa | Stare |
 |---|---|---|
-| 1 | Scheletul: Compatibility + 1920×1080, foldere, autoload-uri, JSON + validare, meniu, setări cu limba, docs, **scena de verificare a celor 24 de rune desenate din cod** | făcută pe v3 (așteaptă testul lui Relax) |
-| 2 | Miezul — o rundă: săculețul de 48, mâna de 8, Rostire/Schimbare, sortare/rearanjare, recunoașterea Cuvintelor (cu Laguz și ordinea), Putere × Rezonanță animat, cele 24 de Glasuri, rundă de test; teste; simulatorul + tabelul de probabilități | — |
+| 1 | Scheletul: Compatibility + 1920×1080, foldere, autoload-uri, JSON + validare, meniu, setări cu limba, docs, **scena de verificare a celor 24 de rune desenate din cod** | făcută pe v3; ajustări mici pentru v4 după OK |
+| 2 | Miezul — o rundă: săculețul de 48, mâna de 8, Rostire/Schimbare, sortare/rearanjare, recunoașterea Cuvintelor (cu Laguz și ordinea), Putere × Rezonanță animat, cele 24 de Glasuri, rundă de test; teste; simulatorul + tabelul de probabilități; **primele 8 Vrăji** (detectare, efecte, descoperire, animație simplă); ecranul de rundă așezat ca în 3.16 | — |
 | 3 | Examenul complet: 8 Probe × 3 runde, Examinatorii, Monede, Piața de noapte, primele 15 Talismane, Lecții, Gravuri, materiale, legături runice, Săculețe, Picat / Examen trecut | — |
-| 4 | Bucla Aevei: Dimineața, alegerea părintelui, Amintiri, deblocări, salvare (inclusiv examenul în curs), Cartea de rune, Colecția, numele jucătorului | — |
-| 5 | Povestea și conținutul: intro, replici, final, restul Talismanelor (~30), Cuvintele vechi (ALU, LAÞU, AUJA), balans cu simulatorul | — |
-| 6 | Șlefuire și export: efectele din 3.13, fontul, arta lui Relax, ultimul balans, export Linux/Windows/Web | — |
+| 4 | Bucla Aevei: Dimineața, alegerea părintelui, Amintiri, deblocări, salvare (inclusiv examenul în curs), Cartea de rune (cu Vrăjile descoperite), Colecția, numele jucătorului, Paginile rupte în Piață | — |
+| 5 | Povestea și conținutul: intro, replici, final, restul Talismanelor (~30), restul Vrăjilor (30–40, cu blestemele), Cuvintele vechi (ALU, LAÞU, AUJA), balans cu simulatorul | — |
+| 6 | Șlefuire și export: efectele din 3.13 și 3.16 (linii care fierb, granulație, animația completă a Vrăjilor), fonturile Grenze (cu OK), arta lui Relax, ultimul balans, export Linux/Windows/Web | — |

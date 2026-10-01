@@ -1,14 +1,17 @@
-# Designul Jocului 1 — „Examenul de Moștenire” (EN: „The Inheritance Exam”) — v3
+# Designul Jocului 1 — „Examenul de Moștenire” (EN: „The Inheritance Exam”) — v4
 
 > Document viu: se actualizează când se schimbă designul. Valorile exacte stau în `data/*.json`.
-> v1 (deckbuilder cu lupte) și v2 (cercul runic) sunt **înlocuite** de v3.
+> v1 (deckbuilder cu lupte) și v2 (cercul runic) sunt **înlocuite**. v4 = v3 + **Vrăjile** (3.15) + stilul vizual (3.16).
 
 ## 1. Viziunea
 - Gen: **roguelike de construit scoruri, cu rune în loc de cărți**, în spiritul Balatro.
 - În loc de un pachet de cărți ai un **Săculeț cu pietre de rune**. Tragi pietre în mână și **rostești Cuvinte**
   (combinații de rune). Fiecare Cuvânt dă un scor. Ca să treci o rundă, atingi scorul cerut de examinator.
 - Cele **24 de rune sunt runele istorice reale (Futharkul vechi)**. **Fiecare rună are un efect („Glasul” ei)
-  inspirat din sensul ei real** — asta ne face diferiți de Balatro.
+  inspirat din sensul ei real**.
+- **Vrăjile:** anumite combinații de 2–3 rune au efecte **complet diferite**, nu doar scor mai mare: scad ținta,
+  dau bani, creează Talismane, schimbă săculețul, anulează regula examinatorului. Sunt ascunse până le descoperi și se
+  pot ghici din sensul runelor (3.15). **Glasurile și Vrăjile ne fac diferiți de Balatro.**
 - Premisa: ești un semizeu de 16 ani la **Examenul de Moștenire**. Dacă pici, **Aeva, zeița timpului**, te întoarce în
   dimineața examenului. Păstrezi amintirile, adică deblocările.
 - Ton: **epic + umor**. Motto: **„Puterea o moștenești. Runele le înveți.”**
@@ -34,6 +37,7 @@ Tarot, Planet etc.), interfața, aranjarea ecranului, textele, valorile numerice
 | nivelurile de dificultate | **Probele** examenului | `trial` |
 | rundele | **Întrebarea mică**, **Întrebarea mare**, **Examinatorul** | `small`, `big`, `examiner` |
 | banii | **Monede** | `money` |
+| *(nu există la Balatro)* | **Vrăjile**: combinații secrete de rune cu efecte unice | `spell` |
 
 ## 3.1 Bucla
 ```
@@ -61,12 +65,14 @@ Meniu → Dimineața examenului (hub) → Alegi părintele divin (= săculețul 
   Cuvintele vechi ascunse).
 
 ## 3.3 Scorul: Putere × Rezonanță
+0. Se verifică **Vrăjile** din toate pietrele rostite (3.15); cele cu momentul `before_score` se aplică acum.
 1. Cuvântul rostit dă **Puterea** și **Rezonanța** de bază (în funcție de nivel).
 2. **Pietrele care formează Cuvântul** punctează una câte una, de la stânga la dreapta: Puterea pietrei, apoi
    materialul și Glasul. Pietrele rostite care nu fac parte din Cuvânt nu punctează.
 3. Efectele pietrelor rămase în mână (de ex. Isaz).
 4. **Talismanele**, de la stânga la dreapta.
 5. **Scor = Putere × Rezonanță**, adunat la scorul rundei.
+6. Vrăjile cu momentul `after_score` se aplică acum; cele cu `next_cast` se pregătesc pentru următoarea Rostire.
 
 Animația scorului e **inima jocului**: fiecare piatră se ridică și strălucește, numerele zboară în contoare (Puterea
 în albastru, Rezonanța în roșu), la final se înmulțesc cu un efect mare. Viteză ×1, ×2, ×4.
@@ -245,6 +251,7 @@ interpretări moderne (secolul XX).
 - **Finalul**, după Aeva: o scenă scurtă cu Pecetea și un indiciu despre misterul runelor.
 
 ## 3.13 Senzația
+(Detaliile vizuale complete sunt în 3.16.)
 - Pietrele se înclină ușor sub mouse și „respiră” când sunt selectate. Runele pulsează cu lumină.
 - Scorul crește cu cifre care se rotesc. La multiplicatori mari: tremur de ecran, flash, cifre mari.
 - Fundal animat cu shader (ceață de noapte, paleta din `docs/ARTA.md`).
@@ -256,6 +263,86 @@ interpretări moderne (secolul XX).
 - Un jucător nou trece Proba 1 aproape mereu, iar Proba 3 în ~50% din încercări.
 - Primul examen complet reușit: după câteva ore de joc.
 - O partidă completă: 30–45 de minute.
+
+## 3.15 Vrăjile (combinații cu efecte complet diferite)
+- O **Vrajă** = 2–3 rune anume, rostite în aceeași Rostire. Ordinea nu contează. Excepție fac Cuvintele vechi ascunse
+  (ALU, LAÞU, AUJA), unde ordinea contează.
+- Vrăjile se verifică pe **toate pietrele rostite**, nu doar pe cele care punctează în Cuvânt. Poți rosti un Cuvânt și
+  o Vrajă deodată. Exemplu: Hagalaz + Fehu + Tiwaz + Isaz + Naudiz = o **Treime** (trei pietre cu Poziția 1) **și**
+  Vraja **Iarna** (Isaz + Hagalaz + Naudiz).
+- **Decizia jucătorului:** runele unei Vrăji formează de obicei un Cuvânt slab. Alegi între scor mare acum și efectul Vrăjii.
+- O legătură runică contează ca ambele rune și pentru Vrăji. **Laguz nu e joker pentru Vrăji**, ci doar pentru Neam.
+- Dacă se potrivesc mai multe Vrăji, se activează toate, fiecare o singură dată pe Rostire.
+- Fiecare Vrajă are un **moment**: `before_score` (schimbă calculul), `after_score` sau `next_cast` (pentru următoarea Rostire).
+- Efectele sunt **de alt fel decât scorul**. Categorii: Țintă, Economie, Săculeț, Acțiuni, Talismane, Examinator, Risc,
+  Permanent, Scor. Pe lângă efect, Rostirea punctează normal.
+- **Regula de aur:** fiecare Vrajă trebuie să se poată **ghici din sensurile runelor** (gheață + grindină + nevoie = iarnă).
+- **Descoperirea:**
+  - la început toate Vrăjile sunt ascunse;
+  - când pietrele selectate conțin o Vrajă nedescoperită, cercul strălucește și scrie „ceva se trezește în cerc…”, fără să spună ce;
+  - prima rostire a unei Vrăji pornește o animație mare (3.16), făcută pentru clipuri pe TikTok;
+  - Vraja rămâne descoperită pentru totdeauna (în Cartea de rune) și dă +Amintiri.
+- **Indicii:** Tanti Vera vinde **Pagini rupte** (consumabil). O Pagină arată runele unei Vrăji nedescoperite, cu un vers ca indiciu.
+- **Blesteme:** 2–3 combinații care se întorc împotriva ta, dar cu o recompensă. Și ele se descoperă.
+- Prima versiune: **30–40 de Vrăji** în `data/spells.json` (8 în Etapa 2, restul în Etapa 5). Exemple:
+
+| Vrajă | Rune | Logica | Efect | Moment |
+|---|---|---|---|---|
+| Iarna | Isaz + Hagalaz + Naudiz | gheață + grindină + nevoie | ținta rundei scade cu 15% | după |
+| Târgul | Fehu + Gebo | avere + dar | +6 Monede | după |
+| Răsăritul | Dagaz + Sowilo | zi + soare | Rostirea asta nu se consumă | după |
+| Steaua | Tiwaz + Sowilo | stea călăuzitoare + soare | ×2 Rezonanță la următoarea Rostire | următoarea |
+| Lecția | Ansuz + Mannaz | zeu + om (zeii învață de la oameni) | Cuvântul rostit crește cu 1 nivel | după |
+| Moștenirea | Othala + Mannaz + Gebo | moștenire + om + dar | primești un Talisman aleatoriu (dacă ai loc) | după |
+| Hramul | Wunjo + Gebo + Mannaz | bucurie + dar + oameni = sărbătoare | la următoarea vizită în Piață, totul costă pe jumătate | după |
+| Drumul | Raidho + Ehwaz | călătorie + cal | tragi 3 pietre în plus (doar în runda asta) | după |
+| Făclia | Kenaz + Perthro | făclie + necunoscut | vezi și reordonezi următoarele 5 pietre din săculeț | după |
+| Uriașul | Thurisaz + Uruz | uriaș + bour | Putere ×2 pentru Rostirea asta | înainte |
+| Pădurea | Berkanan + Eihwaz + Ingwaz | mesteacăn + tisă + sămânță | pietrele din Cuvânt primesc +5 Putere permanent | după |
+| Sacrificiul | Tiwaz + Naudiz | dreptate + nevoie | distrugi o piatră aleasă din mână; ×3 Rezonanță acum | înainte |
+| Zarurile | Perthro + Fehu | joc + avere | 50%: îți dublezi Monedele (max +20); 50%: pierzi 5 | după |
+| Scutul | Algiz + Eihwaz | elan + tisă (rezistență) | regula Examinatorului e anulată tot restul rundei | după |
+| Potopul | Laguz + Uruz | apă + forță | schimbi toată mâna fără să consumi o Schimbare | după |
+| Focul | Kenaz + Thurisaz | făclie + spin | arzi până la 2 pietre din săculeț (le scoți definitiv); +2 Monede pentru fiecare | după |
+| Grindina pe recoltă *(blestem)* | Hagalaz + Jera | grindină + recoltă | −5 Monede, dar ×3 Rezonanță acum | înainte |
+
+## 3.16 Stilul vizual și senzația
+Luăm de la jocurile de gen doar **principiile**: totul reacționează, numerele cresc cu impact, fundalul trăiește, fiecare
+acțiune are sunet. **Aspectul e al nostru.** Nu copiem fundalul psihedelic rotitor, panoul lateral, fontul sau cutiile
+albastru/roșu ale Balatro. Paleta și fonturile: `docs/ARTA.md`.
+
+**Ecranul rundei (1920×1080):**
+- **stânga sus:** Proba („Proba 3 din 8”), Monedele (monedă cu runa Fehu), Săculețul („40 / 48”);
+- **stânga:** Scorul rundei (cifră mare + „din 1 200” + bară de progres în culoarea jarului) și, dedesubt,
+  **Putere × Rezonanță**: Puterea pe o tăbliță de os (fundal deschis, cifre închise), Rezonanța într-un bloc de jar
+  (roșu-închis, cifre portocalii care strălucesc);
+- **stânga, mai jos:** Rostirile ca **4 lumânări** (cele folosite sunt stinse, cu un fir de fum) și Schimbările ca
+  **3 linii de cretă** (cele folosite sunt tăiate);
+- **sus, centru:** cartea Examinatorului: portret rotund, nume, „zeul războiului · antrenor de box”, regula într-o casetă
+  roșie, Ținta;
+- **centru:** **Cercul runic**, un disc de piatră cu cele 24 de rune gravate pe margine, care se rotește foarte încet.
+  În mijloc apar, în timp ce alegi pietre, numele Cuvântului, câte pietre punctează, Putere × Rezonanță și Vrăjile
+  găsite. Când există o Vrajă, cercul strălucește în culoarea ei;
+- **dreapta sus:** Talismanele atârnă pe o sfoară, ca niște cărți prinse cu cleme, și se leagănă ușor;
+- **dreapta:** cele 2 consumabile (Lecții și Gravuri), ușor rotite;
+- **jos:** mâna de 8 pietre, într-un arc ușor. Fiecare piatră are poziția în colțul din stânga sus, runa strălucind în
+  centru și semnul Neamului în dreapta jos;
+- **dreapta jos:** butoanele **Rostește** (mare, jar) și **Schimbă**; **stânga jos:** sortare după Poziție sau Neam;
+- **fundalul:** Orașul Pragului noaptea: lună, blocuri cu câteva ferestre aprinse, ruine de templu, firele
+  troleibuzului, ceață violetă care se mișcă încet, o masă întunecată în primul plan.
+
+**Efecte (shadere sau tween-uri, pe renderer-ul Compatibility):**
+- **Linii care „fierb”:** contururile și ramele tremură ușor, schimbând de 8–12 ori pe secundă între 3 variante de
+  zgomot (shader de deplasare). Textul nu fierbe.
+- **Granulație de hârtie** peste tot ecranul, foarte discretă.
+- **Pietrele:** se leagănă ușor când stau, se înclină și se ridică sub mouse, sar în sus când sunt selectate, cu un
+  halou în culoarea Neamului. Runa are **trei straturi** (strălucire neclară, culoarea Neamului, miez alb) și pulsează.
+- **Talismanele** se leagănă pe sfoară; **flacăra lumânărilor** pâlpâie.
+- **Descoperirea unei Vrăji:** ecranul se întunecă; un cerc punctat se rotește; runele Vrăjii apar pe cerc cu un „pop”
+  și se unesc cu linii (sigiliul); numele Vrăjii apare uriaș, cu strălucire în culoarea ei; dedesubt: formula
+  („Isaz · gheață + Hagalaz · grindină + Naudiz · nevoie”), efectul și scorul Rostirii.
+- **Sunet** (placeholder-uri acum): fiecare piatră punctată are un sunet care urcă în ton. Muzica: atmosferă de noapte
+  cu instrumente populare (nai, țambal, cobză), ca identitate proprie.
 
 ## Sistemul de efecte (2.2)
 Un efect = **declanșator** + **condiții** + **acțiuni**.
@@ -277,3 +364,5 @@ Un efect = **declanșator** + **condiții** + **acțiuni**.
   - Fereastra pornește la 1600×900 (baza rămâne 1920×1080), ca să încapă pe laptopuri.
   - Formele runelor (`segments` în `runes.json`) sunt scrise de Claude după formele standard ale Futharkului vechi;
     Relax le verifică în ecranul „Cele 24 de rune”.
+- **v4:** au intrat Vrăjile (3.15), stilul vizual al ecranului de rundă (3.16), paleta și fonturile propuse (Grenze
+  Gotisch + Grenze, OFL, se descarcă doar cu OK-ul lui Relax). Culorile Neamurilor se iau din paleta din `docs/ARTA.md`.

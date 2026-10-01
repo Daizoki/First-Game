@@ -16,7 +16,29 @@
   - două Sowilo puse una lângă alta;
   - „soarele negru”.
   Variantele astea sunt folosite și de grupări extremiste, iar platformele le pot semnala.
-- Interfața: rame de piatră și fier, colțuri cu mici gravuri runice (nu noduri celtice copiate din referință).
+- Interfața: panouri închise la culoare, cu contur de tuș și o linie interioară violet; rame de piatră și fier;
+  colțuri cu mici gravuri runice (nu noduri celtice copiate din referință).
+- Așezarea ecranului de rundă și efectele (linii care „fierb”, granulație de hârtie, pietre care se leagănă,
+  animația Vrăjilor) sunt descrise în `docs/DESIGN.md` → 3.16.
+
+## Paleta
+| Nume | Culoare | Folosire |
+|---|---|---|
+| Noapte | `#0A0C18` | fundal |
+| Violet | `#241B3A` | umbre, ceață |
+| Cerneală | `#05060A` | contur (singurul negru pur) |
+| Os | `#E9E3D2` | text, Putere |
+| Jar | `#FF6A3D` | Rezonanță, butonul Rostește, bara de scor |
+| Lumânare | `#FFB347` | lumini calde, ferestre, flăcări |
+| Fehu | `#EBAA3C` | Neamul lui Fehu |
+| Hagalaz | `#63C6F2` | Neamul lui Hagalaz |
+| Tiwaz | `#E8573F` | Neamul lui Tiwaz |
+
+Text secundar: `#A39DB4`.
+
+## Fonturi
+**Grenze Gotisch** (titluri, Vrăji, examinatori) + **Grenze** (text, interfață, cifre), ambele de pe Google Fonts,
+licență OFL, cu ă â î ș ț. **Se descarcă doar după OK-ul lui Relax**; până atunci, fontul implicit.
 - Balatro e doar inspirație pentru **mecanică**: nu copiem interfața, aranjarea ecranului sau efectele lui vizuale
   caracteristice.
 
