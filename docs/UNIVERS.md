@@ -1,7 +1,8 @@
 # Universul „Coborârea”
 
 > Toate numele sunt **provizorii**; Relax le poate schimba oricând. **Toate personajele sunt originale.**
-> Nu folosim zei din mitologii reale și nici personaje din alte jocuri, cărți sau filme.
+> Nu folosim zei din mitologii reale, nici personaje din alte jocuri, cărți sau filme, nici alfabete runice
+> reale (futhark etc.).
 > Universul e în întregime al lui Relax.
 
 ## Lumea
@@ -17,6 +18,18 @@
 - **Misterul eroului:** Aeva spune că toți candidații repetă examenul de câte ori e nevoie. Dar nimeni altcineva
   nu-și amintește repetările. Doar eroul.
 
+## Runele — magia oamenilor
+- Oamenii nu au puteri divine. După Coborâre, ca să nu rămână neputincioși lângă zei, au dezvoltat **magia runelor**:
+  simboluri scrise, sculptate sau desenate care, combinate corect, se rostesc ca **Cuvinte** cu efecte reale.
+- În 300 de ani, oamenii au dus runele atât de departe încât **zeii vin să învețe de la ei**. Zeii au forță brută;
+  oamenii au precizie și meșteșug. Școlile de rune sunt instituții omenești, iar cei mai buni maeștri sunt oameni.
+- Zeii ca elevi: Kaldor a picat cursul de două ori; Varr scrie runele cu greșeli; Morrah e cea mai bună elevă;
+  Ignar își gravează rune pe tăvile de la shaormerie.
+- Semizeii stau la mijloc: puterea o moștenesc de la părintele divin, runele le învață de la oameni. Examenul de
+  Moștenire le testează pe amândouă. **„Puterea o moștenești. Runele le înveți.”**
+- **Fir pentru misterul universului (opțional, nu pentru Jocul 1):** cele mai vechi rune găsite sunt mai vechi decât
+  Coborârea. Cine le-a scris primele? Au coborât zeii tocmai din cauza lor?
+
 ## Panteonul
 | Zeu | Domeniu | Meseria printre oameni | Caracter |
 |---|---|---|---|
@@ -28,6 +41,10 @@
 | **Lunet** | visele, iluziile | DJ la o emisiune de radio de noapte | nu știi niciodată dacă glumește |
 | **Morrah** | moartea, amintirile | bibliotecară | cea mai blândă dintre zei, deși toți se tem de ea |
 | **Gronn** | pământul, munții | șef de șantier | vorbește puțin, construiește mult |
+
+## Oamenii importanți
+- **Maestra Ilinca** — om, aproximativ 70 de ani, cea mai mare maestră de rune din Orașul Pragului. Jumătate din
+  panteon i-a fost elev. Severă, ironică, nu se teme de niciun zeu. Examinatoarea Probei a doua.
 
 ## Semizeii din generația eroului (16 ani)
 - **Eroul** — numele îl alege jucătorul; părintele e ales la începutul fiecărei partide.

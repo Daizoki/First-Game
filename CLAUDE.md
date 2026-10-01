@@ -1,5 +1,8 @@
 # CLAUDE.md — reguli pentru „Examenul” (Universul „Coborârea”, Jocul 1)
 
+> Versiunea de design: **v2 (cu rune)**. Cei doi stâlpi ai jocului: **Puterile** (moștenite de la părintele divin)
+> și **Runele** (magia oamenilor, învățată). Motto: „Puterea o moștenești. Runele le înveți.”
+
 Citește asta la începutul fiecărei sesiuni. Detaliile de design sunt în `docs/DESIGN.md`,
 lumea și personajele în `docs/UNIVERS.md`.
 
@@ -13,7 +16,8 @@ lumea și personajele în `docs/UNIVERS.md`.
 - Dacă ceva e neclar sau se contrazice: **întreabă înainte să construiești**.
 - Lucruri complete care rulează, nu bucăți de cod de lipit.
 - **Nu descărca și nu instala nimic** (fonturi, pluginuri, pachete) fără să spui întâi ce, de unde și de ce.
-- Toate personajele sunt originale. Fără zei din mitologii reale sau personaje din alte opere.
+- Toate personajele sunt originale. Fără zei din mitologii reale, personaje din alte opere
+  sau **alfabete runice reale** (futhark etc.): runele și simbolurile lor sunt inventate.
 
 ## Reguli tehnice
 - **Godot 4.x, GDScript.** Randare `gl_compatibility` (merge și pe Web).
@@ -35,12 +39,14 @@ lumea și personajele în `docs/UNIVERS.md`.
   (Excepție: mesajele de diagnostic pentru dezvoltator — erori de date, `push_error` — sunt în engleză.)
 - **Pixel art:** bază 640×360, stretch `viewport`, aspect `keep`, scale `integer`, filtru `Nearest`, fereastră 1280×720.
 - **Placeholder-uri automate** (se implementează în Etapa 2, odată cu primele personaje pe ecran): codul caută `art/<categorie>/<id>.png`; dacă lipsește, desenează un dreptunghi
-  colorat (culoarea din `gods.json` → `color`) cu inițiala și numele. Mărimi: vezi `art/README.md`.
+  colorat (culoarea din `gods.json` → `color`; runele au culoarea lor din `runes.json`) cu inițiala și numele.
+  Mărimi: vezi `art/README.md` (inclusiv `art/runes/`, 32×32).
 - Fontul: deocamdată cel implicit; fontul pixel (OFL, cu ă â î ș ț) se alege în Etapa 6.
 
 ## Autoload-uri (ordinea contează)
 1. `GameData` — `scripts/autoload/game_data.gd` — date din `data/`, `errors`.
-2. `SaveManager` — `scripts/autoload/save_manager.gd` — `user://save.json` (nume, Amintiri, deblocări, încercări, setări).
+2. `SaveManager` — `scripts/autoload/save_manager.gd` — `user://save.json` (nume, Amintiri, deblocări,
+   **Cuvinte descoperite (Cartea de rune)**, încercări, cea mai bună probă, setări).
 3. `Loc` — `scripts/autoload/loc.gd` — limba curentă, semnalul `language_changed`.
 4. `RunState` — `scripts/autoload/run_state.gd` — partida în curs (nu se salvează în v1).
 
@@ -55,10 +61,12 @@ adăugat în lista `TEST_FILES` din `tests/run_tests.gd`.
 
 ## Structura
 ```
-data/        gods, cards, enemies, blessings, trials, events, dialogs, ui_text (.json)
-art/         characters/ enemies/ gods/ portraits/ cards/ blessings/ backgrounds/ ui/
-scenes/      câte o scenă .tscn pe ecran
-scripts/     autoload/, core/ (validare date), combat/, ui/
+data/        gods, cards, enemies, blessings, runes, words, trials, events, dialogs, ui_text (.json)
+art/         characters/ enemies/ gods/ portraits/ cards/ blessings/ runes/ backgrounds/ ui/
+scenes/      câte o scenă .tscn pe ecran (main_menu, hub, parent_select, trial_map, combat, reward, rest,
+             event, dialog, result, deck_view, rune_book, evening_class, settings)
+scripts/     autoload/, core/ (validare date), combat/ (combat_state, card_effects, enemy_ai,
+             statuses, rune_circle), ui/
 tests/       run_tests.gd, test_case.gd, test_*.gd
 docs/        UNIVERS.md, DESIGN.md
 ```
@@ -66,9 +74,9 @@ docs/        UNIVERS.md, DESIGN.md
 ## Etapele
 | # | Etapa | Stare |
 |---|---|---|
-| 1 | Scheletul: proiect, foldere, autoload-uri, JSON + validare, meniu, setări cu limba, docs | făcută (așteaptă OK) |
-| 2 | Lupta: CombatState, efecte, stări, AI cu intenții, ecran de luptă; Varr vs 2 Manechine; teste | — |
+| 1 | Scheletul: proiect, foldere, autoload-uri, JSON + validare, meniu, setări cu limba, docs | făcută pe v1; de adaptat la v2 (runes/words) |
+| 2 | Lupta: CombatState, efecte, stări, AI cu intenții, **Cercul runic + 6 rune + Cuvinte (descoperire la ½ putere)**, ecran de luptă; Varr vs 2 Manechine; teste (inclusiv recunoașterea Cuvintelor) | — |
 | 3 | Examenul: alegere părinte, harta probei, recompense, Odihnă, 3 probe + examinatori, Picat/Victorie, pachet | — |
-| 4 | Bucla și Amintirile: hub, Aeva, deblocări, salvare, binecuvântări, numele jucătorului | — |
-| 5 | Povestea: rivali, evenimente, dialoguri cu portrete, intro, final | — |
+| 4 | Bucla și Amintirile: hub, Aeva, deblocări, salvare, binecuvântări, numele jucătorului, **Cartea de rune permanentă, Cursul de seară al Maestrei Ilinca** | — |
+| 5 | Povestea: rivali, evenimente, dialoguri cu portrete, intro (4–5 cadre: Coborârea, runele oamenilor, orașul, convocarea), final | — |
 | 6 | Șlefuire și export: efecte, font pixel, balans + simulare, export Linux/Windows/Web | — |

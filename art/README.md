@@ -12,6 +12,7 @@ Nu trebuie scris cod nou: fișierul apare în joc la următoarea pornire.
 | Portrete pentru dialog | 96×96 | `portraits/` | `portraits/aeva.png` |
 | Iconițe cărți | 32×32 | `cards/` | `cards/strike.png` |
 | Iconițe binecuvântări | 32×32 | `blessings/` | `blessings/varr_umbrella.png` |
+| Simboluri de rune (originale, nu din alfabete reale) | 32×32 | `runes/` | `runes/tor.png` |
 | Fundaluri | 640×360 | `backgrounds/` | `backgrounds/main_menu.png` |
 | Elemente de interfață | liber | `ui/` | |
 
