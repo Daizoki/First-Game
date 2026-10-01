@@ -31,6 +31,38 @@ func reset_round() -> void:
 	_shuffle(draw_pile)
 
 
+## Keeps only one stone per listed rune id (a tutorial bag). Returns the ids it could not find.
+func keep_only(rune_ids: Array[String]) -> Array[String]:
+	var kept: Array[Stone] = []
+	var missing: Array[String] = []
+	var pool: Array[Stone] = stones.duplicate()
+	for id: String in rune_ids:
+		var found: Stone = _take_from(pool, id)
+		if found == null:
+			missing.append(id)
+		else:
+			kept.append(found)
+	stones = kept
+	draw_pile.assign(stones)
+	return missing
+
+
+## Moves stones with these runes to the top of the draw pile: rune_ids[0] is drawn first.
+## Returns the ids it could not find in the pile.
+func stack_on_top(rune_ids: Array[String]) -> Array[String]:
+	var stacked: Array[Stone] = []
+	var missing: Array[String] = []
+	for id: String in rune_ids:
+		var found: Stone = _take_from(draw_pile, id)
+		if found == null:
+			missing.append(id)
+		else:
+			stacked.append(found)
+	stacked.reverse()
+	draw_pile.append_array(stacked)
+	return missing
+
+
 ## Takes up to `count` stones from the top of the pile (fewer if the bag runs out).
 func draw(count: int) -> Array[Stone]:
 	var drawn: Array[Stone] = []
@@ -69,6 +101,16 @@ func size() -> int:
 
 func remaining() -> int:
 	return draw_pile.size()
+
+
+## Removes and returns the first stone with this rune from the list (null if none).
+func _take_from(list: Array[Stone], rune_id: String) -> Stone:
+	for i: int in list.size():
+		if list[i].rune_id == rune_id:
+			var stone: Stone = list[i]
+			list.remove_at(i)
+			return stone
+	return null
 
 
 func _take_uid() -> int:

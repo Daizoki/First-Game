@@ -4,6 +4,8 @@ extends Control
 
 signal selection_changed
 signal stone_moved(from: int, to: int)
+## The stone under the mouse changed (null when the mouse left every stone).
+signal hover_changed(view: StoneView)
 
 const Stone = preload("res://scripts/core/stone.gd")
 const StoneView = preload("res://scripts/ui/stone_view.gd")
@@ -13,13 +15,17 @@ const ARC_DEPTH: float = 34.0
 const ARC_TILT: float = 0.09
 const DRAG_THRESHOLD: float = 14.0
 
+## Clicks and drags (hovering always works, so the player can always read the stones).
 var enabled: bool = true
 var max_selection: int = 5
+## Optional filter: func(stone) -> bool. Stones it rejects cannot be selected.
+var can_select: Callable = Callable()
 
 var _views: Array[StoneView] = []
 var _pressed: StoneView = null
 var _press_position: Vector2 = Vector2.ZERO
 var _dragging: bool = false
+var _hovered: StoneView = null
 
 
 func _ready() -> void:
@@ -68,6 +74,15 @@ func view_at(index: int) -> StoneView:
 	return _views[index] if index >= 0 and index < _views.size() else null
 
 
+## Every view showing this rune (the tutorial lights them up).
+func views_with_rune(rune_id: String) -> Array[StoneView]:
+	var result: Array[StoneView] = []
+	for view: StoneView in _views:
+		if view.stone.rune_id == rune_id:
+			result.append(view)
+	return result
+
+
 func view_for(stone: Stone) -> StoneView:
 	for view: StoneView in _views:
 		if view.stone == stone:
@@ -100,11 +115,11 @@ func _slot(i: int, count: int) -> Dictionary:
 
 
 func _gui_input(event: InputEvent) -> void:
-	if not enabled:
-		return
 	if event is InputEventMouseMotion:
 		var motion: InputEventMouseMotion = event
 		_update_hover(motion.position)
+		if not enabled:
+			return
 		if _pressed != null:
 			if not _dragging and motion.position.distance_to(_press_position) > DRAG_THRESHOLD:
 				_dragging = true
@@ -112,6 +127,8 @@ func _gui_input(event: InputEvent) -> void:
 			if _dragging:
 				_pressed.position = motion.position - _pressed.size * 0.5
 	elif event is InputEventMouseButton:
+		if not enabled:
+			return
 		var button: InputEventMouseButton = event
 		if button.button_index != MOUSE_BUTTON_LEFT:
 			return
@@ -131,6 +148,8 @@ func _gui_input(event: InputEvent) -> void:
 
 func _toggle(view: StoneView) -> void:
 	if not view.selected and selected_indices().size() >= max_selection:
+		return
+	if not view.selected and can_select.is_valid() and not bool(can_select.call(view.stone)):
 		return
 	view.selected = not view.selected
 	selection_changed.emit()
@@ -154,6 +173,9 @@ func _update_hover(at: Vector2) -> void:
 	var hovered: StoneView = _view_under(at)
 	for view: StoneView in _views:
 		view.hovered = view == hovered
+	if hovered != _hovered:
+		_hovered = hovered
+		hover_changed.emit(hovered)
 
 
 func _view_under(at: Vector2) -> StoneView:
@@ -168,3 +190,6 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_MOUSE_EXIT:
 		for view: StoneView in _views:
 			view.hovered = false
+		if _hovered != null:
+			_hovered = null
+			hover_changed.emit(null)

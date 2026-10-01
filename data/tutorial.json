@@ -1,0 +1,76 @@
+{
+	"speaker": "ilinca",
+	"intro": {
+		"lines": [
+			{"text": {"ro": "Deci tu ești {name}. Mâine dai Examenul de Moștenire și n-ai ținut o rună în mână. Minunat.", "en": "So you are {name}. Tomorrow you sit the Inheritance Exam and you have never held a rune. Wonderful."}},
+			{"text": {"ro": "Ai o seară. Eu am răbdare pentru o seară. Hai.", "en": "You have one evening. I have patience for one evening. Come."}}
+		],
+		"learn": {"ro": "Învață-mă", "en": "Teach me"},
+		"skip": {"ro": "Mă descurc singur", "en": "I'll manage alone"},
+		"confirm": {"ro": "Sigur? Kaldor nu explică nimic.", "en": "Sure? Kaldor explains nothing."},
+		"confirm_yes": {"ro": "Da, sar", "en": "Yes, skip"},
+		"confirm_no": {"ro": "Nu, rămân", "en": "No, I'll stay"}
+	},
+	"lessons": [
+		{
+			"id": "stones_and_casting",
+			"title": {"ro": "Pietrele și Rostirea", "en": "Stones and Casting"},
+			"hand": ["fehu", "hagalaz", "gebo", "isaz", "raidho", "dagaz", "wunjo", "ingwaz"],
+			"bag_only": true,
+			"target": 250,
+			"casts": 3,
+			"swaps": 0,
+			"seed": 1001,
+			"fail_text": {"ro": "Mai încearcă. Nu se notează.", "en": "Try again. It isn't graded."},
+			"steps": [
+				{
+					"text": {"ro": "Asta e mâna ta: opt pietre. Fiecare are o rună.", "en": "This is your hand: eight stones. Each one bears a rune."},
+					"spotlight": ["hand"]
+				},
+				{
+					"text": {"ro": "Ține mouse-ul pe o piatră ca să afli ce e.", "en": "Hold the mouse over a stone to find out what it is."},
+					"spotlight": ["hand"],
+					"wait_for": {"event": "hover"}
+				},
+				{
+					"text": {"ro": "Cifra din colț e Poziția. Culoarea e Neamul. Restul îl citești singur.", "en": "The number in the corner is the Position. The colour is the Kin. The rest you can read yourself."}
+				},
+				{
+					"text": {"ro": "Două pietre cu aceeași Poziție fac o Pereche. Fehu și Hagalaz au amândouă Poziția 1. Alege-le.", "en": "Two stones with the same Position make a Pair. Fehu and Hagalaz both have Position 1. Pick them."},
+					"spotlight": ["stone:fehu", "stone:hagalaz"],
+					"wait_for": {
+						"event": "selection", "word": "pair", "prefer": ["fehu", "hagalaz"],
+						"alt_text": {"ro": "Și asta e o Pereche. Bine.", "en": "That is a Pair too. Fine."}
+					},
+					"allow": ["select"],
+					"wrong_text": {"ro": "Nu astea. Uită-te la cifra din colț.", "en": "Not those. Look at the number in the corner."}
+				},
+				{
+					"text": {"ro": "În cerc vezi ce Cuvânt ai format, înainte să-l rostești.", "en": "The circle shows which Word you have made, before you cast it."},
+					"spotlight": ["circle"]
+				},
+				{
+					"text": {"ro": "Rostește.", "en": "Cast."},
+					"spotlight": ["btn_cast"],
+					"wait_for": {"event": "cast"},
+					"allow": ["cast"],
+					"slow_scoring": true,
+					"phase_captions": {
+						"word": {"ro": "Cuvântul îți dă o Putere și o Rezonanță de bază.", "en": "The Word gives you a base Power and Resonance."},
+						"stone": {"ro": "Fiecare piatră care punctează adaugă Putere.", "en": "Every stone that scores adds Power."},
+						"total": {"ro": "Putere × Rezonanță. Asta e scorul.", "en": "Power × Resonance. That is the score."}
+					}
+				},
+				{
+					"text": {"ro": "Scorurile se adună până atingi Ținta. Fiecare lumânare e o Rostire. Când se sting toate, ai picat.", "en": "Scores add up until you reach the Target. Each candle is a Cast. When they all go out, you have failed."},
+					"spotlight": ["score", "target", "candles"]
+				},
+				{
+					"text": {"ro": "Mai ai o Pereche în mână. Găsește-o singur.", "en": "There is another Pair in your hand. Find it yourself."},
+					"wait_for": {"event": "round_won"},
+					"allow": ["select", "cast"]
+				}
+			]
+		}
+	]
+}

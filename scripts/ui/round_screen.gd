@@ -1,7 +1,9 @@
 extends Control
 ## The round screen (DESIGN 3.16): hand of stones, Rune Circle, score, Power × Resonance,
 ## candles for Casts, chalk lines for Swaps, the examiner card. Stage 2 plays a practice
-## round with a fixed target; the full exam (Stage 3) reuses this screen.
+## round with a fixed target; the tutorial and the full exam (Stage 3) reuse this screen.
+## It reports what happens on the EventBus and respects its action gate; it knows nothing
+## about who listens.
 
 const RoundState = preload("res://scripts/core/round_state.gd")
 const Stone = preload("res://scripts/core/stone.gd")
@@ -15,6 +17,7 @@ const Portrait = preload("res://scripts/ui/portrait.gd")
 const TalismanString = preload("res://scripts/ui/talisman_string.gd")
 const SpellReveal = preload("res://scripts/ui/spell_reveal.gd")
 const FloatLayer = preload("res://scripts/ui/float_layer.gd")
+const StoneCard = preload("res://scripts/ui/stone_card.gd")
 
 const MAIN_MENU_SCENE: String = "res://scenes/main_menu.tscn"
 const SPEEDS: Array[int] = [1, 2, 4]
@@ -69,6 +72,23 @@ const SHAKE_SHARE: float = 0.35
 @onready var _result_money: Label = %ResultMoney
 @onready var _again_button: Button = %AgainButton
 @onready var _result_menu_button: Button = %ResultMenuButton
+@onready var _classroom: Control = %Classroom
+@onready var _night: Control = %Backdrop
+@onready var _pause_panel: Control = %PausePanel
+@onready var _pause_title: Label = %PauseTitle
+@onready var _pause_seed: Label = %PauseSeed
+@onready var _pause_buttons: VBoxContainer = %PauseButtons
+@onready var _resume_button: Button = %ResumeButton
+@onready var _main_menu_button: Button = %MainMenuButton
+
+## Set before the screen enters the tree (the tutorial does it). Every key is optional:
+##   title, rule: {"ro", "en"} texts for the card    target: int    seed: int
+##   casts, swaps, hand, bag_top, bag_only: see RoundState.setup
+##   examiner: character id    backdrop: "night" | "classroom"
+##   hide_swap: bool    show_result: bool (default true)
+var config: Dictionary = {}
+## Half-speed score animation (the tutorial explains it phase by phase).
+var slow_scoring: bool = false
 
 var _round: RoundState
 var _seed: int = 0
@@ -76,16 +96,26 @@ var _busy: bool = false
 var _speed: int = 1
 var _shown_score: float = 0.0
 var _player: ScoringPlayer
+var _casts_total: int = 0
+var _swaps_total: int = 0
+## Extra pause-menu buttons: [{"key": ui_text key, "button": Button}].
+var _pause_actions: Array[Dictionary] = []
+var _card: StoneCard
 
 
 func _ready() -> void:
-	_seed = randi()
+	_seed = int(config.get("seed", 0))
+	if _seed == 0:
+		_seed = randi()
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	rng.seed = _seed
 	_round = RoundState.new()
+	var target: float = float(config.get("target", GameData.rule("test_round_target", 1500)))
 	_round.setup({"runes": GameData.runes, "words": GameData.words, "spells": GameData.spells,
-		"rules": GameData.rules}, rng, float(GameData.rule("test_round_target", 1500)))
+		"rules": GameData.rules}, rng, target, config)
 	_round.start()
+	_casts_total = _round.casts_left
+	_swaps_total = _round.swaps_left
 	_speed = int(SaveManager.get_setting("scoring_speed", GameData.rule("scoring_speed", 1)))
 
 	_player = ScoringPlayer.new()
@@ -98,20 +128,37 @@ func _ready() -> void:
 	_player.total_label = _preview_value
 
 	_hand.max_selection = _round.max_selection()
+	_hand.can_select = func(stone: Stone) -> bool:
+		return EventBus.is_allowed("select") and EventBus.can_select(stone.rune_id)
 	_hand.selection_changed.connect(_on_selection_changed)
 	_hand.stone_moved.connect(_on_stone_moved)
+	_card = StoneCard.new()
+	add_child(_card)
+	_hand.hover_changed.connect(func(view: StoneView) -> void:
+		_card.show_stone(view.stone if view != null else null, view)
+		EventBus.stone_hovered.emit(view.stone.rune_id if view != null else ""))
 	_cast_button.pressed.connect(_on_cast_pressed)
 	_swap_button.pressed.connect(_on_swap_pressed)
 	_sort_position.pressed.connect(_on_sort.bind(true))
 	_sort_kin.pressed.connect(_on_sort.bind(false))
 	_speed_button.pressed.connect(_on_speed_pressed)
-	_menu_button.pressed.connect(_go_to_menu)
+	_menu_button.pressed.connect(open_pause)
+	_resume_button.pressed.connect(close_pause)
+	_main_menu_button.pressed.connect(_go_to_menu)
 	_result_menu_button.pressed.connect(_go_to_menu)
 	_again_button.pressed.connect(func() -> void: get_tree().reload_current_scene())
 	Loc.language_changed.connect(func(_language: String) -> void: _refresh_texts())
+	EventBus.gate_changed.connect(_refresh_state)
 
-	_portrait.character_id = str(GameData.rule("test_round_examiner", "ilinca"))
+	_portrait.character_id = str(config.get("examiner", GameData.rule("test_round_examiner", "ilinca")))
+	var classroom: bool = str(config.get("backdrop", "night")) == "classroom"
+	_classroom.visible = classroom
+	_night.visible = not classroom
+	var hide_swap: bool = bool(config.get("hide_swap", false))
+	for node: CanvasItem in [_swap_button, _swaps_label, _chalk]:
+		node.visible = not hide_swap
 	_result_panel.visible = false
+	_pause_panel.visible = false
 	_toast.modulate.a = 0.0
 	_hand.call_deferred("set_stones", _round.hand)
 	_refresh_texts()
@@ -119,7 +166,7 @@ func _ready() -> void:
 
 func _refresh_texts() -> void:
 	var examiner: Dictionary = GameData.characters.get(_portrait.character_id, {})
-	_trial_label.text = Loc.t("round_practice")
+	_trial_label.text = Loc.text(config["title"]) if config.has("title") else Loc.t("round_practice")
 	_coins_label.text = Loc.t("round_coins")
 	_bag_label.text = Loc.t("round_bag")
 	_seed_label.text = Loc.t("round_seed", {"seed": _seed})
@@ -129,7 +176,7 @@ func _refresh_texts() -> void:
 	_swaps_label.text = Loc.t("round_swaps")
 	_examiner_name.text = Loc.text(examiner.get("name", {}))
 	_examiner_role.text = Loc.text(examiner.get("job", {}))
-	_rule_text.text = Loc.t("round_practice_rule")
+	_rule_text.text = Loc.text(config["rule"]) if config.has("rule") else Loc.t("round_practice_rule")
 	_sort_label.text = Loc.t("round_sort")
 	_sort_position.text = Loc.t("round_sort_position")
 	_sort_kin.text = Loc.t("round_sort_kin")
@@ -140,6 +187,12 @@ func _refresh_texts() -> void:
 	_consumables.empty_label = Loc.t("round_consumable_slot")
 	_again_button.text = Loc.t("result_again")
 	_result_menu_button.text = Loc.t("result_menu")
+	_pause_title.text = Loc.t("pause_title")
+	_pause_seed.text = Loc.t("round_seed", {"seed": _seed})
+	_resume_button.text = Loc.t("pause_resume")
+	_main_menu_button.text = Loc.t("pause_main_menu")
+	for action: Dictionary in _pause_actions:
+		(action["button"] as Button).text = Loc.t(action["key"])
 	_refresh_state()
 	_on_selection_changed()
 
@@ -153,13 +206,17 @@ func _refresh_state() -> void:
 	_target_label.text = Loc.t("round_target", {"target": Loc.number(_round.target)})
 	_score_bar.max_value = maxf(1.0, _round.target)
 	_score_bar.value = minf(_shown_score, _round.target)
-	_candles.total = int(GameData.rule("casts_per_round", 4))
+	_candles.total = maxi(_casts_total, _round.casts_left)
 	_candles.left = _round.casts_left
-	_chalk.total = maxi(int(GameData.rule("swaps_per_round", 3)), _round.swaps_left)
+	_chalk.total = maxi(_swaps_total, _round.swaps_left)
 	_chalk.left = _round.swaps_left
 	var selection: Array[int] = _hand.selected_indices()
-	_cast_button.disabled = _busy or not _round.can_cast(selection)
-	_swap_button.disabled = _busy or not _round.can_swap(selection)
+	_cast_button.disabled = _busy or not _round.can_cast(selection) or not EventBus.is_allowed("cast")
+	_swap_button.disabled = _busy or not _round.can_swap(selection) or not EventBus.is_allowed("swap")
+	_sort_position.disabled = _busy or not EventBus.is_allowed("sort")
+	_sort_kin.disabled = _sort_position.disabled
+	_speed_button.disabled = not EventBus.is_allowed("speed")
+	_menu_button.disabled = not EventBus.is_allowed("menu")
 	_hand.enabled = not _busy
 	_refresh_kenaz()
 
@@ -176,10 +233,71 @@ func _refresh_kenaz() -> void:
 		_kenaz_stones.add_child(glyph)
 
 
+## What is selected right now: {"word": id or "", "spells": [...], "runes": [...]}.
+func selection_info() -> Dictionary:
+	var indices: Array[int] = _hand.selected_indices()
+	var preview: Dictionary = _round.preview(indices)
+	var runes: Array[String] = []
+	for i: int in indices:
+		runes.append(_round.hand[i].rune_id)
+	return {"word": preview.get("word", ""), "spells": preview.get("spells", []), "runes": runes}
+
+
+## UI elements with this tutorial id (metadata "tutorial_id"), or the stones of
+## "stone:<rune_id>" in hand.
+func find_ui(id: String) -> Array[Control]:
+	var found: Array[Control] = []
+	if id.begins_with("stone:"):
+		for view: StoneView in _hand.views_with_rune(id.substr(6)):
+			found.append(view)
+		return found
+	for node: Node in find_children("*", "Control", true, false):
+		if node.get_meta("tutorial_id", "") == id and (node as Control).is_visible_in_tree():
+			found.append(node as Control)
+	return found
+
+
+## Adds a button to the pause menu (above "Main menu"). key: ui_text key.
+func add_pause_action(key: String, callback: Callable) -> void:
+	var button: Button = Button.new()
+	button.custom_minimum_size = _resume_button.custom_minimum_size
+	button.text = Loc.t(key)
+	button.pressed.connect(callback)
+	_pause_buttons.add_child(button)
+	_pause_buttons.move_child(button, _main_menu_button.get_index())
+	_pause_actions.append({"key": key, "button": button})
+
+
+func open_pause() -> void:
+	if _pause_panel.visible:
+		return
+	_pause_panel.visible = true
+	_resume_button.grab_focus()
+	EventBus.pause_opened.emit()
+
+
+func close_pause() -> void:
+	if not _pause_panel.visible:
+		return
+	_pause_panel.visible = false
+	EventBus.pause_closed.emit()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel") and EventBus.is_allowed("menu"):
+		get_viewport().set_input_as_handled()
+		if _pause_panel.visible:
+			close_pause()
+		else:
+			open_pause()
+
+
 ## The middle of the Rune Circle: Word, scoring stones, Power × Resonance, Spells.
 func _on_selection_changed() -> void:
 	if _busy:
 		return
+	var info: Dictionary = selection_info()
+	EventBus.selection_changed.emit(info["word"], info["spells"], info["runes"])
 	var preview: Dictionary = _round.preview(_hand.selected_indices())
 	_circle.glow_color = Color(0, 0, 0, 0)
 	_circle.awakening = false
@@ -252,16 +370,20 @@ func _on_sort(by_position: bool) -> void:
 
 
 func _on_swap_pressed() -> void:
-	if _busy or not _round.swap(_hand.selected_indices()):
+	var count: int = _hand.selected_indices().size()
+	if _busy or not EventBus.is_allowed("swap") or not _round.swap(_hand.selected_indices()):
 		return
 	_hand.set_stones(_round.hand)
+	EventBus.swap.emit(count)
 	_on_selection_changed()
 
 
 func _on_cast_pressed() -> void:
 	var selection: Array[int] = _hand.selected_indices()
-	if _busy or not _round.can_cast(selection):
+	if _busy or not EventBus.is_allowed("cast") or not _round.can_cast(selection):
 		return
+	var info: Dictionary = selection_info()
+	EventBus.cast.emit(info["word"], info["runes"])
 	_busy = true
 	_refresh_state()
 	var cast_views: Array[StoneView] = []
@@ -273,7 +395,7 @@ func _on_cast_pressed() -> void:
 		else:
 			held_views.append(view)
 	var result: Dictionary = _round.cast(selection)
-	_player.speed = float(_speed)
+	_player.speed = float(_speed) * (0.5 if slow_scoring else 1.0)
 	await _player.play(result, cast_views, held_views)
 	await _add_score(float(result["score"]))
 	await _announce(result)
@@ -285,6 +407,7 @@ func _on_cast_pressed() -> void:
 	_hand.set_stones(_round.hand)
 	_busy = false
 	_on_selection_changed()
+	EventBus.cast_resolved.emit()
 	if result["won"] or result["lost"]:
 		_finish_round()
 
@@ -300,7 +423,7 @@ func _add_score(amount: float) -> void:
 
 func _set_shown_score(value: float) -> void:
 	_shown_score = value
-	_score_value.text = Loc.number(value)
+	_score_value.text = Loc.number(roundf(value))
 	_score_bar.value = minf(value, _round.target)
 
 
@@ -320,6 +443,7 @@ func _announce(result: Dictionary) -> void:
 			SaveManager.save_game()
 			_spell_reveal.reveal(spell, memories)
 			await _spell_reveal.closed
+			EventBus.spell_discovered.emit(id)
 		else:
 			await _show_toast("%s: %s" % [Loc.text(spell["name"]), Loc.text(spell["effect"])])
 	_refresh_state()
@@ -351,6 +475,12 @@ func _shake() -> void:
 func _finish_round() -> void:
 	var finished: Dictionary = _round.finish()
 	_refresh_state()
+	if _round.is_won():
+		EventBus.round_won.emit()
+	else:
+		EventBus.round_lost.emit()
+	if not bool(config.get("show_result", true)):
+		return
 	_result_title.text = Loc.t("result_won_title") if _round.is_won() else Loc.t("result_lost_title")
 	_result_score.text = Loc.t("result_score", {"score": Loc.number(_round.score), "target": Loc.number(_round.target)})
 	_result_money.text = Loc.t("result_money", {"n": finished["money"]}) if int(finished["money"]) > 0 else ""
@@ -365,4 +495,5 @@ func _on_speed_pressed() -> void:
 
 
 func _go_to_menu() -> void:
+	EventBus.reset()
 	get_tree().change_scene_to_file(MAIN_MENU_SCENE)

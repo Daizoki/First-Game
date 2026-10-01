@@ -31,10 +31,14 @@ var _hand_bonus: int = 0
 var _res_mult_next: float = 1.0
 var _money_at_round_end: int = 0
 var _once_used: Array[String] = []
+## Rune ids drawn first, in this order (a fixed tutorial hand, then its next stones).
+var _stacked: Array[String] = []
 
 
 ## data: {"runes", "words", "spells", "rules"} (the GameData tables).
-func setup(data: Dictionary, rng: RandomNumberGenerator, round_target: float) -> void:
+## options (all optional): "casts", "swaps" (override the rules), "hand" + "bag_top"
+## (rune ids drawn first, in order), "bag_only" (the bag holds only those stones).
+func setup(data: Dictionary, rng: RandomNumberGenerator, round_target: float, options: Dictionary = {}) -> void:
 	_data = data
 	_rng = rng
 	var rules: Dictionary = data["rules"]
@@ -42,8 +46,15 @@ func setup(data: Dictionary, rng: RandomNumberGenerator, round_target: float) ->
 	bag.fill_with_runes(data["runes"], int(rules.get("copies_per_rune", 2)))
 	target = round_target
 	_hand_size = int(rules.get("hand_size", 8))
-	casts_left = int(rules.get("casts_per_round", 4))
-	swaps_left = int(rules.get("swaps_per_round", 3))
+	casts_left = int(options.get("casts", rules.get("casts_per_round", 4)))
+	swaps_left = int(options.get("swaps", rules.get("swaps_per_round", 3)))
+	_stacked.clear()
+	for id: Variant in options.get("hand", []):
+		_stacked.append(str(id))
+	for id: Variant in options.get("bag_top", []):
+		_stacked.append(str(id))
+	if bool(options.get("bag_only", false)):
+		bag.keep_only(_stacked)
 
 
 func start() -> void:
@@ -55,6 +66,7 @@ func start() -> void:
 	_once_used.clear()
 	hand.clear()
 	bag.reset_round()
+	bag.stack_on_top(_stacked)
 	refill()
 
 

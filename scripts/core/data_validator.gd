@@ -30,11 +30,23 @@ const ENUMS: Dictionary = {
 		"reduce_target_pct", "add_money", "refund_cast", "next_cast_mul_res", "word_level_up",
 		"grant_random_talisman", "market_discount_pct", "hand_size_bonus",
 	],
+	"tutorial_event": [
+		"hover", "selection", "cast", "swap", "round_won", "spell_discovered", "book_opened", "book_closed",
+	],
+	"tutorial_action": ["select", "cast", "swap", "sort", "speed", "menu", "word_book"],
+	"tutorial_labels": ["meaning"],
+	## UI elements the tutorial can light up (metadata "tutorial_id" on the round screen),
+	## plus "stone:<rune_id>" for a stone in hand.
+	"ui_id": [
+		"hand", "circle", "btn_cast", "btn_swap", "target", "score", "candles", "chalk", "power_res",
+		"examiner", "btn_word_book", "btn_menu", "sort", "kenaz",
+	],
 }
 
 ## Field kinds:
 ##   id, string, int, number, bool, loc, color, dict, array, segments, spell_runes,
-##   enum:<name>, ref:<collection>, object:<schema>, array:<schema>
+##   rune_list (rune ids), loc_map ({"key": loc}), spotlight_list (ui ids or "stone:<rune>"),
+##   action_list (tutorial actions), enum:<name>, ref:<collection>, object:<schema>, array:<schema>
 const SCHEMAS: Dictionary = {
 	"kin": {
 		"required": {"id": "id", "name": "loc", "color": "color", "sign": "enum:kin_sign"},
@@ -87,6 +99,50 @@ const SCHEMAS: Dictionary = {
 	},
 	"dialog_line": {
 		"required": {"speaker": "ref:characters", "text": "loc"},
+		"optional": {},
+	},
+	"tutorial": {
+		"required": {"speaker": "ref:characters", "intro": "object:tutorial_intro", "lessons": "array:tutorial_lesson"},
+		"optional": {},
+	},
+	"tutorial_intro": {
+		"required": {
+			"lines": "array:tutorial_line", "learn": "loc", "skip": "loc", "confirm": "loc",
+			"confirm_yes": "loc", "confirm_no": "loc",
+		},
+		"optional": {},
+	},
+	"tutorial_line": {
+		"required": {"text": "loc"},
+		"optional": {"speaker": "ref:characters"},
+	},
+	"tutorial_lesson": {
+		"required": {
+			"id": "id", "title": "loc", "target": "int", "casts": "int", "swaps": "int", "seed": "int",
+			"fail_text": "loc", "steps": "array:tutorial_step",
+		},
+		"optional": {
+			"hand": "rune_list", "bag_top": "rune_list", "bag_only": "bool", "win_text": "loc",
+			"idle_hint": "object:tutorial_idle",
+		},
+	},
+	"tutorial_step": {
+		"required": {"text": "loc"},
+		"optional": {
+			"speaker": "ref:characters", "spotlight": "spotlight_list", "wait_for": "object:tutorial_wait",
+			"allow": "action_list", "selectable": "rune_list", "wrong_text": "loc", "slow_scoring": "bool",
+			"phase_captions": "loc_map", "labels": "enum:tutorial_labels",
+		},
+	},
+	"tutorial_wait": {
+		"required": {"event": "enum:tutorial_event"},
+		"optional": {
+			"rune": "ref:runes", "word": "ref:words", "include": "rune_list", "exact": "rune_list",
+			"prefer": "rune_list", "alt_text": "loc", "spell": "ref:spells", "min_count": "int",
+		},
+	},
+	"tutorial_idle": {
+		"required": {"seconds": "number", "text": "loc"},
 		"optional": {},
 	},
 	"rules": {
@@ -268,6 +324,22 @@ func check_value(file_name: String, label: String, path: String, value: Variant,
 			_check_segments(file_name, label, path, value)
 		"spell_runes":
 			_check_spell_runes(file_name, label, path, value)
+		"rune_list":
+			_check_id_list(file_name, label, path, value, "runes")
+		"action_list":
+			if not (value is Array):
+				add_error(file_name, label, "\"%s\" must be a list of actions" % path)
+			else:
+				for i: int in (value as Array).size():
+					check_value(file_name, label, "%s[%d]" % [path, i], (value as Array)[i], "enum:tutorial_action")
+		"spotlight_list":
+			_check_spotlights(file_name, label, path, value)
+		"loc_map":
+			if not (value is Dictionary):
+				add_error(file_name, label, "\"%s\" must be an object {\"key\": {\"ro\": ..., \"en\": ...}}" % path)
+			else:
+				for key: Variant in value:
+					_check_loc(file_name, label, "%s.%s" % [path, str(key)], (value as Dictionary)[key])
 		_:
 			add_error(file_name, label, "internal: unknown field kind \"%s\" for \"%s\"" % [kind, path])
 
@@ -359,6 +431,33 @@ func _check_spell_runes(file_name: String, label: String, path: String, value: V
 			add_error(file_name, label, "\"%s\" must be a rune id" % rune_path)
 		else:
 			_add_ref(file_name, label, rune_path, "runes", runes[i])
+
+
+## A list of ids that must exist in another collection (e.g. rune ids).
+func _check_id_list(file_name: String, label: String, path: String, value: Variant, collection: String) -> void:
+	if not (value is Array):
+		add_error(file_name, label, "\"%s\" must be a list of ids" % path)
+		return
+	var ids: Array = value
+	for i: int in ids.size():
+		if not (ids[i] is String):
+			add_error(file_name, label, "\"%s[%d]\" must be an id" % [path, i])
+		else:
+			_add_ref(file_name, label, "%s[%d]" % [path, i], collection, ids[i])
+
+
+func _check_spotlights(file_name: String, label: String, path: String, value: Variant) -> void:
+	if not (value is Array):
+		add_error(file_name, label, "\"%s\" must be a list of UI ids" % path)
+		return
+	var ids: Array = value
+	for i: int in ids.size():
+		var item_path: String = "%s[%d]" % [path, i]
+		var id: Variant = ids[i]
+		if id is String and (id as String).begins_with("stone:"):
+			_add_ref(file_name, label, item_path, "runes", (id as String).substr(6))
+		else:
+			check_value(file_name, label, item_path, id, "enum:ui_id")
 
 
 func _check_loc(file_name: String, label: String, path: String, value: Variant) -> void:

@@ -80,6 +80,30 @@ layout_mode = 2
 text = "80%"
 horizontal_alignment = 2
 
+[node name="TutorialLabel" type="Label" parent="Center/Panel/Grid"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Tutorial"
+
+[node name="ReplayTutorialButton" type="Button" parent="Center/Panel/Grid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(420, 56)
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Replay"
+
+[node name="HintsLabel" type="Label" parent="Center/Panel/Grid"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Hints"
+
+[node name="HintsButton" type="CheckButton" parent="Center/Panel/Grid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(420, 56)
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "on"
+
 [node name="BackButton" type="Button" parent="Center/Panel"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(420, 72)

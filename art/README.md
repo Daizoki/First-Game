@@ -20,4 +20,7 @@ Nume de fișiere pe care codul le caută deja:
 - `stones/stone.png` — piatra de bază (runa o desenează codul peste ea);
 - `runes/<id>.png` — de ex. `runes/fehu.png`;
 - `examiners/<id>.png` — portretul rotund din cartea examinatorului (de ex. `examiners/ilinca.png`);
-- `backgrounds/round_table.png` — fundalul ecranului de rundă.
+- `backgrounds/round_table.png` — fundalul ecranului de rundă;
+- `backgrounds/classroom.png` — sala de curs a Școlii de Rune (numele, instruirea);
+- `portraits/<id>.png` — portretul din bulele de dialog (de ex. `portraits/ilinca.png`); dacă lipsește, se folosește
+  `examiners/<id>.png`, apoi cercul cu inițiala.

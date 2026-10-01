@@ -19,6 +19,10 @@ static func default_data() -> Dictionary:
 	return {
 		"version": SAVE_VERSION,
 		"player_name": "",
+		## The evening class before the exam: finished or skipped.
+		"tutorial_done": false,
+		## Contextual hints already shown once (ids from data/hints.json).
+		"hints_seen": [],
 		"memories": 0,
 		"attempts": 0,
 		"unlocked_parents": ["varr"],
@@ -36,6 +40,7 @@ static func default_data() -> Dictionary:
 		"settings": {
 			"language": "ro",
 			"volume": DEFAULT_VOLUME,
+			"hints_enabled": true,
 		},
 	}
 

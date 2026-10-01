@@ -1,10 +1,10 @@
 extends Control
-## A round portrait. Uses art/examiners/<id>.png when Relax has drawn it; otherwise a circle
-## in the character's color with the initial.
+## A round portrait. Uses art/portraits/<id>.png or art/examiners/<id>.png when Relax has
+## drawn it; otherwise a circle in the character's color with the initial.
 
 const INK: Color = Color("#05060a")
 const BONE: Color = Color("#e9e3d2")
-const ART_PATH: String = "res://art/examiners/%s.png"
+const ART_PATHS: Array[String] = ["res://art/portraits/%s.png", "res://art/examiners/%s.png"]
 
 var character_id: String = "": set = set_character_id
 
@@ -19,9 +19,11 @@ func set_character_id(value: String) -> void:
 	_color = Color.html(str(character.get("color", "#808080")))
 	_initial = Loc.text(character.get("name", {})).substr(0, 1)
 	_art = null
-	var path: String = ART_PATH % value
-	if ResourceLoader.exists(path):
-		_art = load(path) as Texture2D
+	for pattern: String in ART_PATHS:
+		var path: String = pattern % value
+		if ResourceLoader.exists(path):
+			_art = load(path) as Texture2D
+			break
 	queue_redraw()
 
 

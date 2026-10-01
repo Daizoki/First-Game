@@ -1,8 +1,9 @@
 extends Control
-## Main menu: Play / Runes / Settings / Quit. Also shows data errors found at startup.
+## Main menu: Play / Evening class / Runes / Settings / Quit. Also shows data errors found at startup.
 
 const SETTINGS_SCENE: String = "res://scenes/settings.tscn"
 const RUNE_CHECK_SCENE: String = "res://scenes/rune_check.tscn"
+const TUTORIAL_SCENE: String = "res://scenes/tutorial.tscn"
 ## Stage 2: Play opens a practice round. Stage 3-4 put the morning hub and the exam in between.
 const ROUND_SCENE: String = "res://scenes/round.tscn"
 
@@ -10,6 +11,7 @@ const ROUND_SCENE: String = "res://scenes/round.tscn"
 @onready var _subtitle: Label = %Subtitle
 @onready var _motto: Label = %Motto
 @onready var _play_button: Button = %PlayButton
+@onready var _tutorial_button: Button = %TutorialButton
 @onready var _runes_button: Button = %RunesButton
 @onready var _settings_button: Button = %SettingsButton
 @onready var _quit_button: Button = %QuitButton
@@ -23,6 +25,7 @@ const ROUND_SCENE: String = "res://scenes/round.tscn"
 
 func _ready() -> void:
 	_play_button.pressed.connect(_on_play_pressed)
+	_tutorial_button.pressed.connect(func() -> void: get_tree().change_scene_to_file(TUTORIAL_SCENE))
 	_runes_button.pressed.connect(_on_runes_pressed)
 	_settings_button.pressed.connect(_on_settings_pressed)
 	_quit_button.pressed.connect(_on_quit_pressed)
@@ -47,6 +50,7 @@ func _refresh_texts() -> void:
 	_subtitle.text = Loc.t("game_subtitle")
 	_motto.text = Loc.t("game_motto")
 	_play_button.text = Loc.t("menu_play")
+	_tutorial_button.text = Loc.t("menu_tutorial")
 	_runes_button.text = Loc.t("menu_runes")
 	_settings_button.text = Loc.t("menu_settings")
 	_quit_button.text = Loc.t("menu_quit")

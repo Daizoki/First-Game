@@ -10,6 +10,7 @@ const DataValidator = preload("res://scripts/core/data_validator.gd")
 const DATA_DIR: String = "res://data/"
 const UI_TEXT_FILE: String = "ui_text.json"
 const RULES_FILE: String = "rules.json"
+const TUTORIAL_FILE: String = "tutorial.json"
 const RUNE_ART_PATH: String = "res://art/runes/%s.png"
 
 ## Collection name -> [file name, schema name]
@@ -40,6 +41,8 @@ var dialogs: Dictionary = {}
 var rules: Dictionary = {}
 ## key -> {"ro": "...", "en": "..."}
 var ui_text: Dictionary = {}
+## The evening class: intro and lessons (data/tutorial.json).
+var tutorial: Dictionary = {}
 
 
 func _ready() -> void:
@@ -60,6 +63,9 @@ func load_all(data_dir: String) -> bool:
 
 	var raw_rules: Variant = _read_json(data_dir, RULES_FILE, validator)
 	rules = {} if raw_rules == null else validator.validate_single(RULES_FILE, raw_rules, "rules")
+
+	var raw_tutorial: Variant = _read_json(data_dir, TUTORIAL_FILE, validator)
+	tutorial = {} if raw_tutorial == null else validator.validate_single(TUTORIAL_FILE, raw_tutorial, "tutorial")
 
 	var raw_ui: Variant = _read_json(data_dir, UI_TEXT_FILE, validator)
 	ui_text = {} if raw_ui == null else validator.validate_text_table(UI_TEXT_FILE, raw_ui)

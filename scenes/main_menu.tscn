@@ -67,6 +67,13 @@ layout_mode = 2
 size_flags_horizontal = 4
 text = "Play"
 
+[node name="TutorialButton" type="Button" parent="Center/Menu"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(460, 76)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Tutorial"
+
 [node name="RunesButton" type="Button" parent="Center/Menu"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(460, 76)

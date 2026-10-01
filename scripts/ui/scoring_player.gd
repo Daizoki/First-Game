@@ -21,10 +21,15 @@ var level_label: Label
 var total_label: Label
 var speed: float = 1.0
 
+var _stone_phase_sent: bool = false
+
 
 ## cast_views / held_views: the StoneViews of the cast and held stones, same order as the scorer's.
+## Each phase is announced on the EventBus; listeners (the tutorial) may hold the animation.
 func play(result: Dictionary, cast_views: Array[StoneView], held_views: Array[StoneView]) -> void:
+	_stone_phase_sent = false
 	for event: Dictionary in result["events"]:
+		await _announce_phase(event, cast_views, held_views)
 		match str(event["type"]):
 			"word":
 				var word: Dictionary = GameData.words[event["word"]]
@@ -98,6 +103,26 @@ func _show_voice(view: StoneView, event: Dictionary) -> bool:
 	if color == RES_COLOR:
 		_pop(res_label)
 	return true
+
+
+func _announce_phase(event: Dictionary, cast_views: Array[StoneView], held_views: Array[StoneView]) -> void:
+	var type: String = str(event["type"])
+	var rune_id: String = ""
+	match type:
+		"stone", "voice":
+			rune_id = cast_views[event["index"]].stone.rune_id
+		"held":
+			rune_id = held_views[event["index"]].stone.rune_id
+	match type:
+		"word", "total":
+			EventBus.scoring_phase.emit(type, "", "")
+		"stone":
+			EventBus.scoring_phase.emit("stone", rune_id, "first" if not _stone_phase_sent else "")
+			_stone_phase_sent = true
+		"voice", "held":
+			EventBus.scoring_phase.emit("voice", rune_id, str(event.get("kind", "")))
+	while EventBus.scoring_held():
+		await EventBus.scoring_released
 
 
 func _set_counters(event: Dictionary) -> void:

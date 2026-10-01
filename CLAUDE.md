@@ -10,7 +10,9 @@ Artă: `docs/ARTA.md`.
 
 > **Starea codului:** Etapele 1 și 2 sunt făcute pe v4. Etapa 2: o rundă de antrenament jucabilă (Joacă din meniu),
 > săculețul de 48, Cuvintele, Putere × Rezonanță animat, cele 24 de Glasuri în date, primele 8 Vrăji cu animația de
-> descoperire, simulatorul. Verificat cu Godot 4.7.2: 57 de teste trec.
+> descoperire, simulatorul. **Etapa 2½ (instruirea, `docs/INSTRUIRE.md`) e în lucru: pasul A făcut** — EventBus,
+> stratul de instruire (lumină, bulă, săgeată), `data/tutorial.json` (intro + Lecția 1), mâini fixe, blocarea
+> acțiunilor, numele jucătorului, pauza, Setările. Verificat cu Godot 4.7.2: 69 de teste trec.
 
 ## Cum lucrăm
 - Utilizatorul e **Relax** (18 ani, Chișinău; desenează, TikTok/YouTube). **Scrie-i în română.**
@@ -85,6 +87,11 @@ Artă: `docs/ARTA.md`.
   `TitleLabel` (Grenze Gotisch, culoarea Lumânare) și `SecondaryLabel` (text secundar). Folosește-le în loc de culori
   puse de mână.
 - **Fonturi:** Grenze Gotisch + Grenze sunt în `fonts/` (descărcate cu OK-ul lui Relax, licențe OFL lângă ele).
+- **Instruirea** (`docs/INSTRUIRE.md`, `data/tutorial.json`): logica pașilor în `scripts/core/tutorial_flow.gd`
+  (testabilă), ecranul în `scripts/ui/tutorial.gd` + `tutorial_overlay.gd` (shader `shaders/spotlight.gdshader`).
+  Elementele pe care lumina le poate găsi au metadata `tutorial_id` (lista în `ENUMS["ui_id"]`); pietrele sunt
+  `stone:<rune_id>`. Ecranul de rundă se configurează prin `config` (mână fixă, țintă, fundal…) și nu știe de
+  instruire. `scenes/round.tscn` se generează cu `python3 tools/gen_round.py`.
 - **Vrăjile** (`data/spells.json`): 2–3 rune, ordinea nu contează, verificate pe toate pietrele rostite; Laguz nu e
   joker pentru Vrăji; moment `before_score` / `after_score` / `next_cast`; ascunse până la prima rostire.
 
@@ -94,6 +101,9 @@ Artă: `docs/ARTA.md`.
    descoperiri, statistici, setări, **examenul în curs salvat după fiecare rundă**).
 3. `Loc` — `scripts/autoload/loc.gd` — limba curentă, semnalul `language_changed`.
 4. `RunState` — `scripts/autoload/run_state.gd` — examenul în curs.
+5. `EventBus` — `scripts/autoload/event_bus.gd` — evenimentele jocului (`stone_hovered`, `selection_changed`, `cast`,
+   `swap`, `scoring_phase`, `spell_discovered`, `round_won`/`lost`, `book_opened`/`closed` …) și „poarta” de acțiuni
+   (`allowed_actions`, `selectable_runes`). Jocul doar emite și verifică poarta; instruirea și indiciile doar ascultă.
 
 ## Verificare după fiecare etapă (nu raporta etapa gata dacă sunt erori)
 În sesiunile din cloud, Godot 4.7.2 pentru Linux se poate descărca în scratchpad (Relax a fost de acord); capturile de
@@ -110,19 +120,23 @@ adăugat în lista `TEST_FILES` din `tests/run_tests.gd`.
 ## Structura (țintă v3)
 ```
 docs/        UNIVERS.md, DESIGN.md, ARTA.md
-data/        kins, runes, words, spells, characters, rules, dialogs, ui_text (.json) — există deja
+data/        kins, runes, words, spells, characters, rules, dialogs, tutorial, ui_text (.json) — există deja
              talismans, lessons, engravings, examiners, trials, parents, economy — vin în etapele lor
 fonts/       Grenze, Grenze Gotisch + licențe OFL
 art/         stones/ runes/ talismans/ lessons/ engravings/ examiners/ portraits/ backgrounds/ ui/
-scenes/      main_menu, rune_check, settings, round, spell_reveal, theme/main_theme.tres — există deja
+scenes/      boot, name_entry, main_menu, rune_check, settings, round, spell_reveal, tutorial, tutorial_overlay,
+             theme/main_theme.tres — există deja
              morning (hub), parent_select, trial_select, shop, pack_open, result, rune_book, collection,
              intro, dialog — vin în etapele lor
-scripts/     autoload/ (game_data, run_state, save_manager, loc)
-             core/ (stone, bag, word_detector, spell_detector, scorer, round_state, data_validator;
+scripts/     autoload/ (game_data, run_state, save_manager, loc, event_bus)
+             core/ (stone, bag, word_detector, spell_detector, scorer, round_state, tutorial_flow, data_validator;
                     examiner_rules, shop_logic vin în Etapa 3)
              ui/ (ecrane + componente: rune_glyph, stone_view, hand_view, rune_circle, candle_row, portrait,
-                  talisman_string, night_backdrop, float_layer, scoring_player, spell_reveal, round_screen)
-tests/       run_tests.gd, test_case.gd, fixtures.gd, test_data/loc/save/words/scoring.gd, simulate.gd
+                  talisman_string, night_backdrop, classroom_backdrop, float_layer, scoring_player, spell_reveal,
+                  stone_card, round_screen, tutorial, tutorial_overlay, boot, name_entry)
+shaders/     spotlight.gdshader (lumina instruirii)
+tools/       gen_round.py (generează scenes/round.tscn)
+tests/       run_tests.gd, test_case.gd, fixtures.gd, test_data/loc/save/words/scoring/tutorial.gd, simulate.gd
 ```
 
 ## Etapele
@@ -130,6 +144,7 @@ tests/       run_tests.gd, test_case.gd, fixtures.gd, test_data/loc/save/words/s
 |---|---|---|
 | 1 | Scheletul: Compatibility + 1920×1080, foldere, autoload-uri, JSON + validare, meniu, setări cu limba, docs, **scena de verificare a celor 24 de rune desenate din cod** | făcută |
 | 2 | Miezul — o rundă: săculețul de 48, mâna de 8, Rostire/Schimbare, sortare/rearanjare, recunoașterea Cuvintelor (cu Laguz și ordinea), Putere × Rezonanță animat, cele 24 de Glasuri, rundă de test; teste; simulatorul + tabelul de probabilități; **primele 8 Vrăji** (detectare, efecte, descoperire, animație simplă); ecranul de rundă așezat ca în 3.16 | făcută (așteaptă testul lui Relax) |
+| 2½ | Instruirea „Seara dinaintea examenului” (`docs/INSTRUIRE.md`): A sistemul, B lecțiile 1–5, C ajutorul permanent + indiciile, D documentele | A făcut |
 | 3 | Examenul complet: 8 Probe × 3 runde, Examinatorii, Monede, Piața de noapte, primele 15 Talismane, Lecții, Gravuri, materiale, legături runice, Săculețe, Picat / Examen trecut | — |
 | 4 | Bucla Aevei: Dimineața, alegerea părintelui, Amintiri, deblocări, salvare (inclusiv examenul în curs), Cartea de rune (cu Vrăjile descoperite), Colecția, numele jucătorului, Paginile rupte în Piață | — |
 | 5 | Povestea și conținutul: intro, replici, final, restul Talismanelor (~30), restul Vrăjilor (30–40, cu blestemele), Cuvintele vechi (ALU, LAÞU, AUJA), balans cu simulatorul | — |

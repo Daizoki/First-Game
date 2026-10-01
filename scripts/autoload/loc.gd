@@ -41,6 +41,21 @@ func t(key: String, params: Dictionary = {}) -> String:
 	return text(ui_text[key], params)
 
 
+## A ui_text entry formatted in every language at once: {"ro": "...", "en": "..."}.
+## Params may themselves be {"ro", "en"} texts. Useful for texts that must follow
+## later language changes (they go through Loc.text when shown).
+func both(key: String, params: Dictionary = {}) -> Dictionary:
+	var entry: Dictionary = ui_text.get(key, {})
+	var result: Dictionary = {}
+	for code: String in LANGUAGES:
+		var values: Dictionary = {}
+		for param: Variant in params:
+			var value: Variant = params[param]
+			values[param] = (value as Dictionary).get(code, "") if value is Dictionary else value
+		result[code] = str(entry.get(code, "[%s]" % key)).format(values)
+	return result
+
+
 ## Resolves a {"ro": "...", "en": "..."} object into the current language.
 func text(value: Variant, params: Dictionary = {}) -> String:
 	var result: String = ""

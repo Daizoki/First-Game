@@ -1,0 +1,104 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/tutorial_overlay.gd" id="1_overlay"]
+[ext_resource type="Shader" path="res://shaders/spotlight.gdshader" id="2_spot"]
+[ext_resource type="Script" path="res://scripts/ui/portrait.gd" id="3_portrait"]
+
+[sub_resource type="ShaderMaterial" id="spot_material"]
+shader = ExtResource("2_spot")
+shader_parameter/hole_count = 0
+shader_parameter/dim = 0.0
+
+[node name="TutorialOverlay" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_overlay")
+
+[node name="Dim" type="ColorRect" parent="."]
+unique_name_in_owner = true
+material = SubResource("spot_material")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Ink" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Labels" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Bubble" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+offset_right = 820.0
+offset_bottom = 160.0
+theme_type_variation = &"BubblePanel"
+
+[node name="Row" type="HBoxContainer" parent="Bubble"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="BubblePortrait" type="Control" parent="Bubble/Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(112, 112)
+layout_mode = 2
+size_flags_vertical = 0
+mouse_filter = 2
+script = ExtResource("3_portrait")
+
+[node name="Body" type="VBoxContainer" parent="Bubble/Row"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Speaker" type="Label" parent="Bubble/Row/Body"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+theme_override_font_sizes/font_size = 30
+text = "Maestra Ilinca"
+
+[node name="BubbleText" type="Label" parent="Bubble/Row/Body"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(640, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 31
+text = "text"
+autowrap_mode = 3
+
+[node name="Choices" type="HBoxContainer" parent="Bubble/Row/Body"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="ClickHint" type="Label" parent="Bubble/Row/Body"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SecondaryLabel"
+theme_override_font_sizes/font_size = 20
+text = "clic »"
+horizontal_alignment = 2

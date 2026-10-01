@@ -11,6 +11,7 @@ const TEST_FILES: Array = [
 	"res://tests/test_save.gd",
 	"res://tests/test_words.gd",
 	"res://tests/test_scoring.gd",
+	"res://tests/test_tutorial.gd",
 ]
 
 
