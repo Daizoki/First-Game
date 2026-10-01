@@ -16,4 +16,8 @@ următoarea pornire.
 | Fundaluri | 1920×1080 | `backgrounds/` |
 | Rame UI (9-slice) | după nevoie | `ui/` |
 
-> Folderele vechi (`characters/`, `enemies/`, `gods/`, `cards/`, `blessings/`) sunt din v2 și dispar la migrarea la v3.
+Nume de fișiere pe care codul le caută deja:
+- `stones/stone.png` — piatra de bază (runa o desenează codul peste ea);
+- `runes/<id>.png` — de ex. `runes/fehu.png`;
+- `examiners/<id>.png` — portretul rotund din cartea examinatorului (de ex. `examiners/ilinca.png`);
+- `backgrounds/round_table.png` — fundalul ecranului de rundă.

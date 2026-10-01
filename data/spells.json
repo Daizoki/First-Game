@@ -7,7 +7,8 @@
 		"effect": {"ro": "Ținta rundei scade cu 15%.", "en": "The round's target drops by 15%."},
 		"moment": "after_score",
 		"category": "target",
-		"color": "#9fe3ff"
+		"color": "#9fe3ff",
+		"actions": [{"type": "reduce_target_pct", "value": 15}]
 	},
 	{
 		"id": "market",
@@ -17,7 +18,8 @@
 		"effect": {"ro": "+6 Monede.", "en": "+6 Coins."},
 		"moment": "after_score",
 		"category": "economy",
-		"color": "#ebaa3c"
+		"color": "#ebaa3c",
+		"actions": [{"type": "add_money", "value": 6}]
 	},
 	{
 		"id": "sunrise",
@@ -27,7 +29,8 @@
 		"effect": {"ro": "Rostirea asta nu se consumă.", "en": "This Cast is not used up."},
 		"moment": "after_score",
 		"category": "actions",
-		"color": "#ffd27a"
+		"color": "#ffd27a",
+		"actions": [{"type": "refund_cast", "value": 1}]
 	},
 	{
 		"id": "star",
@@ -37,7 +40,8 @@
 		"effect": {"ro": "×2 Rezonanță la următoarea Rostire.", "en": "×2 Resonance on the next Cast."},
 		"moment": "next_cast",
 		"category": "score",
-		"color": "#fff1b8"
+		"color": "#fff1b8",
+		"actions": [{"type": "next_cast_mul_res", "value": 2}]
 	},
 	{
 		"id": "lesson",
@@ -47,7 +51,8 @@
 		"effect": {"ro": "Cuvântul rostit crește cu 1 nivel.", "en": "The Word you cast goes up 1 level."},
 		"moment": "after_score",
 		"category": "permanent",
-		"color": "#e9e3d2"
+		"color": "#e9e3d2",
+		"actions": [{"type": "word_level_up", "value": 1}]
 	},
 	{
 		"id": "inheritance",
@@ -57,7 +62,8 @@
 		"effect": {"ro": "Primești un Talisman aleatoriu (dacă ai loc).", "en": "You get a random Talisman (if you have room)."},
 		"moment": "after_score",
 		"category": "talismans",
-		"color": "#e8573f"
+		"color": "#e8573f",
+		"actions": [{"type": "grant_random_talisman", "value": 1}]
 	},
 	{
 		"id": "feast",
@@ -67,7 +73,8 @@
 		"effect": {"ro": "La următoarea vizită în Piață, totul costă pe jumătate.", "en": "On your next Market visit, everything costs half."},
 		"moment": "after_score",
 		"category": "economy",
-		"color": "#ffb347"
+		"color": "#ffb347",
+		"actions": [{"type": "market_discount_pct", "value": 50}]
 	},
 	{
 		"id": "road",
@@ -77,7 +84,8 @@
 		"effect": {"ro": "Tragi 3 pietre în plus (doar în runda asta).", "en": "Draw 3 extra stones (this round only)."},
 		"moment": "after_score",
 		"category": "actions",
-		"color": "#c98a5a"
+		"color": "#c98a5a",
+		"actions": [{"type": "hand_size_bonus", "value": 3}]
 	},
 	{
 		"id": "torch",

@@ -372,3 +372,36 @@ Un efect = **declanșator** + **condiții** + **acțiuni**.
   - Categorii alese: Drumul și Potopul = Acțiuni; Făclia și Focul = Săculeț; Sacrificiul și Zarurile = Risc;
     Lecția și Pădurea = Permanent.
   - Titlurile folosesc culoarea Lumânare (`#FFB347`), motto-ul culoarea Hagalaz, restul textului culoarea Os.
+- **Etapa 2 — o rundă (propuneri de verificat de Relax):**
+  - **Tabelul de probabilități** (simulator, 100 000 de mâini de 8 pietre din 48; „posibil” = Cuvântul se poate
+    forma din mână, „cel mai bun” = e cel mai puternic Cuvânt posibil):
+
+    | Cuvânt | posibil | cel mai bun | Putere × Rezonanță (nivel 1) | + pe nivel |
+    |---|---|---|---|---|
+    | Rună singură | 100% | 0% | 5 × 1 | +8 / +1 |
+    | Pereche | 99,6% | 1,8% | 12 × 2 | +12 / +1 |
+    | Două perechi | 80,7% | 27,7% | 22 × 2 | +18 / +1 |
+    | Treime | 37,9% | 3,4% | 30 × 3 | +22 / +2 |
+    | Neam | 29,9% | 13,9% | 36 × 3 | +22 / +2 |
+    | Familie | 29,4% | 25,8% | 42 × 4 | +26 / +2 |
+    | Șir | 23,8% | 22,3% | 48 × 4 | +28 / +2 |
+    | Patru | 3,7% | 3,5% | 70 × 6 | +34 / +3 |
+    | Descântec | 1,5% | 1,5% | 110 × 8 | +42 / +4 |
+    | Cuvântul Vechi | 0,16% | 0,16% | 160 × 12 | +50 / +4 |
+
+  - Concluzie: cu 3 Neamuri × 8 Poziții, fiecare Poziție apare de 6 ori în săculeț, deci **Perechea e aproape sigură**,
+    iar **Șirul e mai rar decât Neamul și Familia**. Ordinea „mai rar = mai puternic” devine: Rună singură < Pereche <
+    Două perechi < Treime < Neam < Familie < **Șir** < Patru < Descântec < Cuvântul Vechi (câmpul `rank` din
+    `words.json`). Valorile sunt propunerea lui Claude, nu cele din Balatro.
+  - **Runda de test:** ținta 1 500 (`rules.json` → `test_round_target`). O strategie lacomă simplă (simulator) face
+    în medie ~2 500 pe rundă și trece ~89% din runde.
+  - **Glasurile** sunt toate în date (`runes.json` → `effects`). Handleri speciali în cod (lista scurtă din 2.2):
+    `kenaz_peek`, `gebo_copy_left`, `algiz_ignore_rule`, `berkanan_copy`, `laguz_wild`.
+  - Interpretări: Hagalaz punctează de 2 ori (Putere + Glas); Ehwaz face piatra din dreapta (în Cuvânt) să mai
+    puncteze o dată; Gebo copiază Glasul pietrei din stânga ei din Cuvânt (nu al altui Gebo); Ansuz ridică nivelul
+    Cuvântului doar dacă punctează; Berkanan adaugă o copie a unei pietre aleatorii din Cuvânt, o dată pe rundă;
+    Algiz contează dacă e rostită (nu trebuie să puncteze); Jera plătește la finalul rundei.
+  - **Primele 8 Vrăji** (din tabelul 3.15) au efecte. Moștenirea (Talisman) și Hramul (Piața la jumătate de preț) se
+    notează în rundă, dar se simt abia în Etapa 3, când există Talismane și Piață. Steaua dublează Rezonanța la final,
+    înainte de înmulțire. Descoperirea unei Vrăji dă **+5 Amintiri** (`memories_per_spell`).
+  - Easter egg F-U-Þ-A-R: un Descântec cu Fehu, Uruz, Thurisaz, Ansuz, Raidho în ordine afișează un mesaj special.

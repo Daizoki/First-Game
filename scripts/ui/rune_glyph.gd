@@ -74,3 +74,14 @@ func _draw_strokes(origin: Vector2, side: float, width: float, color: Color) -> 
 		# Round caps so joints look like one continuous carving.
 		draw_circle(a, width / 2.0, color)
 		draw_circle(b, width / 2.0, color)
+
+
+## Draws rune strokes from data segments into any CanvasItem (stones, the rune circle).
+static func draw_segments(canvas: CanvasItem, segments: Array, rect: Rect2, width: float, color: Color) -> void:
+	for segment: Variant in segments:
+		var s: Array = segment
+		var a: Vector2 = rect.position + Vector2(float(s[0]), float(s[1])) * rect.size
+		var b: Vector2 = rect.position + Vector2(float(s[2]), float(s[3])) * rect.size
+		canvas.draw_line(a, b, color, width, true)
+		canvas.draw_circle(a, width / 2.0, color)
+		canvas.draw_circle(b, width / 2.0, color)

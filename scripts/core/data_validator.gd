@@ -17,6 +17,19 @@ const ENUMS: Dictionary = {
 	"character_kind": ["god", "human", "demigod"],
 	"spell_moment": ["before_score", "after_score", "next_cast"],
 	"spell_category": ["target", "economy", "bag", "actions", "talismans", "examiner", "risk", "permanent", "score"],
+	"effect_trigger": ["on_score", "on_held", "on_cast", "in_word", "on_round_end_held", "passive"],
+	"effect_condition": ["first_in_word", "first_cast", "last_cast", "chance", "once_per_round"],
+	"effect_action": [
+		"add_power", "add_res", "mul_res", "add_money", "add_swap", "retrigger", "grow_power",
+		"base_power_mult", "word_level_bonus", "add_money_at_round_end", "special",
+	],
+	"effect_per": ["word_stone", "lesson_used", "talisman"],
+	"effect_target": ["self", "right"],
+	"effect_special": ["kenaz_peek", "gebo_copy_left", "algiz_ignore_rule", "berkanan_copy", "laguz_wild"],
+	"spell_action": [
+		"reduce_target_pct", "add_money", "refund_cast", "next_cast_mul_res", "word_level_up",
+		"grant_random_talisman", "market_discount_pct", "hand_size_bonus",
+	],
 }
 
 ## Field kinds:
@@ -32,10 +45,29 @@ const SCHEMAS: Dictionary = {
 			"id": "id", "name": "loc", "glyph": "string", "kin": "ref:kins", "position": "int",
 			"base_power": "int", "meaning": "loc", "voice": "loc", "segments": "segments",
 		},
+		"optional": {"effects": "array:effect"},
+	},
+	"effect": {
+		"required": {"trigger": "enum:effect_trigger", "actions": "array:effect_action"},
+		"optional": {"conditions": "array:effect_condition"},
+	},
+	"effect_condition": {
+		"required": {"type": "enum:effect_condition"},
+		"optional": {"value": "number"},
+	},
+	"effect_action": {
+		"required": {"type": "enum:effect_action"},
+		"optional": {"value": "number", "per": "enum:effect_per", "target": "enum:effect_target", "name": "enum:effect_special"},
+	},
+	"spell_action": {
+		"required": {"type": "enum:spell_action", "value": "number"},
 		"optional": {},
 	},
 	"word": {
-		"required": {"id": "id", "name": "loc", "description": "loc"},
+		"required": {
+			"id": "id", "name": "loc", "description": "loc", "rank": "int",
+			"base_power": "int", "base_res": "number", "level_power": "int", "level_res": "number",
+		},
 		"optional": {"hidden": "bool"},
 	},
 	"spell": {
@@ -43,7 +75,7 @@ const SCHEMAS: Dictionary = {
 			"id": "id", "name": "loc", "runes": "spell_runes", "logic": "loc", "effect": "loc",
 			"moment": "enum:spell_moment", "category": "enum:spell_category",
 		},
-		"optional": {"curse": "bool", "color": "color"},
+		"optional": {"curse": "bool", "color": "color", "actions": "array:spell_action"},
 	},
 	"character": {
 		"required": {"id": "id", "name": "loc", "kind": "enum:character_kind", "description": "loc", "color": "color"},
@@ -61,6 +93,8 @@ const SCHEMAS: Dictionary = {
 		"required": {
 			"hand_size": "int", "casts_per_round": "int", "swaps_per_round": "int",
 			"max_stones_per_action": "int", "copies_per_rune": "int", "rune_voices_start_awake": "bool",
+			"test_round_target": "int", "test_round_examiner": "ref:characters", "memories_per_spell": "int",
+			"scoring_speed": "int",
 		},
 		"optional": {},
 	},

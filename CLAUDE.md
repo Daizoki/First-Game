@@ -8,9 +8,9 @@
 Citește asta la începutul fiecărei sesiuni. Design: `docs/DESIGN.md`. Lume și personaje: `docs/UNIVERS.md`.
 Artă: `docs/ARTA.md`.
 
-> **Starea codului:** Etapa 1 e făcută pe v4: 1920×1080, paleta din `docs/ARTA.md`, fonturile Grenze (în `fonts/`,
-> cu licențele OFL), cele 24 de rune desenate din cod în 3 straturi, `spells.json` cu primele 17 Vrăji (doar date;
-> efectele vin în Etapa 2). Verificat cu Godot 4.7.2: fără erori, 28 de teste trec.
+> **Starea codului:** Etapele 1 și 2 sunt făcute pe v4. Etapa 2: o rundă de antrenament jucabilă (Joacă din meniu),
+> săculețul de 48, Cuvintele, Putere × Rezonanță animat, cele 24 de Glasuri în date, primele 8 Vrăji cu animația de
+> descoperire, simulatorul. Verificat cu Godot 4.7.2: 57 de teste trec.
 
 ## Cum lucrăm
 - Utilizatorul e **Relax** (18 ani, Chișinău; desenează, TikTok/YouTube). **Scrie-i în română.**
@@ -65,9 +65,13 @@ Artă: `docs/ARTA.md`.
 - **Conținutul stă în JSON în `data/`**: rune, Cuvinte, Talismane, Lecții, Gravuri, examinatori, probe, părinți,
   prețuri, dialoguri, texte UI. `GameData` încarcă și validează totul (`scripts/core/data_validator.gd`). Erorile apar
   ca „`data/<fișier> [<id>]: <problemă>`” pe ecranul meniului, fără crash. Câmp nou în JSON → adaugă-l și în schemă.
-- **Efecte în date:** declanșator (`on_score`, `on_held`, `on_round_end`, `on_cast`, `passive`) + condiții + acțiuni
-  (`add_power`, `add_res`, `mul_res`, `add_money`, `retrigger`, `add_discard`…). Efecte prea speciale → handler numit
-  în cod (`"special": "gebo_copy_left"`), ținuți într-o listă scurtă.
+- **Efecte în date:** declanșator (`on_score`, `on_held`, `on_cast`, `in_word`, `on_round_end_held`, `passive`) +
+  condiții (`first_in_word`, `first_cast`, `last_cast`, `chance`, `once_per_round`) + acțiuni (`add_power`, `add_res`,
+  `mul_res`, `add_money`, `add_swap`, `retrigger`, `grow_power`, `base_power_mult`, `word_level_bonus`,
+  `add_money_at_round_end`, `special`). Lista scurtă de handleri speciali: `kenaz_peek`, `gebo_copy_left`,
+  `algiz_ignore_rule`, `berkanan_copy`, `laguz_wild`. Valorile permise sunt în `ENUMS` din `data_validator.gd`.
+- **Scorul** (`scripts/core/scorer.gd`) produce o listă de evenimente pe care `scoring_player.gd` le animă. Logica nu
+  știe nimic de ecran.
 - **Două limbi:** fiecare text din JSON e `{"ro": "...", "en": "..."}`. Implicit româna; se schimbă din Setări și se
   salvează. **Niciun text afișat nu e scris în cod** — totul prin `Loc`: `Loc.t("cheie", {"n": 3})` pentru
   `ui_text.json`, `Loc.text(obiect_loc)` pentru restul. (Excepție: diagnostice pentru dezvoltator, în engleză.)
@@ -110,20 +114,22 @@ data/        kins, runes, words, spells, characters, rules, dialogs, ui_text (.j
              talismans, lessons, engravings, examiners, trials, parents, economy — vin în etapele lor
 fonts/       Grenze, Grenze Gotisch + licențe OFL
 art/         stones/ runes/ talismans/ lessons/ engravings/ examiners/ portraits/ backgrounds/ ui/
-scenes/      main_menu, rune_check, settings, theme/main_theme.tres — există deja
-             morning (hub), parent_select, trial_select, round, scoring_popup, shop, pack_open,
-             result, rune_book, collection, intro, dialog — vin în etapele lor
+scenes/      main_menu, rune_check, settings, round, spell_reveal, theme/main_theme.tres — există deja
+             morning (hub), parent_select, trial_select, shop, pack_open, result, rune_book, collection,
+             intro, dialog — vin în etapele lor
 scripts/     autoload/ (game_data, run_state, save_manager, loc)
-             core/ (bag, stone, word_detector, scorer, effects, examiner_rules, shop_logic, data_validator)
-             ui/ (main_menu, settings, rune_check, rune_glyph = desenează o rună din segmente)
-tests/       run_tests.gd, test_case.gd, test_words.gd, test_scoring.gd, simulate.gd
+             core/ (stone, bag, word_detector, spell_detector, scorer, round_state, data_validator;
+                    examiner_rules, shop_logic vin în Etapa 3)
+             ui/ (ecrane + componente: rune_glyph, stone_view, hand_view, rune_circle, candle_row, portrait,
+                  talisman_string, night_backdrop, float_layer, scoring_player, spell_reveal, round_screen)
+tests/       run_tests.gd, test_case.gd, fixtures.gd, test_data/loc/save/words/scoring.gd, simulate.gd
 ```
 
 ## Etapele
 | # | Etapa | Stare |
 |---|---|---|
-| 1 | Scheletul: Compatibility + 1920×1080, foldere, autoload-uri, JSON + validare, meniu, setări cu limba, docs, **scena de verificare a celor 24 de rune desenate din cod** | făcută pe v4, verificată cu Godot 4.7.2 (așteaptă testul lui Relax) |
-| 2 | Miezul — o rundă: săculețul de 48, mâna de 8, Rostire/Schimbare, sortare/rearanjare, recunoașterea Cuvintelor (cu Laguz și ordinea), Putere × Rezonanță animat, cele 24 de Glasuri, rundă de test; teste; simulatorul + tabelul de probabilități; **primele 8 Vrăji** (detectare, efecte, descoperire, animație simplă); ecranul de rundă așezat ca în 3.16 | — |
+| 1 | Scheletul: Compatibility + 1920×1080, foldere, autoload-uri, JSON + validare, meniu, setări cu limba, docs, **scena de verificare a celor 24 de rune desenate din cod** | făcută |
+| 2 | Miezul — o rundă: săculețul de 48, mâna de 8, Rostire/Schimbare, sortare/rearanjare, recunoașterea Cuvintelor (cu Laguz și ordinea), Putere × Rezonanță animat, cele 24 de Glasuri, rundă de test; teste; simulatorul + tabelul de probabilități; **primele 8 Vrăji** (detectare, efecte, descoperire, animație simplă); ecranul de rundă așezat ca în 3.16 | făcută (așteaptă testul lui Relax) |
 | 3 | Examenul complet: 8 Probe × 3 runde, Examinatorii, Monede, Piața de noapte, primele 15 Talismane, Lecții, Gravuri, materiale, legături runice, Săculețe, Picat / Examen trecut | — |
 | 4 | Bucla Aevei: Dimineața, alegerea părintelui, Amintiri, deblocări, salvare (inclusiv examenul în curs), Cartea de rune (cu Vrăjile descoperite), Colecția, numele jucătorului, Paginile rupte în Piață | — |
 | 5 | Povestea și conținutul: intro, replici, final, restul Talismanelor (~30), restul Vrăjilor (30–40, cu blestemele), Cuvintele vechi (ALU, LAÞU, AUJA), balans cu simulatorul | — |

@@ -2,52 +2,102 @@
 	{
 		"id": "single",
 		"name": {"ro": "Rună singură", "en": "Single Rune"},
-		"description": {"ro": "Nicio combinație: punctează piatra cu Poziția cea mai mare.", "en": "No combination: the stone with the highest Position scores."}
+		"description": {"ro": "Nicio combinație: punctează piatra cu Poziția cea mai mare.", "en": "No combination: the stone with the highest Position scores."},
+		"rank": 1,
+		"base_power": 5,
+		"base_res": 1,
+		"level_power": 8,
+		"level_res": 1
 	},
 	{
 		"id": "pair",
 		"name": {"ro": "Pereche", "en": "Pair"},
-		"description": {"ro": "2 pietre cu aceeași Poziție.", "en": "2 stones with the same Position."}
+		"description": {"ro": "2 pietre cu aceeași Poziție.", "en": "2 stones with the same Position."},
+		"rank": 2,
+		"base_power": 12,
+		"base_res": 2,
+		"level_power": 12,
+		"level_res": 1
 	},
 	{
 		"id": "two_pairs",
 		"name": {"ro": "Două perechi", "en": "Two Pairs"},
-		"description": {"ro": "2 Perechi diferite.", "en": "2 different Pairs."}
+		"description": {"ro": "2 Perechi diferite.", "en": "2 different Pairs."},
+		"rank": 3,
+		"base_power": 22,
+		"base_res": 2,
+		"level_power": 18,
+		"level_res": 1
 	},
 	{
 		"id": "triad",
 		"name": {"ro": "Treime", "en": "Triad"},
-		"description": {"ro": "3 pietre cu aceeași Poziție.", "en": "3 stones with the same Position."}
-	},
-	{
-		"id": "row",
-		"name": {"ro": "Șir", "en": "Row"},
-		"description": {"ro": "5 Poziții consecutive (1–8, fără întoarcere de la 8 la 1).", "en": "5 consecutive Positions (1–8, no wrapping from 8 to 1)."}
+		"description": {"ro": "3 pietre cu aceeași Poziție.", "en": "3 stones with the same Position."},
+		"rank": 4,
+		"base_power": 30,
+		"base_res": 3,
+		"level_power": 22,
+		"level_res": 2
 	},
 	{
 		"id": "kin",
 		"name": {"ro": "Neam", "en": "Kin"},
-		"description": {"ro": "5 pietre din același Neam.", "en": "5 stones of the same Kin."}
+		"description": {"ro": "5 pietre din același Neam.", "en": "5 stones of the same Kin."},
+		"rank": 5,
+		"base_power": 36,
+		"base_res": 3,
+		"level_power": 22,
+		"level_res": 2
 	},
 	{
 		"id": "family",
 		"name": {"ro": "Familie", "en": "Family"},
-		"description": {"ro": "o Treime + o Pereche.", "en": "a Triad + a Pair."}
+		"description": {"ro": "o Treime + o Pereche.", "en": "a Triad + a Pair."},
+		"rank": 6,
+		"base_power": 42,
+		"base_res": 4,
+		"level_power": 26,
+		"level_res": 2
+	},
+	{
+		"id": "row",
+		"name": {"ro": "Șir", "en": "Row"},
+		"description": {"ro": "5 Poziții consecutive (1–8, fără întoarcere de la 8 la 1).", "en": "5 consecutive Positions (1–8, no wrapping from 8 to 1)."},
+		"rank": 7,
+		"base_power": 48,
+		"base_res": 4,
+		"level_power": 28,
+		"level_res": 2
 	},
 	{
 		"id": "four",
 		"name": {"ro": "Patru", "en": "Four"},
-		"description": {"ro": "4 pietre cu aceeași Poziție.", "en": "4 stones with the same Position."}
+		"description": {"ro": "4 pietre cu aceeași Poziție.", "en": "4 stones with the same Position."},
+		"rank": 8,
+		"base_power": 70,
+		"base_res": 6,
+		"level_power": 34,
+		"level_res": 3
 	},
 	{
 		"id": "chant",
 		"name": {"ro": "Descântec", "en": "Chant"},
-		"description": {"ro": "un Șir în care toate pietrele sunt din același Neam.", "en": "a Row in which all stones are of the same Kin."}
+		"description": {"ro": "un Șir în care toate pietrele sunt din același Neam.", "en": "a Row in which all stones are of the same Kin."},
+		"rank": 9,
+		"base_power": 110,
+		"base_res": 8,
+		"level_power": 42,
+		"level_res": 4
 	},
 	{
 		"id": "ancient_word",
 		"name": {"ro": "Cuvântul Vechi", "en": "The Ancient Word"},
 		"description": {"ro": "5 pietre cu aceeași Poziție.", "en": "5 stones with the same Position."},
+		"rank": 10,
+		"base_power": 160,
+		"base_res": 12,
+		"level_power": 50,
+		"level_res": 4,
 		"hidden": true
 	}
 ]

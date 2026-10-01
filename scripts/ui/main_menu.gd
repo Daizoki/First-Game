@@ -3,6 +3,8 @@ extends Control
 
 const SETTINGS_SCENE: String = "res://scenes/settings.tscn"
 const RUNE_CHECK_SCENE: String = "res://scenes/rune_check.tscn"
+## Stage 2: Play opens a practice round. Stage 3-4 put the morning hub and the exam in between.
+const ROUND_SCENE: String = "res://scenes/round.tscn"
 
 @onready var _title: Label = %Title
 @onready var _subtitle: Label = %Subtitle
@@ -55,8 +57,7 @@ func _refresh_texts() -> void:
 
 
 func _on_play_pressed() -> void:
-	# The round arrives in Stage 2, the full exam in Stage 3.
-	_notice.visible = true
+	get_tree().change_scene_to_file(ROUND_SCENE)
 
 
 func _on_runes_pressed() -> void:

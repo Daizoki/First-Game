@@ -8,6 +8,7 @@
 		"base_power": 3,
 		"meaning": {"ro": "vite, avere", "en": "cattle, wealth"},
 		"voice": {"ro": "+1 Monedă când punctează.", "en": "+1 Coin when it scores."},
+		"effects": [{"trigger": "on_score", "actions": [{"type": "add_money", "value": 1}]}],
 		"segments": [
 			[0.35, 0.05, 0.35, 0.95],
 			[0.35, 0.30, 0.70, 0.08],
@@ -23,6 +24,7 @@
 		"base_power": 4,
 		"meaning": {"ro": "bourul (taurul sălbatic dispărut)", "en": "the aurochs (the extinct wild ox)"},
 		"voice": {"ro": "Puterea ei de bază e dublă.", "en": "Its base Power is doubled."},
+		"effects": [{"trigger": "passive", "actions": [{"type": "base_power_mult", "value": 2}]}],
 		"segments": [
 			[0.30, 0.05, 0.30, 0.95],
 			[0.30, 0.05, 0.70, 0.35],
@@ -38,6 +40,7 @@
 		"base_power": 5,
 		"meaning": {"ro": "uriaș, monstru; în poemul englez: spin", "en": "giant, monster; in the English poem: thorn"},
 		"voice": {"ro": "+4 Rezonanță.", "en": "+4 Resonance."},
+		"effects": [{"trigger": "on_score", "actions": [{"type": "add_res", "value": 4}]}],
 		"segments": [
 			[0.35, 0.05, 0.35, 0.95],
 			[0.35, 0.30, 0.68, 0.50],
@@ -53,6 +56,7 @@
 		"base_power": 6,
 		"meaning": {"ro": "„un zeu”; în poemul englez: gura", "en": "\"a god\"; in the English poem: the mouth"},
 		"voice": {"ro": "Cuvântul rostit punctează ca și cum ar avea +1 nivel.", "en": "The Word scores as if it were 1 level higher."},
+		"effects": [{"trigger": "in_word", "actions": [{"type": "word_level_bonus", "value": 1}]}],
 		"segments": [
 			[0.35, 0.05, 0.35, 0.95],
 			[0.35, 0.08, 0.70, 0.30],
@@ -68,6 +72,7 @@
 		"base_power": 7,
 		"meaning": {"ro": "călărie, călătorie", "en": "riding, journey"},
 		"voice": {"ro": "+1 Schimbare în runda asta.", "en": "+1 Swap this round."},
+		"effects": [{"trigger": "on_score", "actions": [{"type": "add_swap", "value": 1}]}],
 		"segments": [
 			[0.30, 0.05, 0.30, 0.95],
 			[0.30, 0.05, 0.68, 0.27],
@@ -84,6 +89,7 @@
 		"base_power": 8,
 		"meaning": {"ro": "în poemul englez: făclie; în cele nordice: bubă, rană", "en": "in the English poem: torch; in the Norse ones: ulcer, sore"},
 		"voice": {"ro": "Cât timp e în mână, vezi următoarele 3 pietre din săculeț.", "en": "While in hand, you see the next 3 stones in the bag."},
+		"effects": [{"trigger": "passive", "actions": [{"type": "special", "name": "kenaz_peek", "value": 3}]}],
 		"segments": [
 			[0.65, 0.25, 0.35, 0.50],
 			[0.35, 0.50, 0.65, 0.75]
@@ -98,6 +104,7 @@
 		"base_power": 9,
 		"meaning": {"ro": "dar, cadou", "en": "gift"},
 		"voice": {"ro": "Copiază Glasul pietrei din stânga ei.", "en": "Copies the Voice of the stone to its left."},
+		"effects": [{"trigger": "on_score", "actions": [{"type": "special", "name": "gebo_copy_left"}]}],
 		"segments": [
 			[0.25, 0.10, 0.75, 0.90],
 			[0.75, 0.10, 0.25, 0.90]
@@ -112,6 +119,7 @@
 		"base_power": 10,
 		"meaning": {"ro": "bucurie", "en": "joy"},
 		"voice": {"ro": "+1 Rezonanță pentru fiecare piatră din Cuvânt.", "en": "+1 Resonance for each stone in the Word."},
+		"effects": [{"trigger": "on_score", "actions": [{"type": "add_res", "value": 1, "per": "word_stone"}]}],
 		"segments": [
 			[0.35, 0.05, 0.35, 0.95],
 			[0.35, 0.05, 0.68, 0.27],
@@ -127,6 +135,7 @@
 		"base_power": 3,
 		"meaning": {"ro": "grindină", "en": "hail"},
 		"voice": {"ro": "Punctează de două ori.", "en": "Scores twice."},
+		"effects": [{"trigger": "on_score", "actions": [{"type": "retrigger", "target": "self", "value": 1}]}],
 		"segments": [
 			[0.30, 0.05, 0.30, 0.95],
 			[0.70, 0.05, 0.70, 0.95],
@@ -142,6 +151,7 @@
 		"base_power": 4,
 		"meaning": {"ro": "nevoie, lipsă, suferință", "en": "need, want, hardship"},
 		"voice": {"ro": "×2 Rezonanță dacă e ultima Rostire a rundei.", "en": "×2 Resonance if it is the last Cast of the round."},
+		"effects": [{"trigger": "on_score", "conditions": [{"type": "last_cast"}], "actions": [{"type": "mul_res", "value": 2}]}],
 		"segments": [
 			[0.50, 0.05, 0.50, 0.95],
 			[0.32, 0.35, 0.68, 0.60]
@@ -156,6 +166,7 @@
 		"base_power": 5,
 		"meaning": {"ro": "gheață", "en": "ice"},
 		"voice": {"ro": "Dacă rămâne în mână (nerostită), +3 Rezonanță la fiecare Rostire.", "en": "If it stays in hand (not cast), +3 Resonance on every Cast."},
+		"effects": [{"trigger": "on_held", "actions": [{"type": "add_res", "value": 3}]}],
 		"segments": [
 			[0.50, 0.05, 0.50, 0.95]
 		]
@@ -169,6 +180,7 @@
 		"base_power": 6,
 		"meaning": {"ro": "an, an bun, recoltă", "en": "year, good year, harvest"},
 		"voice": {"ro": "La finalul rundei, +2 Monede pentru fiecare Jera rostită în rundă.", "en": "At the end of the round, +2 Coins for each Jera cast this round."},
+		"effects": [{"trigger": "on_score", "actions": [{"type": "add_money_at_round_end", "value": 2}]}],
 		"segments": [
 			[0.45, 0.15, 0.25, 0.35],
 			[0.25, 0.35, 0.45, 0.55],
@@ -185,6 +197,7 @@
 		"base_power": 7,
 		"meaning": {"ro": "tisa (copac care trăiește sute de ani)", "en": "yew (a tree that lives for centuries)"},
 		"voice": {"ro": "Crește: +3 Putere permanent de fiecare dată când punctează.", "en": "Grows: +3 Power permanently each time it scores."},
+		"effects": [{"trigger": "on_score", "actions": [{"type": "grow_power", "value": 3}]}],
 		"segments": [
 			[0.50, 0.05, 0.50, 0.95],
 			[0.50, 0.05, 0.70, 0.25],
@@ -200,6 +213,7 @@
 		"base_power": 8,
 		"meaning": {"ro": "sens necunoscut; poemul englez vorbește de joc și distracție (poate o cupă de zaruri)", "en": "unknown meaning; the English poem speaks of play and fun (maybe a dice cup)"},
 		"voice": {"ro": "1 șansă din 4: ×3 Rezonanță.", "en": "1 chance in 4: ×3 Resonance."},
+		"effects": [{"trigger": "on_score", "conditions": [{"type": "chance", "value": 0.25}], "actions": [{"type": "mul_res", "value": 3}]}],
 		"segments": [
 			[0.32, 0.05, 0.32, 0.95],
 			[0.32, 0.05, 0.55, 0.28],
@@ -217,6 +231,7 @@
 		"base_power": 9,
 		"meaning": {"ro": "elan (numele original e nesigur)", "en": "elk (the original name is uncertain)"},
 		"voice": {"ro": "Regula Examinatorului nu se aplică acestei Rostiri.", "en": "The Examiner's rule does not apply to this Cast."},
+		"effects": [{"trigger": "on_cast", "actions": [{"type": "special", "name": "algiz_ignore_rule"}]}],
 		"segments": [
 			[0.50, 0.05, 0.50, 0.95],
 			[0.50, 0.45, 0.22, 0.12],
@@ -232,6 +247,7 @@
 		"base_power": 10,
 		"meaning": {"ro": "soare", "en": "sun"},
 		"voice": {"ro": "×1,5 Rezonanță.", "en": "×1.5 Resonance."},
+		"effects": [{"trigger": "on_score", "actions": [{"type": "mul_res", "value": 1.5}]}],
 		"segments": [
 			[0.65, 0.08, 0.30, 0.42],
 			[0.30, 0.42, 0.70, 0.58],
@@ -247,6 +263,7 @@
 		"base_power": 3,
 		"meaning": {"ro": "numele unui zeu al cerului și al dreptății; în poemul englez: o stea călăuzitoare", "en": "the name of a god of the sky and of justice; in the English poem: a guiding star"},
 		"voice": {"ro": "×2 Rezonanță dacă e prima piatră din stânga în Cuvânt.", "en": "×2 Resonance if it is the leftmost stone of the Word."},
+		"effects": [{"trigger": "on_score", "conditions": [{"type": "first_in_word"}], "actions": [{"type": "mul_res", "value": 2}]}],
 		"segments": [
 			[0.50, 0.05, 0.50, 0.95],
 			[0.25, 0.32, 0.50, 0.05],
@@ -262,6 +279,7 @@
 		"base_power": 4,
 		"meaning": {"ro": "mesteacăn", "en": "birch"},
 		"voice": {"ro": "O dată pe rundă, după ce punctează, adaugă în săculeț o copie a unei pietre din Cuvânt.", "en": "Once per round, after it scores, adds a copy of a stone from the Word to the bag."},
+		"effects": [{"trigger": "on_score", "conditions": [{"type": "once_per_round"}], "actions": [{"type": "special", "name": "berkanan_copy"}]}],
 		"segments": [
 			[0.32, 0.05, 0.32, 0.95],
 			[0.32, 0.05, 0.68, 0.27],
@@ -279,6 +297,7 @@
 		"base_power": 5,
 		"meaning": {"ro": "cal", "en": "horse"},
 		"voice": {"ro": "Piatra din dreapta ei punctează încă o dată.", "en": "The stone to its right scores one more time."},
+		"effects": [{"trigger": "on_score", "actions": [{"type": "retrigger", "target": "right", "value": 1}]}],
 		"segments": [
 			[0.28, 0.05, 0.28, 0.95],
 			[0.72, 0.05, 0.72, 0.95],
@@ -295,6 +314,7 @@
 		"base_power": 6,
 		"meaning": {"ro": "om, ființă umană", "en": "man, human being"},
 		"voice": {"ro": "Runa oamenilor: +2 Rezonanță pentru fiecare Lecție folosită în acest examen.", "en": "The rune of humans: +2 Resonance for each Lesson used in this exam."},
+		"effects": [{"trigger": "on_score", "actions": [{"type": "add_res", "value": 2, "per": "lesson_used"}]}],
 		"segments": [
 			[0.28, 0.05, 0.28, 0.95],
 			[0.72, 0.05, 0.72, 0.95],
@@ -311,6 +331,7 @@
 		"base_power": 7,
 		"meaning": {"ro": "apă, lac, mare", "en": "water, lake, sea"},
 		"voice": {"ro": "Curge: contează ca piatră din orice Neam.", "en": "Flows: counts as a stone of any Kin."},
+		"effects": [{"trigger": "passive", "actions": [{"type": "special", "name": "laguz_wild"}]}],
 		"segments": [
 			[0.38, 0.05, 0.38, 0.95],
 			[0.38, 0.05, 0.68, 0.30]
@@ -325,6 +346,7 @@
 		"base_power": 8,
 		"meaning": {"ro": "Ing, numele unui zeu sau erou", "en": "Ing, the name of a god or hero"},
 		"voice": {"ro": "Sămânța: dacă rămâne în mână la finalul rundei, primește +10 Putere permanent.", "en": "The Seed: if it stays in hand at the end of the round, it gains +10 Power permanently."},
+		"effects": [{"trigger": "on_round_end_held", "actions": [{"type": "grow_power", "value": 10}]}],
 		"segments": [
 			[0.50, 0.25, 0.72, 0.50],
 			[0.72, 0.50, 0.50, 0.75],
@@ -341,6 +363,7 @@
 		"base_power": 9,
 		"meaning": {"ro": "zi", "en": "day"},
 		"voice": {"ro": "×2 Rezonanță dacă e prima Rostire a rundei.", "en": "×2 Resonance if it is the first Cast of the round."},
+		"effects": [{"trigger": "on_score", "conditions": [{"type": "first_cast"}], "actions": [{"type": "mul_res", "value": 2}]}],
 		"segments": [
 			[0.25, 0.05, 0.25, 0.95],
 			[0.75, 0.05, 0.75, 0.95],
@@ -357,6 +380,7 @@
 		"base_power": 10,
 		"meaning": {"ro": "moștenire, pământul și casa familiei", "en": "inheritance, the family land and home"},
 		"voice": {"ro": "Moștenirea: +2 Rezonanță pentru fiecare Talisman deținut.", "en": "Inheritance: +2 Resonance for each Talisman you own."},
+		"effects": [{"trigger": "on_score", "actions": [{"type": "add_res", "value": 2, "per": "talisman"}]}],
 		"segments": [
 			[0.50, 0.05, 0.78, 0.38],
 			[0.50, 0.05, 0.22, 0.38],

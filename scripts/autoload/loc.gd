@@ -52,3 +52,37 @@ func text(value: Variant, params: Dictionary = {}) -> String:
 	if not params.is_empty():
 		result = result.format(params)
 	return result
+
+
+## Big numbers, nicely: "12 840" / "1,2 mil." in Romanian, "12,840" / "1.2M" in English.
+func number(value: float) -> String:
+	var negative: bool = value < 0.0
+	value = absf(value)
+	var text: String
+	if value >= 1.0e6:
+		var millions: String = _decimal(value / 1.0e6, 1)
+		text = t("number_millions", {"n": millions})
+	elif value != floorf(value) and value < 100.0:
+		text = _decimal(value, 1)
+	else:
+		text = _group_thousands(str(int(roundf(value))))
+	return ("-" if negative else "") + text
+
+
+func _decimal(value: float, digits: int) -> String:
+	var text: String = String.num(value, digits)
+	if text.ends_with(".0"):
+		text = text.substr(0, text.length() - 2)
+	return text.replace(".", t("number_decimal_point"))
+
+
+func _group_thousands(digits: String) -> String:
+	var separator: String = t("number_thousands_separator")
+	var result: String = ""
+	var count: int = 0
+	for i: int in range(digits.length() - 1, -1, -1):
+		if count > 0 and count % 3 == 0:
+			result = separator + result
+		result = digits[i] + result
+		count += 1
+	return result
