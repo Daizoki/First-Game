@@ -31,7 +31,8 @@ const ENUMS: Dictionary = {
 		"grant_random_talisman", "market_discount_pct", "hand_size_bonus",
 	],
 	"tutorial_event": [
-		"hover", "selection", "cast", "swap", "round_won", "spell_discovered", "book_opened", "book_closed",
+		"hover", "selection", "cast", "swap", "round_won", "spell_cast", "spell_discovered", "book_opened",
+		"book_closed",
 	],
 	"tutorial_action": ["select", "cast", "swap", "sort", "speed", "menu", "word_book"],
 	"tutorial_labels": ["meaning"],
@@ -80,7 +81,7 @@ const SCHEMAS: Dictionary = {
 			"id": "id", "name": "loc", "description": "loc", "rank": "int",
 			"base_power": "int", "base_res": "number", "level_power": "int", "level_res": "number",
 		},
-		"optional": {"hidden": "bool"},
+		"optional": {"hidden": "bool", "example": "rune_list"},
 	},
 	"spell": {
 		"required": {

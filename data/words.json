@@ -1,6 +1,7 @@
 [
 	{
 		"id": "single",
+		"example": ["wunjo"],
 		"name": {"ro": "Rună singură", "en": "Single Rune"},
 		"description": {"ro": "Nicio combinație: punctează piatra cu Poziția cea mai mare.", "en": "No combination: the stone with the highest Position scores."},
 		"rank": 1,
@@ -11,6 +12,7 @@
 	},
 	{
 		"id": "pair",
+		"example": ["fehu", "hagalaz"],
 		"name": {"ro": "Pereche", "en": "Pair"},
 		"description": {"ro": "2 pietre cu aceeași Poziție.", "en": "2 stones with the same Position."},
 		"rank": 2,
@@ -21,6 +23,7 @@
 	},
 	{
 		"id": "two_pairs",
+		"example": ["fehu", "hagalaz", "gebo", "dagaz"],
 		"name": {"ro": "Două perechi", "en": "Two Pairs"},
 		"description": {"ro": "2 Perechi diferite.", "en": "2 different Pairs."},
 		"rank": 3,
@@ -31,6 +34,7 @@
 	},
 	{
 		"id": "triad",
+		"example": ["fehu", "hagalaz", "tiwaz"],
 		"name": {"ro": "Treime", "en": "Triad"},
 		"description": {"ro": "3 pietre cu aceeași Poziție.", "en": "3 stones with the same Position."},
 		"rank": 4,
@@ -41,6 +45,7 @@
 	},
 	{
 		"id": "kin",
+		"example": ["fehu", "raidho", "kenaz", "gebo", "wunjo"],
 		"name": {"ro": "Neam", "en": "Kin"},
 		"description": {"ro": "5 pietre din același Neam.", "en": "5 stones of the same Kin."},
 		"rank": 5,
@@ -51,6 +56,7 @@
 	},
 	{
 		"id": "family",
+		"example": ["isaz", "ehwaz", "thurisaz", "gebo", "dagaz"],
 		"name": {"ro": "Familie", "en": "Family"},
 		"description": {"ro": "o Treime + o Pereche.", "en": "a Triad + a Pair."},
 		"rank": 6,
@@ -61,6 +67,7 @@
 	},
 	{
 		"id": "row",
+		"example": ["fehu", "naudiz", "ehwaz", "ansuz", "eihwaz"],
 		"name": {"ro": "Șir", "en": "Row"},
 		"description": {"ro": "5 Poziții consecutive (1–8, fără întoarcere de la 8 la 1).", "en": "5 consecutive Positions (1–8, no wrapping from 8 to 1)."},
 		"rank": 7,
@@ -71,6 +78,7 @@
 	},
 	{
 		"id": "four",
+		"example": ["fehu", "hagalaz", "tiwaz", "fehu"],
 		"name": {"ro": "Patru", "en": "Four"},
 		"description": {"ro": "4 pietre cu aceeași Poziție.", "en": "4 stones with the same Position."},
 		"rank": 8,
@@ -81,6 +89,7 @@
 	},
 	{
 		"id": "chant",
+		"example": ["fehu", "uruz", "thurisaz", "ansuz", "raidho"],
 		"name": {"ro": "Descântec", "en": "Chant"},
 		"description": {"ro": "un Șir în care toate pietrele sunt din același Neam.", "en": "a Row in which all stones are of the same Kin."},
 		"rank": 9,
@@ -91,6 +100,7 @@
 	},
 	{
 		"id": "ancient_word",
+		"example": ["fehu", "hagalaz", "tiwaz", "fehu", "hagalaz"],
 		"name": {"ro": "Cuvântul Vechi", "en": "The Ancient Word"},
 		"description": {"ro": "5 pietre cu aceeași Poziție.", "en": "5 stones with the same Position."},
 		"rank": 10,

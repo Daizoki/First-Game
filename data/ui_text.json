@@ -90,5 +90,10 @@
 	"card_position_kin": {"ro": "Poziția {n} · {kin}", "en": "Position {n} · {kin}"},
 	"card_meaning": {"ro": "Sens istoric: {meaning}", "en": "Historical meaning: {meaning}"},
 	"card_power": {"ro": "Putere {n}", "en": "Power {n}"},
-	"card_voice": {"ro": "Glas: {voice}", "en": "Voice: {voice}"}
+	"card_voice": {"ro": "Glas: {voice}", "en": "Voice: {voice}"},
+	"word_book_title": {"ro": "Cartea Cuvintelor", "en": "Book of Words"},
+	"word_book_hint": {"ro": "De la cel mai puternic la cel mai obișnuit · tasta C o deschide oricând", "en": "From the strongest to the most common · press C to open it any time"},
+	"word_book_close": {"ro": "Închide", "en": "Close"},
+	"word_book_values": {"ro": "{power} × {res}", "en": "{power} × {res}"},
+	"word_book_button": {"ro": "Cuvinte", "en": "Words"}
 }

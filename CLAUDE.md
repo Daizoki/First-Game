@@ -10,9 +10,10 @@ Artă: `docs/ARTA.md`.
 
 > **Starea codului:** Etapele 1 și 2 sunt făcute pe v4. Etapa 2: o rundă de antrenament jucabilă (Joacă din meniu),
 > săculețul de 48, Cuvintele, Putere × Rezonanță animat, cele 24 de Glasuri în date, primele 8 Vrăji cu animația de
-> descoperire, simulatorul. **Etapa 2½ (instruirea, `docs/INSTRUIRE.md`) e în lucru: pasul A făcut** — EventBus,
-> stratul de instruire (lumină, bulă, săgeată), `data/tutorial.json` (intro + Lecția 1), mâini fixe, blocarea
-> acțiunilor, numele jucătorului, pauza, Setările. Verificat cu Godot 4.7.2: 69 de teste trec.
+> descoperire, simulatorul. **Etapa 2½ (instruirea, `docs/INSTRUIRE.md`) e în lucru: pașii A și B făcuți** —
+> EventBus, stratul de instruire (lumină, bulă, săgeată), intro + Lecțiile 1–5 în `data/tutorial.json`, mâini fixe,
+> blocarea acțiunilor, numele jucătorului, pauza, Setările, fișa pietrei, Cartea Cuvintelor (buton + tasta C).
+> Verificat cu Godot 4.7.2: 82 de teste trec (inclusiv parcurgerea fiecărei lecții).
 
 ## Cum lucrăm
 - Utilizatorul e **Relax** (18 ani, Chișinău; desenează, TikTok/YouTube). **Scrie-i în română.**
@@ -133,7 +134,7 @@ scripts/     autoload/ (game_data, run_state, save_manager, loc, event_bus)
                     examiner_rules, shop_logic vin în Etapa 3)
              ui/ (ecrane + componente: rune_glyph, stone_view, hand_view, rune_circle, candle_row, portrait,
                   talisman_string, night_backdrop, classroom_backdrop, float_layer, scoring_player, spell_reveal,
-                  stone_card, round_screen, tutorial, tutorial_overlay, boot, name_entry)
+                  stone_card, word_book, mini_stone, round_screen, tutorial, tutorial_overlay, boot, name_entry)
 shaders/     spotlight.gdshader (lumina instruirii)
 tools/       gen_round.py (generează scenes/round.tscn)
 tests/       run_tests.gd, test_case.gd, fixtures.gd, test_data/loc/save/words/scoring/tutorial.gd, simulate.gd

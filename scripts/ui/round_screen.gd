@@ -18,6 +18,7 @@ const TalismanString = preload("res://scripts/ui/talisman_string.gd")
 const SpellReveal = preload("res://scripts/ui/spell_reveal.gd")
 const FloatLayer = preload("res://scripts/ui/float_layer.gd")
 const StoneCard = preload("res://scripts/ui/stone_card.gd")
+const WordBook = preload("res://scripts/ui/word_book.gd")
 
 const MAIN_MENU_SCENE: String = "res://scenes/main_menu.tscn"
 const SPEEDS: Array[int] = [1, 2, 4]
@@ -72,6 +73,8 @@ const SHAKE_SHARE: float = 0.35
 @onready var _result_money: Label = %ResultMoney
 @onready var _again_button: Button = %AgainButton
 @onready var _result_menu_button: Button = %ResultMenuButton
+@onready var _word_book_button: Button = %WordBookButton
+@onready var _word_book: WordBook = %WordBook
 @onready var _classroom: Control = %Classroom
 @onready var _night: Control = %Backdrop
 @onready var _pause_panel: Control = %PausePanel
@@ -142,6 +145,8 @@ func _ready() -> void:
 	_sort_position.pressed.connect(_on_sort.bind(true))
 	_sort_kin.pressed.connect(_on_sort.bind(false))
 	_speed_button.pressed.connect(_on_speed_pressed)
+	_word_book_button.pressed.connect(open_word_book)
+	_word_book.closed.connect(func() -> void: EventBus.book_closed.emit("words"))
 	_menu_button.pressed.connect(open_pause)
 	_resume_button.pressed.connect(close_pause)
 	_main_menu_button.pressed.connect(_go_to_menu)
@@ -187,6 +192,7 @@ func _refresh_texts() -> void:
 	_consumables.empty_label = Loc.t("round_consumable_slot")
 	_again_button.text = Loc.t("result_again")
 	_result_menu_button.text = Loc.t("result_menu")
+	_word_book_button.text = Loc.t("word_book_button")
 	_pause_title.text = Loc.t("pause_title")
 	_pause_seed.text = Loc.t("round_seed", {"seed": _seed})
 	_resume_button.text = Loc.t("pause_resume")
@@ -217,6 +223,7 @@ func _refresh_state() -> void:
 	_sort_kin.disabled = _sort_position.disabled
 	_speed_button.disabled = not EventBus.is_allowed("speed")
 	_menu_button.disabled = not EventBus.is_allowed("menu")
+	_word_book_button.disabled = not EventBus.is_allowed("word_book")
 	_hand.enabled = not _busy
 	_refresh_kenaz()
 
@@ -283,7 +290,22 @@ func close_pause() -> void:
 	EventBus.pause_closed.emit()
 
 
+## The Book of Words over the round (button or key C).
+func open_word_book() -> void:
+	if _word_book.visible or _pause_panel.visible or not EventBus.is_allowed("word_book"):
+		return
+	_word_book.open(_round.word_levels)
+	EventBus.book_opened.emit("words")
+
+
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and (event as InputEventKey).pressed and not (event as InputEventKey).echo \
+			and (event as InputEventKey).keycode == KEY_C:
+		get_viewport().set_input_as_handled()
+		open_word_book()
+		return
+	if _word_book.visible:
+		return
 	if event.is_action_pressed("ui_cancel") and EventBus.is_allowed("menu"):
 		get_viewport().set_input_as_handled()
 		if _pause_panel.visible:
@@ -446,6 +468,7 @@ func _announce(result: Dictionary) -> void:
 			EventBus.spell_discovered.emit(id)
 		else:
 			await _show_toast("%s: %s" % [Loc.text(spell["name"]), Loc.text(spell["effect"])])
+		EventBus.spell_cast.emit(id)
 	_refresh_state()
 
 

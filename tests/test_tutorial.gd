@@ -6,6 +6,7 @@ const Fixtures = preload("res://tests/fixtures.gd")
 const TutorialFlow = preload("res://scripts/core/tutorial_flow.gd")
 const RoundState = preload("res://scripts/core/round_state.gd")
 const Stone = preload("res://scripts/core/stone.gd")
+const WordDetector = preload("res://scripts/core/word_detector.gd")
 
 
 func _flow() -> TutorialFlow:
@@ -225,3 +226,229 @@ func test_lesson_1_is_not_won_without_pairs() -> void:
 			_cast(state, [c])
 			with_pair = maxf(with_pair, state.score)
 	check(with_pair < float(_lesson("stones_and_casting")["target"]), "fehu+hagalaz and two singles reach %s" % with_pair)
+
+
+# --- Every lesson, played through the step machine ------------------------------------------
+
+## Plays a lesson the way the tutorial screen would: game actions go through a RoundState set
+## up like the lesson, and the same events reach the flow. Fails on actions the gate forbids.
+## actions: ["advance"], ["hover", rune], ["select", [runes]], ["swap", [runes]], ["cast"],
+## ["book"]. Returns the last flow result.
+func _play_lesson(lesson: Dictionary, actions: Array) -> String:
+	var flow: TutorialFlow = TutorialFlow.new()
+	flow.setup({"lessons": [lesson]})
+	var state: RoundState = _round(lesson)
+	var selected: Array = []
+	var last: String = ""
+	for action: Array in actions:
+		var kind: String = action[0]
+		var gate: Dictionary = flow.gate()
+		var needs: String = {"select": "select", "swap": "swap", "cast": "cast", "book": "word_book"}.get(kind, "")
+		if not needs.is_empty() and not (gate["actions"] as Array).has(needs):
+			failures.append("%s: \"%s\" is not allowed at step %d" % [lesson["id"], kind, flow.step_index])
+			return "blocked"
+		match kind:
+			"advance":
+				last = flow.advance()["result"]
+			"hover":
+				last = flow.handle("hover", {"rune": action[1]})["result"]
+			"select":
+				selected = action[1]
+				for id: Variant in selected:
+					var runes: Array = gate["runes"]
+					if not runes.is_empty() and not runes.has(id):
+						failures.append("%s: %s cannot be selected at step %d" % [lesson["id"], id, flow.step_index])
+				var preview: Dictionary = state.preview(_indices(state, selected))
+				last = flow.handle("selection", {"word": preview.get("word", ""), "runes": selected})["result"]
+			"swap":
+				state.swap(_indices(state, action[1]))
+				last = flow.handle("swap", {"count": (action[1] as Array).size()})["result"]
+				selected = []
+			"cast":
+				var indices: Array[int] = _indices(state, selected)
+				var word: String = state.preview(indices).get("word", "")
+				last = flow.handle("cast", {"word": word, "runes": selected})["result"]
+				var result: Dictionary = state.cast(indices)
+				for spell: String in result["spells"]:
+					last = flow.handle("spell_cast", {"spell": spell})["result"]
+				if result["won"]:
+					last = flow.handle("round_won")["result"]
+				elif result["lost"]:
+					last = flow.handle("round_lost")["result"]
+				selected = []
+			"book":
+				flow.handle("book_opened", {"book": "words"})
+				last = flow.handle("book_closed", {"book": "words"})["result"]
+		if last == "lesson_done" or last == "lesson_failed":
+			return last
+	return last
+
+
+func test_every_lesson_has_steps_and_valid_hands() -> void:
+	var lessons: Array = Fixtures.data()["tutorial"]["lessons"]
+	check_eq(lessons.size(), 5, "lessons:")
+	for lesson: Dictionary in lessons:
+		check(not (lesson["steps"] as Array).is_empty(), "%s has steps" % lesson["id"])
+		if lesson.has("hand"):
+			check_eq((lesson["hand"] as Array).size(), 8, "%s hand size:" % lesson["id"])
+			var state: RoundState = _round(lesson)
+			check_eq(_hand_ids(state), _strings(lesson["hand"]), "%s hand:" % lesson["id"])
+
+
+func _strings(values: Array) -> Array[String]:
+	var result: Array[String] = []
+	for value: Variant in values:
+		result.append(str(value))
+	return result
+
+
+func test_lesson_1_plays_to_the_end() -> void:
+	var result: String = _play_lesson(_lesson("stones_and_casting"), [
+		["advance"], ["hover", "fehu"], ["advance"], ["select", ["fehu", "hagalaz"]], ["advance"],
+		["cast"], ["advance"], ["select", ["gebo", "dagaz"]], ["cast"],
+	])
+	check_eq(result, "lesson_done", "lesson 1:")
+
+
+func test_lesson_2_needs_the_swap_for_its_family() -> void:
+	var lesson: Dictionary = _lesson("swapping_and_big_words")
+	var state: RoundState = _round(lesson)
+	check(not WordDetector.available_in_hand(state.hand).has("family"), "no Family before swapping")
+	state.swap(_indices(state, ["raidho", "wunjo"]))
+	check(WordDetector.available_in_hand(state.hand).has("family"), "a Family after swapping Raidho and Wunjo")
+
+
+func test_lesson_2_family_wins_in_one_cast_however_the_hand_is_ordered() -> void:
+	var lesson: Dictionary = _lesson("swapping_and_big_words")
+	var family: Array = ["isaz", "ehwaz", "thurisaz", "gebo", "dagaz"]
+	for variant: String in ["as dealt", "other swap", "sorted by position", "sorted by kin"]:
+		var state: RoundState = _round(lesson)
+		state.swap(_indices(state, ["kenaz", "naudiz"] if variant == "other swap" else ["raidho", "wunjo"]))
+		if variant == "sorted by position":
+			state.sort_by_position()
+		elif variant == "sorted by kin":
+			state.sort_by_kin()
+		var result: Dictionary = _cast(state, family)
+		check_eq(result["word"], "family", "%s word:" % variant)
+		check(result["won"], "%s: the Family wins (%s of %s)" % [variant, state.score, state.target])
+
+
+func test_lesson_2_is_not_won_without_the_family() -> void:
+	var lesson: Dictionary = _lesson("swapping_and_big_words")
+	# The strongest two Casts without a Family (searched over every swap of the swappable
+	# stones and every pair of Casts): swap Wunjo, Two Pairs, then a single rune. 2 395 points.
+	var state: RoundState = _round(lesson)
+	state.swap(_indices(state, ["wunjo"]))
+	_cast(state, ["ehwaz", "gebo", "dagaz", "thurisaz"])
+	_cast(state, ["isaz", "raidho", "kenaz", "naudiz", "jera"])
+	check(state.score < state.target, "best line without a Family: %s of %s" % [state.score, state.target])
+	# The natural alternative: the Triad and the Pair one after another.
+	var split: RoundState = _round(lesson)
+	split.swap(_indices(split, ["raidho", "wunjo"]))
+	_cast(split, ["isaz", "ehwaz", "thurisaz"])
+	_cast(split, ["gebo", "dagaz"])
+	check(split.score < split.target, "Triad then Pair: %s of %s" % [split.score, split.target])
+
+
+func test_lesson_2_plays_to_the_end() -> void:
+	var result: String = _play_lesson(_lesson("swapping_and_big_words"), [
+		["advance"], ["select", ["raidho", "wunjo"]], ["swap", ["raidho", "wunjo"]], ["advance"],
+		["select", ["isaz", "ehwaz", "thurisaz", "gebo", "dagaz"]], ["cast"], ["book"],
+	])
+	check_eq(result, "lesson_done", "lesson 2:")
+
+
+func test_lesson_3_needs_hagalaz_to_strike_twice() -> void:
+	var lesson: Dictionary = _lesson("voice_of_the_runes")
+	var state: RoundState = _round(lesson)
+	check_eq(_cast(state, ["hagalaz", "fehu"])["word"], "pair", "hagalaz + fehu:")
+	_cast(state, ["kenaz", "ingwaz"])
+	check(state.is_won(), "Hagalaz + Fehu, then Kenaz + Ingwaz wins: %s of %s" % [state.score, state.target])
+	# The same Casts if Hagalaz struck only once.
+	var data: Dictionary = Fixtures.data().duplicate(true)
+	((data["runes"] as Dictionary)["hagalaz"] as Dictionary).erase("effects")
+	var once: RoundState = RoundState.new()
+	once.setup(data, Fixtures.rng(int(lesson["seed"])), float(lesson["target"]), lesson)
+	once.start()
+	_cast(once, ["hagalaz", "fehu"])
+	_cast(once, ["kenaz", "ingwaz"])
+	check(not once.is_won(), "without the second strike: %s of %s" % [once.score, once.target])
+
+
+func test_lesson_3_is_not_won_without_casting_hagalaz() -> void:
+	var lesson: Dictionary = _lesson("voice_of_the_runes")
+	var others: Array = ["fehu", "isaz", "berkanan", "wunjo", "kenaz", "raidho", "ingwaz"]
+	var best: float = 0.0
+	for first: Array in _combinations(others, 5):
+		for second: Array in _combinations(others, 5):
+			var state: RoundState = _round(lesson)
+			if _cast(state, first).is_empty() or _cast(state, second).is_empty():
+				continue
+			best = maxf(best, state.score)
+	check(best < float(lesson["target"]), "best two Casts without Hagalaz: %s" % best)
+
+
+## Every subset of `items` with 1..max_size elements, in order.
+func _combinations(items: Array, max_size: int) -> Array:
+	var result: Array = []
+	for mask: int in range(1, 1 << items.size()):
+		var subset: Array = []
+		for i: int in items.size():
+			if mask & (1 << i):
+				subset.append(items[i])
+		if subset.size() <= max_size:
+			result.append(subset)
+	return result
+
+
+func test_lesson_3_plays_to_the_end() -> void:
+	var result: String = _play_lesson(_lesson("voice_of_the_runes"), [
+		["advance"], ["hover", "hagalaz"], ["advance"], ["select", ["hagalaz", "fehu"]], ["cast"],
+		["advance"], ["select", ["kenaz", "ingwaz"]], ["cast"],
+	])
+	check_eq(result, "lesson_done", "lesson 3:")
+
+
+func test_lesson_4_spell_and_triad_in_one_cast() -> void:
+	var lesson: Dictionary = _lesson("spells")
+	var state: RoundState = _round(lesson)
+	var preview: Dictionary = state.preview(_indices(state, ["isaz", "hagalaz", "naudiz", "fehu", "tiwaz"]))
+	check_eq(preview["word"], "triad", "the five stones:")
+	check_eq(preview["spells"], ["winter"] as Array[String], "spells:")
+	var result: Dictionary = _cast(state, ["isaz", "hagalaz", "naudiz", "fehu", "tiwaz"])
+	check(float(result["score"]) < float(lesson["target"]), "the Triad alone is below the target")
+	check(result["won"], "Winter lowers the target enough: %s of %s" % [state.score, state.target])
+	# The same Cast with no Spells in the game.
+	var data: Dictionary = Fixtures.data().duplicate(true)
+	data["spells"] = {}
+	var plain: RoundState = RoundState.new()
+	plain.setup(data, Fixtures.rng(int(lesson["seed"])), float(lesson["target"]), lesson)
+	plain.start()
+	check(not _cast(plain, ["isaz", "hagalaz", "naudiz", "fehu", "tiwaz"])["won"], "without Winter it is not won")
+
+
+func test_lesson_4_plays_to_the_end() -> void:
+	var result: String = _play_lesson(_lesson("spells"), [
+		["advance"], ["advance"], ["select", ["isaz", "hagalaz", "naudiz"]], ["advance"],
+		["select", ["isaz", "hagalaz", "naudiz", "fehu", "tiwaz"]], ["cast"], ["advance"], ["advance"],
+	])
+	check_eq(result, "lesson_done", "lesson 4:")
+
+
+func test_lesson_5_small_target_two_or_three_words() -> void:
+	var lesson: Dictionary = _lesson("on_your_own")
+	var pairs: RoundState = _round(lesson)
+	for pair: Array in [["thurisaz", "isaz"], ["uruz", "berkanan"], ["mannaz", "ansuz"]]:
+		_cast(pairs, pair)
+	check(pairs.is_won(), "three Pairs win: %s of %s" % [pairs.score, pairs.target])
+	var singles: RoundState = _round(lesson)
+	for rune: String in ["hagalaz", "perthro", "uruz", "ansuz"]:
+		_cast(singles, [rune])
+	check(not singles.is_won(), "four single runes do not: %s of %s" % [singles.score, singles.target])
+
+
+func test_lesson_5_plays_to_the_end() -> void:
+	var result: String = _play_lesson(_lesson("on_your_own"), [
+		["advance"], ["select", ["mannaz", "ansuz"]], ["cast"], ["select", ["uruz", "berkanan"]], ["cast"],
+	])
+	check_eq(result, "lesson_done", "lesson 5:")

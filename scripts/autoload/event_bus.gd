@@ -16,6 +16,9 @@ signal swap(count: int)
 ## The score animation reached a phase: "word", "stone", "voice", "total".
 ## rune_id is the stone involved ("" for word / total); detail is e.g. the Voice kind.
 signal scoring_phase(phase: String, rune_id: String, detail: String)
+## A Spell was cast (every time, after its reveal or toast).
+signal spell_cast(spell_id: String)
+## A Spell was cast for the first time ever.
 signal spell_discovered(spell_id: String)
 signal round_won
 signal round_lost

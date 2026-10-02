@@ -37,7 +37,8 @@ ext=[("Script","res://scripts/ui/round_screen.gd","1_round"),("Script","res://sc
      ("Script","res://scripts/ui/candle_row.gd","3_candles"),("Script","res://scripts/ui/portrait.gd","4_portrait"),
      ("Script","res://scripts/ui/rune_circle.gd","5_circle"),("Script","res://scripts/ui/talisman_string.gd","6_string"),
      ("Script","res://scripts/ui/hand_view.gd","7_hand"),("Script","res://scripts/ui/float_layer.gd","8_float"),
-     ("PackedScene","res://scenes/spell_reveal.tscn","9_reveal"),("Script","res://scripts/ui/classroom_backdrop.gd","10_classroom")]
+     ("PackedScene","res://scenes/spell_reveal.tscn","9_reveal"),("Script","res://scripts/ui/classroom_backdrop.gd","10_classroom"),
+     ("Script","res://scripts/ui/word_book.gd","11_word_book")]
 subs='''[sub_resource type="StyleBoxFlat" id="bar_bg"]
 bg_color = Color(0.0588235, 0.0509804, 0.109804, 1)
 border_width_left = 3
@@ -120,6 +121,8 @@ out.append(label("ScoringCount","RuneCircle/CircleText","",22,"SecondaryLabel",a
 out.append(label("PreviewValue","RuneCircle/CircleText","",40,align=1))
 out.append(label("SpellLine","RuneCircle/CircleText","",22,align=1,extra={"autowrap_mode":"3"}))
 
+out.append(node("WordBookButton","Button",".",dict(tid(rect(1222,486,200,60),"btn_word_book"),**{"theme_override_font_sizes/font_size":"26","text":'"Cuvinte"'}),unique=True))
+
 # --- right: talismans, consumables, Kenaz
 out.append(node("Talismans","Control",".",dict(rect(1320,14,580,210),mouse_filter="2"),unique=True,script="6_string"))
 out.append(node("Consumables","Control",".",dict(rect(1600,262,290,190),mouse_filter="2",slots="2",show_rope="false"),unique=True,script="6_string"))
@@ -145,6 +148,8 @@ out.append(label("ResultMoney","ResultPanel/ResultBox","",26,color="Color(0.9215
 out.append(node("ResultButtons","HBoxContainer","ResultPanel/ResultBox",{"layout_mode":"2","alignment":"1","theme_override_constants/separation":"20"}))
 out.append(node("AgainButton","Button","ResultPanel/ResultBox/ResultButtons",{"custom_minimum_size":"Vector2(320, 72)","layout_mode":"2","theme_type_variation":'&"CastButton"',"theme_override_font_sizes/font_size":"32","text":'"Again"'},unique=True))
 out.append(node("ResultMenuButton","Button","ResultPanel/ResultBox/ResultButtons",{"custom_minimum_size":"Vector2(220, 72)","layout_mode":"2","text":'"Menu"'},unique=True))
+out.append(node("WordBook","Control",".",FULL,unique=True,script="11_word_book"))
+
 # --- pause menu
 out.append(node("PausePanel","Control",".",FULL,unique=True))
 out.append(node("PauseDim","ColorRect","PausePanel",dict(FULL,color="Color(0.0196078, 0.0235294, 0.0392157, 0.75)")))

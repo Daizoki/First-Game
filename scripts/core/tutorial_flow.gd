@@ -85,7 +85,7 @@ func advance() -> Dictionary:
 
 
 ## Feeds one game event: "hover" {rune}, "selection" {word, runes}, "cast" {word, runes},
-## "swap" {count}, "spell_discovered" {spell}, "book_opened" / "book_closed" {book},
+## "swap" {count}, "spell_cast" / "spell_discovered" {spell}, "book_opened" / "book_closed" {book},
 ## "round_won", "round_lost".
 func handle(event: String, args: Dictionary = {}) -> Dictionary:
 	if lesson().is_empty():
@@ -138,7 +138,7 @@ func _judge(wait: Dictionary, args: Dictionary) -> String:
 			if str(wait["event"]) == "cast" or runes.size() >= _min_count(wait):
 				return "wrong"
 			return "no"
-		"spell_discovered":
+		"spell_cast", "spell_discovered":
 			return "yes" if not wait.has("spell") or str(args.get("spell", "")) == str(wait["spell"]) else "no"
 	return "yes"
 

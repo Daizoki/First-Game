@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/round_screen.gd" id="1_round"]
 [ext_resource type="Script" path="res://scripts/ui/night_backdrop.gd" id="2_backdrop"]
@@ -10,6 +10,7 @@
 [ext_resource type="Script" path="res://scripts/ui/float_layer.gd" id="8_float"]
 [ext_resource type="PackedScene" path="res://scenes/spell_reveal.tscn" id="9_reveal"]
 [ext_resource type="Script" path="res://scripts/ui/classroom_backdrop.gd" id="10_classroom"]
+[ext_resource type="Script" path="res://scripts/ui/word_book.gd" id="11_word_book"]
 
 [sub_resource type="StyleBoxFlat" id="bar_bg"]
 bg_color = Color(0.0588235, 0.0509804, 0.109804, 1)
@@ -414,6 +415,17 @@ text = ""
 horizontal_alignment = 1
 autowrap_mode = 3
 
+[node name="WordBookButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+offset_left = 1222.0
+offset_top = 486.0
+offset_right = 1422.0
+offset_bottom = 546.0
+metadata/tutorial_id = "btn_word_book"
+theme_override_font_sizes/font_size = 26
+text = "Cuvinte"
+
 [node name="Talismans" type="Control" parent="."]
 unique_name_in_owner = true
 layout_mode = 1
@@ -590,6 +602,16 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(220, 72)
 layout_mode = 2
 text = "Menu"
+
+[node name="WordBook" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("11_word_book")
 
 [node name="PausePanel" type="Control" parent="."]
 unique_name_in_owner = true

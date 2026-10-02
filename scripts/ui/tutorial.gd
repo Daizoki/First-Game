@@ -32,6 +32,8 @@ var _caption_holding: bool = false
 var _caption_timer: float = -1.0
 var _idle_time: float = 0.0
 var _idle_shown: bool = false
+## The idle nudge is on screen; the next thing the player does puts it away.
+var _idle_bubble: bool = false
 
 
 func _ready() -> void:
@@ -48,11 +50,17 @@ func _ready() -> void:
 	EventBus.cast_resolved.connect(_on_cast_resolved)
 	EventBus.swap.connect(func(count: int) -> void: _feed("swap", {"count": count}))
 	EventBus.scoring_phase.connect(_on_scoring_phase)
+	EventBus.spell_cast.connect(func(spell_id: String) -> void: _feed("spell_cast", {"spell": spell_id}))
 	EventBus.spell_discovered.connect(func(spell_id: String) -> void: _feed("spell_discovered", {"spell": spell_id}))
 	EventBus.round_won.connect(func() -> void: _feed("round_won", {}))
 	EventBus.round_lost.connect(func() -> void: _feed("round_lost", {}))
-	EventBus.book_opened.connect(func(book_id: String) -> void: _feed("book_opened", {"book": book_id}))
-	EventBus.book_closed.connect(func(book_id: String) -> void: _feed("book_closed", {"book": book_id}))
+	# A book covers the lesson; the light and the bubble wait behind it.
+	EventBus.book_opened.connect(func(book_id: String) -> void:
+		_overlay.visible = false
+		_feed("book_opened", {"book": book_id}))
+	EventBus.book_closed.connect(func(book_id: String) -> void:
+		_overlay.visible = true
+		_feed("book_closed", {"book": book_id}))
 	EventBus.pause_opened.connect(func() -> void: _overlay.visible = false)
 	EventBus.pause_closed.connect(func() -> void: _overlay.visible = true)
 	_show_intro_line(0)
@@ -118,11 +126,13 @@ func _start_lesson(index: int) -> void:
 		_round.queue_free()
 		_round = null
 	_overlay.clear()
+	_talk_then = Callable()
 	_pending.clear()
 	_casting = false
 	_captions_shown.clear()
 	_idle_time = 0.0
 	_idle_shown = false
+	_idle_bubble = false
 	EventBus.set_gate(TutorialFlow.ALWAYS_ALLOWED)
 	var round_screen: Control = ROUND_SCENE.instantiate()
 	round_screen.set("config", {
@@ -181,6 +191,9 @@ func _feed(event: String, args: Dictionary, reset_idle: bool = true) -> void:
 		return
 	if reset_idle and event != "round_won" and event != "round_lost":
 		_idle_time = 0.0
+		if _idle_bubble and event != "hover":
+			_idle_bubble = false
+			_overlay.hide_bubble()
 	var result: Dictionary = _flow.handle(event, args)
 	if _casting and result["result"] != "none":
 		_pending.append(result)
@@ -274,6 +287,9 @@ func _release_caption() -> void:
 
 
 func _on_bubble_clicked() -> void:
+	if _idle_bubble:
+		_idle_bubble = false
+		_overlay.hide_bubble()
 	if _caption_holding:
 		_overlay.hide_bubble()
 		_release_caption()
@@ -302,6 +318,7 @@ func _tick_idle(delta: float) -> void:
 	_idle_time += delta
 	if _idle_time >= float(hint["seconds"]):
 		_idle_shown = true
+		_idle_bubble = true
 		_overlay.say(_speaker, _format(hint["text"]), false)
 
 
