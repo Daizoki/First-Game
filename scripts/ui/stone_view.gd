@@ -23,6 +23,10 @@ var hovered: bool = false
 var base_rotation: float = 0.0
 ## Extra glow while the stone scores.
 var flash: float = 0.0
+## Lit while the mouse is over the circle and this stone would score.
+var marked: bool = false
+## Selected but would not score (faded while the circle's card is shown).
+var dimmed: bool = false: set = set_dimmed
 
 var _glyph: RuneGlyphScript
 var _outline: PackedVector2Array = []
@@ -57,6 +61,13 @@ func set_selected(value: bool) -> void:
 	queue_redraw()
 
 
+func set_dimmed(value: bool) -> void:
+	if value == dimmed:
+		return
+	dimmed = value
+	modulate.a = 0.45 if value else 1.0
+
+
 ## Visual offset (lift) the hand adds to the stone's resting place.
 func lift_offset() -> float:
 	return -_lift
@@ -69,14 +80,14 @@ func _process(delta: float) -> void:
 	var sway: float = sin(_time * 1.3 + _phase) * 0.018
 	rotation = base_rotation + sway + (0.06 if hovered and not selected else 0.0)
 	flash = maxf(0.0, flash - delta * 1.6)
-	_glyph.glow = 1.0 + (1.2 if selected else 0.0) + flash * 3.0
+	_glyph.glow = 1.0 + (1.2 if selected else 0.0) + (1.4 if marked else 0.0) + flash * 3.0
 	queue_redraw()
 
 
 func _draw() -> void:
 	var center: Vector2 = STONE_SIZE / 2.0
-	# Halo in the kin color when selected or scoring.
-	var halo: float = (0.55 if selected else 0.0) + flash
+	# Halo in the kin color when selected, scoring or marked.
+	var halo: float = (0.55 if selected else 0.0) + (0.9 if marked else 0.0) + flash
 	if halo > 0.0:
 		for i: int in range(6, 0, -1):
 			var grow: float = 1.0 + float(i) * 0.05

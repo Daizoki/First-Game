@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/round_screen.gd" id="1_round"]
 [ext_resource type="Script" path="res://scripts/ui/night_backdrop.gd" id="2_backdrop"]
@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" path="res://scenes/spell_reveal.tscn" id="9_reveal"]
 [ext_resource type="Script" path="res://scripts/ui/classroom_backdrop.gd" id="10_classroom"]
 [ext_resource type="Script" path="res://scripts/ui/word_book.gd" id="11_word_book"]
+[ext_resource type="Script" path="res://scripts/ui/rune_book.gd" id="12_rune_book"]
 
 [sub_resource type="StyleBoxFlat" id="bar_bg"]
 bg_color = Color(0.0588235, 0.0509804, 0.109804, 1)
@@ -673,8 +674,25 @@ custom_minimum_size = Vector2(460, 72)
 layout_mode = 2
 text = "Resume"
 
+[node name="RuneBookButton" type="Button" parent="PausePanel/PauseCenter/PauseBox/PauseList/PauseButtons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(460, 72)
+layout_mode = 2
+text = "Runes"
+metadata/tutorial_id = "btn_rune_book"
+
 [node name="MainMenuButton" type="Button" parent="PausePanel/PauseCenter/PauseBox/PauseList/PauseButtons"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(460, 72)
 layout_mode = 2
 text = "Menu"
+
+[node name="RuneBook" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("12_rune_book")

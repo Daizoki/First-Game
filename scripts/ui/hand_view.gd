@@ -83,6 +83,15 @@ func views_with_rune(rune_id: String) -> Array[StoneView]:
 	return result
 
 
+## Lights the stones at these hand indices (the ones that would score) and fades the other
+## selected stones; an empty list puts every stone back to normal.
+func mark_scoring(indices: Array) -> void:
+	for i: int in _views.size():
+		var view: StoneView = _views[i]
+		view.marked = indices.has(i)
+		view.dimmed = not indices.is_empty() and view.selected and not view.marked
+
+
 func view_for(stone: Stone) -> StoneView:
 	for view: StoneView in _views:
 		if view.stone == stone:

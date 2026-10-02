@@ -135,6 +135,12 @@ func test_exact_selection_and_cast_conditions() -> void:
 	check_eq(flow.handle("spell_discovered", {"spell": "winter"})["result"], "advance", "winter:")
 
 
+func test_book_wait_names_the_book() -> void:
+	var flow: TutorialFlow = _flow_with([{"text": {}, "wait_for": {"event": "book_closed", "book": "words"}}, {"text": {}}])
+	check_eq(flow.handle("book_closed", {"book": "runes"})["result"], "none", "the Book of Runes:")
+	check_eq(flow.handle("book_closed", {"book": "words"})["result"], "advance", "the Book of Words:")
+
+
 func test_lost_round_fails_the_lesson() -> void:
 	var flow: TutorialFlow = _flow_with([{"text": {}, "wait_for": {"event": "round_won"}}])
 	check_eq(flow.handle("round_lost")["result"], "lesson_failed", "lost:")

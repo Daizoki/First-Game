@@ -299,7 +299,8 @@
 						"btn_word_book"
 					],
 					"wait_for": {
-						"event": "book_closed"
+						"event": "book_closed",
+						"book": "words"
 					},
 					"allow": [
 						"word_book"

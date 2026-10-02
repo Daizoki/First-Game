@@ -140,6 +140,8 @@ func _judge(wait: Dictionary, args: Dictionary) -> String:
 			return "no"
 		"spell_cast", "spell_discovered":
 			return "yes" if not wait.has("spell") or str(args.get("spell", "")) == str(wait["spell"]) else "no"
+		"book_opened", "book_closed":
+			return "yes" if not wait.has("book") or str(args.get("book", "")) == str(wait["book"]) else "no"
 	return "yes"
 
 

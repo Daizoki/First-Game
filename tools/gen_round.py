@@ -38,7 +38,8 @@ ext=[("Script","res://scripts/ui/round_screen.gd","1_round"),("Script","res://sc
      ("Script","res://scripts/ui/rune_circle.gd","5_circle"),("Script","res://scripts/ui/talisman_string.gd","6_string"),
      ("Script","res://scripts/ui/hand_view.gd","7_hand"),("Script","res://scripts/ui/float_layer.gd","8_float"),
      ("PackedScene","res://scenes/spell_reveal.tscn","9_reveal"),("Script","res://scripts/ui/classroom_backdrop.gd","10_classroom"),
-     ("Script","res://scripts/ui/word_book.gd","11_word_book")]
+     ("Script","res://scripts/ui/word_book.gd","11_word_book"),
+     ("Script","res://scripts/ui/rune_book.gd","12_rune_book")]
 subs='''[sub_resource type="StyleBoxFlat" id="bar_bg"]
 bg_color = Color(0.0588235, 0.0509804, 0.109804, 1)
 border_width_left = 3
@@ -160,6 +161,8 @@ out.append(label("PauseTitle","PausePanel/PauseCenter/PauseBox/PauseList","PauzÄ
 out.append(label("PauseSeed","PausePanel/PauseCenter/PauseBox/PauseList","Seed",22,"SecondaryLabel",align=1))
 out.append(node("PauseButtons","VBoxContainer","PausePanel/PauseCenter/PauseBox/PauseList",{"layout_mode":"2","theme_override_constants/separation":"12"},unique=True))
 out.append(node("ResumeButton","Button","PausePanel/PauseCenter/PauseBox/PauseList/PauseButtons",{"custom_minimum_size":"Vector2(460, 72)","layout_mode":"2","text":'"Resume"'},unique=True))
+out.append(node("RuneBookButton","Button","PausePanel/PauseCenter/PauseBox/PauseList/PauseButtons",{"custom_minimum_size":"Vector2(460, 72)","layout_mode":"2","text":'"Runes"',"metadata/tutorial_id":'"btn_rune_book"'},unique=True))
 out.append(node("MainMenuButton","Button","PausePanel/PauseCenter/PauseBox/PauseList/PauseButtons",{"custom_minimum_size":"Vector2(460, 72)","layout_mode":"2","text":'"Menu"'},unique=True))
+out.append(node("RuneBook","Control",".",FULL,unique=True,script="12_rune_book"))
 open('scenes/round.tscn','w').write("\n".join(out))
 print("ok")

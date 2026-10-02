@@ -36,11 +36,19 @@ const ENUMS: Dictionary = {
 	],
 	"tutorial_action": ["select", "cast", "swap", "sort", "speed", "menu", "word_book"],
 	"tutorial_labels": ["meaning"],
+	"book": ["words", "runes"],
 	## UI elements the tutorial can light up (metadata "tutorial_id" on the round screen),
 	## plus "stone:<rune_id>" for a stone in hand.
 	"ui_id": [
 		"hand", "circle", "btn_cast", "btn_swap", "target", "score", "candles", "chalk", "power_res",
-		"examiner", "btn_word_book", "btn_menu", "sort", "kenaz",
+		"examiner", "btn_word_book", "btn_menu", "sort", "kenaz", "btn_rune_book",
+	],
+	## What can show a contextual hint (data/hints.json). Events of later stages are listed
+	## already so their hints can wait with "enabled": false.
+	"hint_event": [
+		"rune_in_hand", "idle", "shop_opened", "reroll_available", "talisman_bought", "examiner_met",
+		"lesson_gained", "engraving_gained", "bindrune_gained", "exam_failed", "evening_class",
+		"torn_page_found", "curse_discovered", "old_word_discovered",
 	],
 }
 
@@ -140,11 +148,20 @@ const SCHEMAS: Dictionary = {
 		"optional": {
 			"rune": "ref:runes", "word": "ref:words", "include": "rune_list", "exact": "rune_list",
 			"prefer": "rune_list", "alt_text": "loc", "spell": "ref:spells", "min_count": "int",
+			"book": "enum:book",
 		},
 	},
 	"tutorial_idle": {
 		"required": {"seconds": "number", "text": "loc"},
 		"optional": {},
+	},
+	"hint": {
+		"required": {"id": "id", "enabled": "bool", "speaker": "ref:characters", "text": "loc"},
+		"optional": {"trigger": "object:hint_trigger", "follows": "ref:hints"},
+	},
+	"hint_trigger": {
+		"required": {"event": "enum:hint_event"},
+		"optional": {"rune": "ref:runes", "seconds": "number", "max_exams": "int"},
 	},
 	"rules": {
 		"required": {
@@ -484,6 +501,15 @@ func _extra_checks(file_name: String, label: String, dict: Dictionary, schema_na
 			var power: Variant = dict.get("base_power")
 			if power is int and power < 0:
 				add_error(file_name, label, "\"base_power\" cannot be negative")
+		"hint":
+			if dict.has("trigger") == dict.has("follows"):
+				add_error(file_name, label, "a hint needs either \"trigger\" or \"follows\" (not both)")
+			var trigger: Variant = dict.get("trigger")
+			if trigger is Dictionary and str((trigger as Dictionary).get("event", "")) == "idle" \
+					and not (trigger as Dictionary).has("seconds"):
+				add_error(file_name, label, "an \"idle\" hint needs \"seconds\"")
+			if str(dict.get("follows", "")) == str(dict.get("id", "")):
+				add_error(file_name, label, "a hint cannot follow itself")
 		"rules":
 			for field: String in ["hand_size", "casts_per_round", "max_stones_per_action", "copies_per_rune"]:
 				var number: Variant = dict.get(field)

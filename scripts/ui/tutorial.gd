@@ -18,6 +18,8 @@ const INTRO_HOME_Y: float = 0.62
 @onready var _overlay: TutorialOverlay = %Overlay
 
 var _flow: TutorialFlow = TutorialFlow.new()
+## How many things cover the lesson right now (pause menu, books).
+var _covers: int = 0
 var _round: Control = null
 var _speaker: String = "ilinca"
 var _intro_line: int = 0
@@ -54,20 +56,26 @@ func _ready() -> void:
 	EventBus.spell_discovered.connect(func(spell_id: String) -> void: _feed("spell_discovered", {"spell": spell_id}))
 	EventBus.round_won.connect(func() -> void: _feed("round_won", {}))
 	EventBus.round_lost.connect(func() -> void: _feed("round_lost", {}))
-	# A book covers the lesson; the light and the bubble wait behind it.
+	# A book or the pause menu covers the lesson; the light and the bubble wait behind it
+	# (the Book of Runes opens over the pause menu, so covers are counted).
 	EventBus.book_opened.connect(func(book_id: String) -> void:
-		_overlay.visible = false
+		_cover(1)
 		_feed("book_opened", {"book": book_id}))
 	EventBus.book_closed.connect(func(book_id: String) -> void:
-		_overlay.visible = true
+		_cover(-1)
 		_feed("book_closed", {"book": book_id}))
-	EventBus.pause_opened.connect(func() -> void: _overlay.visible = false)
-	EventBus.pause_closed.connect(func() -> void: _overlay.visible = true)
+	EventBus.pause_opened.connect(_cover.bind(1))
+	EventBus.pause_closed.connect(_cover.bind(-1))
 	_show_intro_line(0)
 
 
 func _exit_tree() -> void:
 	EventBus.reset()
+
+
+func _cover(step: int) -> void:
+	_covers = maxi(0, _covers + step)
+	_overlay.visible = _covers == 0
 
 
 func _process(delta: float) -> void:
@@ -129,6 +137,8 @@ func _start_lesson(index: int) -> void:
 	_talk_then = Callable()
 	_pending.clear()
 	_casting = false
+	_covers = 0
+	_overlay.visible = true
 	_captions_shown.clear()
 	_idle_time = 0.0
 	_idle_shown = false

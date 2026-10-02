@@ -3,6 +3,11 @@ extends Node
 ## it never knows who listens. Listeners never change game logic directly: the only
 ## thing they may set is the action gate below, which the game checks.
 
+## A round screen opened (round_closed when it leaves the screen, won or not).
+signal round_started
+signal round_closed
+## The stones in hand changed (dealt, refilled, swapped): their runes, in hand order.
+signal hand_changed(rune_ids: Array)
 ## The mouse went over a stone in hand ("" when it left every stone).
 signal stone_hovered(rune_id: String)
 ## The selection in hand changed: the Word it forms ("" = none), Spells it would cast,

@@ -19,6 +19,8 @@ const SpellReveal = preload("res://scripts/ui/spell_reveal.gd")
 const FloatLayer = preload("res://scripts/ui/float_layer.gd")
 const StoneCard = preload("res://scripts/ui/stone_card.gd")
 const WordBook = preload("res://scripts/ui/word_book.gd")
+const WordCard = preload("res://scripts/ui/word_card.gd")
+const RuneBook = preload("res://scripts/ui/rune_book.gd")
 
 const MAIN_MENU_SCENE: String = "res://scenes/main_menu.tscn"
 const SPEEDS: Array[int] = [1, 2, 4]
@@ -83,6 +85,8 @@ const SHAKE_SHARE: float = 0.35
 @onready var _pause_buttons: VBoxContainer = %PauseButtons
 @onready var _resume_button: Button = %ResumeButton
 @onready var _main_menu_button: Button = %MainMenuButton
+@onready var _rune_book_button: Button = %RuneBookButton
+@onready var _rune_book: RuneBook = %RuneBook
 
 ## Set before the screen enters the tree (the tutorial does it). Every key is optional:
 ##   title, rule: {"ro", "en"} texts for the card    target: int    seed: int
@@ -104,6 +108,10 @@ var _swaps_total: int = 0
 ## Extra pause-menu buttons: [{"key": ui_text key, "button": Button}].
 var _pause_actions: Array[Dictionary] = []
 var _card: StoneCard
+var _word_card: WordCard
+## The selection's preview (RoundState.preview), kept for the circle's card.
+var _preview: Dictionary = {}
+var _word_card_shown: bool = false
 
 
 func _ready() -> void:
@@ -137,6 +145,8 @@ func _ready() -> void:
 	_hand.stone_moved.connect(_on_stone_moved)
 	_card = StoneCard.new()
 	add_child(_card)
+	_word_card = WordCard.new()
+	add_child(_word_card)
 	_hand.hover_changed.connect(func(view: StoneView) -> void:
 		_card.show_stone(view.stone if view != null else null, view)
 		EventBus.stone_hovered.emit(view.stone.rune_id if view != null else ""))
@@ -149,6 +159,11 @@ func _ready() -> void:
 	_word_book.closed.connect(func() -> void: EventBus.book_closed.emit("words"))
 	_menu_button.pressed.connect(open_pause)
 	_resume_button.pressed.connect(close_pause)
+	_rune_book_button.pressed.connect(open_rune_book)
+	_rune_book.closed.connect(func() -> void:
+		_pause_panel.modulate.a = 1.0
+		EventBus.book_closed.emit("runes")
+		_rune_book_button.grab_focus())
 	_main_menu_button.pressed.connect(_go_to_menu)
 	_result_menu_button.pressed.connect(_go_to_menu)
 	_again_button.pressed.connect(func() -> void: get_tree().reload_current_scene())
@@ -165,8 +180,23 @@ func _ready() -> void:
 	_result_panel.visible = false
 	_pause_panel.visible = false
 	_toast.modulate.a = 0.0
-	_hand.call_deferred("set_stones", _round.hand)
+	_rune_book.visible = false
+	EventBus.round_started.emit()
+	call_deferred("_show_hand")
 	_refresh_texts()
+
+
+func _exit_tree() -> void:
+	EventBus.round_closed.emit()
+
+
+## Lays the round's hand out on screen and reports it.
+func _show_hand() -> void:
+	_hand.set_stones(_round.hand)
+	var runes: Array[String] = []
+	for stone: Stone in _round.hand:
+		runes.append(stone.rune_id)
+	EventBus.hand_changed.emit(runes)
 
 
 func _refresh_texts() -> void:
@@ -197,6 +227,7 @@ func _refresh_texts() -> void:
 	_pause_seed.text = Loc.t("round_seed", {"seed": _seed})
 	_resume_button.text = Loc.t("pause_resume")
 	_main_menu_button.text = Loc.t("pause_main_menu")
+	_rune_book_button.text = Loc.t("pause_rune_book")
 	for action: Dictionary in _pause_actions:
 		(action["button"] as Button).text = Loc.t(action["key"])
 	_refresh_state()
@@ -284,10 +315,20 @@ func open_pause() -> void:
 
 
 func close_pause() -> void:
-	if not _pause_panel.visible:
+	if not _pause_panel.visible or _rune_book.visible:
 		return
 	_pause_panel.visible = false
 	EventBus.pause_closed.emit()
+
+
+## The Book of Runes, over the pause menu.
+func open_rune_book() -> void:
+	if _rune_book.visible:
+		return
+	_rune_book.open()
+	# The pause menu waits behind the book without showing through it.
+	_pause_panel.modulate.a = 0.0
+	EventBus.book_opened.emit("runes")
 
 
 ## The Book of Words over the round (button or key C).
@@ -304,7 +345,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		open_word_book()
 		return
-	if _word_book.visible:
+	if _word_book.visible or _rune_book.visible:
 		return
 	if event.is_action_pressed("ui_cancel") and EventBus.is_allowed("menu"):
 		get_viewport().set_input_as_handled()
@@ -321,6 +362,8 @@ func _on_selection_changed() -> void:
 	var info: Dictionary = selection_info()
 	EventBus.selection_changed.emit(info["word"], info["spells"], info["runes"])
 	var preview: Dictionary = _round.preview(_hand.selected_indices())
+	_preview = preview
+	_set_word_card(false)
 	_circle.glow_color = Color(0, 0, 0, 0)
 	_circle.awakening = false
 	_spell_line.text = ""
@@ -342,6 +385,36 @@ func _on_selection_changed() -> void:
 		_show_spells(preview["spells"])
 	_preview_value.modulate.a = 1.0
 	_refresh_state()
+
+
+## The circle's card follows the mouse over the middle of the circle.
+func _process(_delta: float) -> void:
+	var covered: bool = _pause_panel.visible or _word_book.visible or _rune_book.visible or _result_panel.visible
+	_set_word_card(not _busy and not covered and not _preview.is_empty() and _mouse_over_circle())
+
+
+func _mouse_over_circle() -> bool:
+	var rect: Rect2 = _circle.get_global_rect()
+	var radius: float = minf(rect.size.x, rect.size.y) * 0.5 - 12.0
+	return get_global_mouse_position().distance_to(rect.get_center()) <= radius
+
+
+## Shows or hides the circle's card; while shown, the scoring stones glow in hand.
+func _set_word_card(wanted: bool) -> void:
+	if wanted == _word_card_shown:
+		return
+	_word_card_shown = wanted
+	if not wanted:
+		_word_card.hide_card()
+		_hand.mark_scoring([])
+		return
+	var word_id: String = _preview["word"]
+	var word: Dictionary = GameData.words[word_id]
+	var known: bool = not bool(word.get("hidden", false)) or SaveManager.has_discovery("words", word_id)
+	_word_card.show_word(_word_display_name(word_id),
+		Loc.text(word["description"]) if known else Loc.t("word_hidden"),
+		_preview, _round.word_level(word_id), _hand.selected_indices().size(), _circle)
+	_hand.mark_scoring(_preview["scoring"])
 
 
 func _show_spells(spell_ids: Array) -> void:
@@ -395,7 +468,7 @@ func _on_swap_pressed() -> void:
 	var count: int = _hand.selected_indices().size()
 	if _busy or not EventBus.is_allowed("swap") or not _round.swap(_hand.selected_indices()):
 		return
-	_hand.set_stones(_round.hand)
+	_show_hand()
 	EventBus.swap.emit(count)
 	_on_selection_changed()
 
@@ -426,7 +499,7 @@ func _on_cast_pressed() -> void:
 		var tween: Tween = view.create_tween()
 		tween.tween_property(view, "modulate:a", 0.0, 0.25 / float(_speed))
 	await get_tree().create_timer(0.25 / float(_speed)).timeout
-	_hand.set_stones(_round.hand)
+	_show_hand()
 	_busy = false
 	_on_selection_changed()
 	EventBus.cast_resolved.emit()

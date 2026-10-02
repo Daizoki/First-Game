@@ -405,3 +405,16 @@ Un efect = **declanșator** + **condiții** + **acțiuni**.
     notează în rundă, dar se simt abia în Etapa 3, când există Talismane și Piață. Steaua dublează Rezonanța la final,
     înainte de înmulțire. Descoperirea unei Vrăji dă **+5 Amintiri** (`memories_per_spell`).
   - Easter egg F-U-Þ-A-R: un Descântec cu Fehu, Uruz, Thurisaz, Ansuz, Raidho în ordine afișează un mesaj special.
+- **Etapa 2½, pasul C — ajutorul permanent și indiciile (propuneri de verificat de Relax):**
+  - Indiciile stau în `data/hints.json`: fiecare are fie un `trigger` (eveniment + `rune` / `seconds` / `max_exams`),
+    fie `follows` (vine imediat după alt indiciu, ca șirurile Tantei Vera și ale Aevei). Acum sunt pornite doar
+    `first_laguz` și `idle_help`; restul au `"enabled": false` și se pornesc în etapa lor.
+  - Bula de indiciu stă în dreapta ecranului, sub mijloc; un clic pe ea o închide. Indiciul se trece la „văzute” când
+    apare (nu când e închis). Se ascunde cât timp e deschis meniul de pauză sau o carte.
+  - Timpul „fără acțiune” se numără doar în rundă, nu în timpul animației de scor, al pauzei sau al cărților; orice
+    mouse pe o piatră, selecție, Rostire sau Schimbare îl pune la zero.
+  - „Primele 3 examene”: până la Etapa 3, fiecare „Joacă” din meniu numără ca o încercare (`attempts` din salvare).
+  - Fișa cercului: mouse-ul pe mijlocul cercului arată Cuvântul, descrierea, câte pietre punctează, Putere ×
+    Rezonanță și Vrăjile; pietrele care punctează strălucesc, celelalte selectate se estompează.
+  - Cartea de rune (din pauză): runele pe Neamuri (sens, Poziție, Putere, Glas), apoi Vrăjile. Vrăjile nedescoperite
+    arată „???” și pietre goale — numărul pietrelor goale spune dacă Vraja are 2 sau 3 rune.

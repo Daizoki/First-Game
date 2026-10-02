@@ -95,5 +95,15 @@
 	"word_book_hint": {"ro": "De la cel mai puternic la cel mai obișnuit · tasta C o deschide oricând", "en": "From the strongest to the most common · press C to open it any time"},
 	"word_book_close": {"ro": "Închide", "en": "Close"},
 	"word_book_values": {"ro": "{power} × {res}", "en": "{power} × {res}"},
-	"word_book_button": {"ro": "Cuvinte", "en": "Words"}
+	"word_book_button": {"ro": "Cuvinte", "en": "Words"},
+	"hint_close": {"ro": "clic ca să închizi", "en": "click to close"},
+	"word_card_scoring": {"ro": "Punctează {n} din {total} pietre · ele strălucesc în mână", "en": "{n} of {total} stones score · they glow in your hand"},
+	"word_card_values": {"ro": "Putere {power} × Rezonanță {res}", "en": "Power {power} × Resonance {res}"},
+	"pause_rune_book": {"ro": "Cartea de rune", "en": "Book of Runes"},
+	"rune_book_title": {"ro": "Cartea de rune", "en": "Book of Runes"},
+	"rune_book_hint": {"ro": "Cele 24 de rune, cu sensul și Glasul lor · Vrăjile pe care le-ai descoperit", "en": "The 24 runes with their meaning and Voice · the Spells you have discovered"},
+	"rune_book_position": {"ro": "Poziția {n} · Putere {power}", "en": "Position {n} · Power {power}"},
+	"rune_book_spells": {"ro": "Vrăjile · {n} din {total} descoperite", "en": "Spells · {n} of {total} discovered"},
+	"rune_book_spell_hidden": {"ro": "Încă n-ai rostit-o.", "en": "You haven't cast it yet."},
+	"rune_book_close": {"ro": "Închide", "en": "Close"}
 }

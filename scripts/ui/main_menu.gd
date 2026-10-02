@@ -61,6 +61,10 @@ func _refresh_texts() -> void:
 
 
 func _on_play_pressed() -> void:
+	# Until the full exam exists (Stage 3), every practice round counts as an exam attempt
+	# (the "first exams" hints look at this count).
+	SaveManager.data["attempts"] = int(SaveManager.data.get("attempts", 0)) + 1
+	SaveManager.save_game()
 	get_tree().change_scene_to_file(ROUND_SCENE)
 
 

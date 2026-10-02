@@ -21,6 +21,7 @@ const COLLECTIONS: Dictionary = {
 	"spells": ["spells.json", "spell"],
 	"characters": ["characters.json", "character"],
 	"dialogs": ["dialogs.json", "dialog"],
+	"hints": ["hints.json", "hint"],
 }
 
 var errors: Array[String] = []
@@ -37,6 +38,8 @@ var spells: Dictionary = {}
 ## Every named god, human and demigod.
 var characters: Dictionary = {}
 var dialogs: Dictionary = {}
+## Contextual hints shown once (data/hints.json).
+var hints: Dictionary = {}
 ## Round rules (hand size, casts, swaps, ...).
 var rules: Dictionary = {}
 ## key -> {"ro": "...", "en": "..."}
@@ -80,6 +83,7 @@ func load_all(data_dir: String) -> bool:
 	spells = loaded["spells"]
 	characters = loaded["characters"]
 	dialogs = loaded["dialogs"]
+	hints = loaded["hints"]
 	errors = validator.errors
 
 	for message: String in errors:
