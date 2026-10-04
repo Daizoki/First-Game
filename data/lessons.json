@@ -1,0 +1,12 @@
+[
+	{"id": "lesson_single", "word": "single", "name": {"ro": "Lecția despre Runa singură", "en": "The Lesson on the Single Rune"}, "text": {"ro": "Cea mai scurtă lecție din școală. Ilinca a ținut-o în trei secunde.", "en": "The shortest lesson in the school. Ilinca gave it in three seconds."}},
+	{"id": "lesson_pair", "word": "pair", "name": {"ro": "Lecția despre Perechi", "en": "The Lesson on Pairs"}, "text": {"ro": "Kaldor a picat-o de două ori. Ironic.", "en": "Kaldor failed it twice. Ironic."}},
+	{"id": "lesson_two_pairs", "word": "two_pairs", "name": {"ro": "Lecția despre Două perechi", "en": "The Lesson on Two Pairs"}, "text": {"ro": "Varr a venit cu doi prieteni. Nu se pune.", "en": "Varr came with two friends. Doesn't count."}},
+	{"id": "lesson_triad", "word": "triad", "name": {"ro": "Lecția despre Treimi", "en": "The Lesson on Triads"}, "text": {"ro": "Trei pietre, trei pagini, trei cafele.", "en": "Three stones, three pages, three coffees."}},
+	{"id": "lesson_kin", "word": "kin", "name": {"ro": "Lecția despre Neamuri", "en": "The Lesson on Kins"}, "text": {"ro": "Toată familia la masă, fiecare cu culoarea lui.", "en": "The whole family at the table, each in their colour."}},
+	{"id": "lesson_family", "word": "family", "name": {"ro": "Lecția despre Familie", "en": "The Lesson on the Family"}, "text": {"ro": "Gronn a adus poze cu Toma. Multe poze.", "en": "Gronn brought photos of Toma. Lots of photos."}},
+	{"id": "lesson_row", "word": "row", "name": {"ro": "Lecția despre Șiruri", "en": "The Lesson on Rows"}, "text": {"ro": "Ca stațiile troleibuzului 22: una după alta, fără sărituri.", "en": "Like the stops of trolleybus 22: one after another, no skipping."}},
+	{"id": "lesson_four", "word": "four", "name": {"ro": "Lecția despre Patru", "en": "The Lesson on Four"}, "text": {"ro": "Patru pietre la fel. Selvia zice că e noroc de pescar.", "en": "Four of the same. Selvia calls it fisherman's luck."}},
+	{"id": "lesson_chant", "word": "chant", "name": {"ro": "Lecția despre Descântec", "en": "The Lesson on the Chant"}, "text": {"ro": "Lunet a cântat-o la radio la trei noaptea. Nimeni n-a dormit.", "en": "Lunet sang it on the radio at 3 a.m. Nobody slept."}},
+	{"id": "lesson_ancient_word", "word": "ancient_word", "name": {"ro": "Lecția despre Cuvântul Vechi", "en": "The Lesson on the Old Word"}, "text": {"ro": "Pagina e ruptă. Morrah zice că așa a găsit-o.", "en": "The page is torn. Morrah says she found it that way."}}
+]

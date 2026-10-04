@@ -52,6 +52,7 @@ static func tables() -> Dictionary:
 		"runes": GameData.runes, "words": GameData.words, "spells": GameData.spells,
 		"spell_actions": GameData.spell_actions, "rules": GameData.rules, "economy": GameData.economy,
 		"trials": GameData.trials, "examiners": GameData.examiners, "talismans": GameData.talismans,
+		"lessons": GameData.lessons, "engravings": GameData.engravings,
 	}
 
 

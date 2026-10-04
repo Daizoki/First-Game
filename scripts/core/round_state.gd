@@ -62,6 +62,9 @@ var words_cast: Array[String] = []
 var talismans: Array = []
 ## Ice into the Talismans: they do not wear down this round.
 var talismans_no_wear: bool = false
+## The exam's Lessons and Engravings waiting to be used ({"type": "lesson" | "engraving", "id"}),
+## shared with ExamState.
+var consumables: Array = []
 
 var _data: Dictionary
 var _hand_size: int = 8
@@ -102,6 +105,8 @@ func setup(data: Dictionary, round_rng: RandomNumberGenerator, round_target: flo
 		word_levels = options["word_levels"]
 	rule = options.get("rule", {})
 	talismans = options.get("talismans", [])
+	consumables = options.get("consumables", [])
+	lessons_used = int(options.get("lessons_used", 0))
 	_hand_size = int(rules.get("hand_size", 8))
 	casts_left = int(rule.get("casts", options.get("casts", rules.get("casts_per_round", 4))))
 	swaps_left = int(rule.get("swaps", options.get("swaps", rules.get("swaps_per_round", 3))))
@@ -360,7 +365,7 @@ func cast(selection: Array[int]) -> Dictionary:
 	for stone: Stone in cast_stones:
 		stone.face_down = false
 	var result: Dictionary = Scorer.score_cast({
-		"blocked": blocked, "zero_score": zero_score, "talisman_effects": talisman_effects(),
+		"blocked": blocked, "zero_score": zero_score, "talisman_effects": talisman_effects(), "materials": _materials(),
 		"bag_left": bag.remaining(),
 		"cast": cast_stones, "held": held, "word": word, "words": _data["words"], "runes": _data["runes"],
 		"word_level": word_level(word["word"]), "cast_index": casts_used, "is_last_cast": casts_left == 1,
@@ -376,6 +381,9 @@ func cast(selection: Array[int]) -> Dictionary:
 		(grow["stone"] as Stone).bonus_power += int(grow["value"])
 	for source: Stone in result["copies"]:
 		bag.add_copy_of(source)
+	# Glass that broke while scoring leaves the bag for good.
+	for broken: Stone in result["broken"]:
+		bag.remove(broken)
 
 	# The cast stones leave the hand; held stones keep their order.
 	hand = held
@@ -450,6 +458,10 @@ func finish() -> Dictionary:
 		SpellResolver.run_ops(self, entry["plan"], entry["ctx"], false)
 	round_end_plans.clear()
 	money += _money_at_round_end + money_per_cast_left * casts_left
+	# Gold stones still in hand pay.
+	for stone: Stone in hand:
+		if stone.material == "gold":
+			money += int(_materials().get("gold", {}).get("value", 0))
 	_money_at_round_end = 0
 	if overflow_pct > 0.0:
 		var next_round: Dictionary = carry["next_round"]
@@ -585,9 +597,82 @@ func pick_limits(choice: Dictionary) -> Dictionary:
 			return {"source": "offer"}
 		"swap_rule":
 			return {"source": "rule"}
+		"engrave_material":
+			var one_stone: int = mini(1, hand.size())
+			return {"source": "hand", "min": one_stone, "max": one_stone, "kin": false}
+		"bind_chosen":
+			var two: int = mini(2, hand.size())
+			return {"source": "hand", "min": two, "max": two, "kin": false}
+		"change_rune_chosen":
+			var one: int = mini(1, hand.size())
+			return {"source": "hand", "min": one, "max": one, "kin": false, "rune": true}
 		"sell_talisman_full", "transform_talisman", "destroy_talisman_res":
 			return {"source": "talisman"}
 	return {}
+
+
+## The runes a stone can be reshaped into: the others of its Kin, by Position.
+func rune_choices(stone: Stone) -> Array[String]:
+	var options: Array[String] = []
+	var runes: Dictionary = _data["runes"]
+	for id: String in runes:
+		if str(runes[id]["kin"]) == stone.kin and id != stone.rune_id:
+			options.append(id)
+	options.sort_custom(func(a: String, b: String) -> bool: return int(runes[a]["position"]) < int(runes[b]["position"]))
+	return options
+
+
+# --- Lessons and Engravings ----------------------------------------------------------------
+
+## Uses the consumable in this slot. A Lesson raises its Word at once; an Engraving asks
+## which stones in hand it changes (a pick, see current_choice()). Returns false if it
+## cannot be used now.
+func use_consumable(slot: int) -> bool:
+	if slot < 0 or slot >= consumables.size() or not pending.is_empty():
+		return false
+	var item: Dictionary = consumables[slot]
+	if str(item["type"]) == "lesson":
+		var lesson: Dictionary = (_data.get("lessons", {}) as Dictionary).get(str(item["id"]), {})
+		if lesson.is_empty():
+			return false
+		var word_id: String = str(lesson["word"])
+		word_levels[word_id] = word_level(word_id) + 1
+		lessons_used += 1
+		consumables.remove_at(slot)
+		return true
+	var engraving: Dictionary = (_data.get("engravings", {}) as Dictionary).get(str(item["id"]), {})
+	if engraving.is_empty() or hand.is_empty():
+		return false
+	var choice: Dictionary = {"engraving": str(item["id"]), "count": int(engraving.get("count", 1))}
+	match str(engraving["kind"]):
+		"material":
+			choice["kind"] = "engrave_material"
+			choice["material"] = str(engraving["material"])
+		"bind":
+			if hand.size() < 2:
+				return false
+			choice["kind"] = "bind_chosen"
+		"change_rune":
+			choice["kind"] = "change_rune_chosen"
+		"copy_stone":
+			choice["kind"] = "copy_chosen_to_bag"
+		"remove_stones":
+			choice["kind"] = "remove_chosen"
+		"change_kin":
+			choice["kind"] = "change_kin_chosen"
+	consumables.remove_at(slot)
+	ask(choice)
+	return true
+
+
+## The Engravings that make materials, by material id.
+func _materials() -> Dictionary:
+	var result: Dictionary = {}
+	var engravings: Dictionary = _data.get("engravings", {})
+	for id: String in engravings:
+		if str(engravings[id].get("kind", "")) == "material":
+			result[str(engravings[id]["material"])] = engravings[id]
+	return result
 
 
 ## The kins a stone can be moved to (Water into the Bag).
@@ -625,6 +710,28 @@ func answer(reply: Dictionary) -> bool:
 				casts_left = maxi(0, casts_left - int(choice["casts"]))
 			else:
 				return false
+		"engrave_material", "bind_chosen", "change_rune_chosen":
+			var wanted: int = int(pick_limits(choice)["max"])
+			if not _valid_picks(picked) or picked.size() != wanted or wanted == 0:
+				return false
+			var chosen: Array[Stone] = _stones_at(picked)
+			match kind:
+				"engrave_material":
+					chosen[0].material = str(choice.get("material", ""))
+				"bind_chosen":
+					if chosen[1].rune_id == chosen[0].rune_id:
+						return false
+					chosen[0].bound_rune = chosen[1].rune_id
+					chosen[0].bound_kin = chosen[1].kin
+					chosen[0].bound_position = chosen[1].position
+					break_stone(chosen[1])
+				"change_rune_chosen":
+					var new_rune: Dictionary = (_data["runes"] as Dictionary).get(str(reply.get("rune", "")), {})
+					if new_rune.is_empty() or str(new_rune["kin"]) != chosen[0].kin:
+						return false
+					chosen[0].rune_id = str(new_rune["id"])
+					chosen[0].position = int(new_rune["position"])
+					chosen[0].base_power = int(new_rune["base_power"])
 		"break_chosen_money", "discard_chosen", "put_back", "copy_chosen_to_bag":
 			var needed: int = 1 if kind == "copy_chosen_to_bag" else mini(count, hand.size())
 			if not _valid_picks(picked) or picked.size() != needed:
@@ -735,6 +842,20 @@ func auto_answer() -> Dictionary:
 			return {"rule": (choice.get("rules", [""]) as Array)[0]}
 		"sell_talisman_full", "transform_talisman", "destroy_talisman_res":
 			return {"talisman": 0}
+		"engrave_material":
+			return {"stones": _strongest(1)}
+		"bind_chosen":
+			var pair: Array[int] = []
+			for i: int in _strongest(hand.size()):
+				if pair.size() < 2 and (pair.is_empty() or hand[i].rune_id != hand[pair[0]].rune_id):
+					pair.append(i)
+			return {"stones": pair}
+		"change_rune_chosen":
+			var weakest: Array[int] = _weakest(1)
+			if weakest.is_empty():
+				return {}
+			var options: Array[String] = rune_choices(hand[weakest[0]])
+			return {"stones": weakest, "rune": options[options.size() - 1] if not options.is_empty() else ""}
 	return {}
 
 

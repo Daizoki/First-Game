@@ -75,6 +75,17 @@ func show_stone(stone: Stone, anchor: Control) -> void:
 	_meaning.text = Loc.t("card_meaning", {"meaning": Loc.text(rune.get("meaning", {}))})
 	_power.text = Loc.t("card_power", {"n": stone.base_power + stone.bonus_power})
 	_voice.text = Loc.t("card_voice", {"voice": Loc.text(rune.get("voice", {}))})
+	if not stone.bound_rune.is_empty():
+		var other: Dictionary = GameData.runes.get(stone.bound_rune, {})
+		_name.text = "%s + %s" % [_name.text, Loc.text(other.get("name", {}))]
+		_voice.text += "\n" + Loc.t("card_bound", {"rune": Loc.text(other.get("name", {})),
+			"voice": Loc.text(other.get("voice", {}))})
+	if not stone.material.is_empty():
+		var engraving: Dictionary = {}
+		for id: String in GameData.engravings:
+			if str(GameData.engravings[id].get("material", "")) == stone.material:
+				engraving = GameData.engravings[id]
+		_power.text += "  ·  " + Loc.t("material_" + stone.material, {"value": Loc.number(float(engraving.get("value", 0)))})
 	reset_size()
 
 

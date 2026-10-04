@@ -55,6 +55,9 @@ const ENUMS: Dictionary = {
 		"second_chance",
 	],
 	"rarity": ["common", "rare", "legendary"],
+	## What an Engraving does to the stones in hand (scripts/core/round_state.gd, use_consumable).
+	"engraving_kind": ["material", "bind", "change_rune", "copy_stone", "remove_stones", "change_kin"],
+	"material": ["bone", "amber", "gold", "iron", "glass"],
 	## The examiners' rules (DESIGN 3.8, scripts/core/round_state.gd).
 	"examiner_rule": [
 		"exact_count", "flux", "lightning", "tax", "dream", "weight", "remember", "correction", "competition",
@@ -149,7 +152,8 @@ const SCHEMAS: Dictionary = {
 			"examiner_spell_fallback_money": "int", "start_money": "int", "round_target_mults": "number_list",
 			"reward_small": "int", "reward_big": "int", "reward_examiner": "int", "reward_per_cast_left": "int",
 			"interest_per": "int", "interest_max": "int", "talisman_slots": "int", "price_common": "int",
-			"price_rare": "int", "price_legendary": "int", "sell_share_pct": "int",
+			"price_rare": "int", "price_legendary": "int", "sell_share_pct": "int", "consumable_slots": "int",
+			"price_lesson": "int", "price_engraving": "int",
 		},
 		"optional": {},
 	},
@@ -159,6 +163,16 @@ const SCHEMAS: Dictionary = {
 			"id": "id", "rarity": "enum:rarity", "kind": "enum:talisman_kind", "name": "loc", "description": "loc",
 		},
 		"optional": {"owner": "ref:characters", "value": "number", "kin": "ref:kins", "word": "ref:words", "step": "number"},
+	},
+	## A Lesson raises one Word by a level (data/lessons.json).
+	"lesson": {
+		"required": {"id": "id", "word": "ref:words", "name": "loc", "text": "loc"},
+		"optional": {},
+	},
+	## An Engraving changes stones in hand (data/engravings.json).
+	"engraving": {
+		"required": {"id": "id", "kind": "enum:engraving_kind", "name": "loc", "text": "loc"},
+		"optional": {"material": "enum:material", "value": "number", "chance": "number", "count": "int"},
 	},
 	## One of the 8 trials of the exam (data/trials.json).
 	"trial": {

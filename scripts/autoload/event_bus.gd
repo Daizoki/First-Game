@@ -28,6 +28,8 @@ signal spell_sentence_cast(spell_id: String, actions: Array)
 ## The selection reads a sentence of the rune grammar: its SentenceParser status ("spell",
 ## "incomplete", "wrong_order" …), the spell ("" if none) and how many Actions it has.
 signal sentence_read(status: String, spell_id: String, action_count: int)
+## A Lesson or an Engraving was used ("lesson" | "engraving", its id).
+signal consumable_used(type: String, id: String)
 ## Gebo kept a spell on the Scroll.
 signal scroll_gained(spell_id: String)
 ## Something covers the whole game for a moment (the spell reveal).

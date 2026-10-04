@@ -127,6 +127,9 @@ func _show_voice(view: StoneView, event: Dictionary) -> bool:
 		"algiz_ignore_rule":
 			text = Loc.t("float_rule")
 			color = BONE
+		"glass_break":
+			text = Loc.t("float_glass_break")
+			color = BONE
 		_:
 			return false
 	view.flash = 1.0

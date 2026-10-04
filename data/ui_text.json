@@ -197,5 +197,21 @@
 	"choice_destroy_talisman_res": {"ro": "Spinul distruge un Talisman: ×{factor} Rezonanță tot restul Probei. Care?", "en": "The Thorn destroys a Talisman: ×{factor} Resonance for the rest of the Trial. Which one?"},
 	"exam_second_chance_title": {"ro": "Clepsidra s-a spart", "en": "The Hourglass broke"},
 	"exam_second_chance_text": {"ro": "Nisipul curge înapoi. Ai încă o încercare la aceeași întrebare.", "en": "The sand flows back. You get one more try at the same question."},
-	"exam_retry": {"ro": "Încă o dată", "en": "Once more"}
+	"exam_retry": {"ro": "Încă o dată", "en": "Once more"},
+	"consumable_lesson": {"ro": "Lecție", "en": "Lesson"},
+	"consumable_engraving": {"ro": "Gravură", "en": "Engraving"},
+	"consumable_use_hint": {"ro": "Apasă ca s-o folosești.", "en": "Click to use it."},
+	"consumable_cannot": {"ro": "Nu se poate folosi acum.", "en": "It can't be used now."},
+	"lesson_effect": {"ro": "Cuvântul {word} crește cu 1 nivel pentru tot examenul.", "en": "The Word {word} goes up 1 level for the whole exam."},
+	"lesson_learned": {"ro": "{word} a urcat la nivelul {n}.", "en": "{word} rose to level {n}."},
+	"choice_engrave_material": {"ro": "Alege piatra din mână pe care o gravezi.", "en": "Pick the stone in your hand to engrave."},
+	"choice_bind_chosen": {"ro": "Alege 2 pietre din mână, cu rune diferite: devin o singură piatră cu ambele rune.", "en": "Pick 2 stones in your hand with different runes: they become one stone with both runes."},
+	"choice_change_rune_chosen": {"ro": "Alege piatra din mână, apoi runa în care se preface (din același Neam).", "en": "Pick the stone in your hand, then the rune it turns into (same Kin)."},
+	"card_bound": {"ro": "Legată cu {rune}: {voice}", "en": "Bound with {rune}: {voice}"},
+	"material_bone": {"ro": "Os: +{value} Putere când punctează", "en": "Bone: +{value} Power when it scores"},
+	"material_amber": {"ro": "Chihlimbar: +{value} Rezonanță când punctează", "en": "Amber: +{value} Resonance when it scores"},
+	"material_gold": {"ro": "Aur: +{value} Monede dacă rămâne în mână la final", "en": "Gold: +{value} Coins if it stays in hand at the end"},
+	"material_iron": {"ro": "Fier: ×{value} Rezonanță cât stă în mână", "en": "Iron: ×{value} Resonance while held"},
+	"material_glass": {"ro": "Sticlă: ×{value} Rezonanță, se poate sparge", "en": "Glass: ×{value} Resonance, may break"},
+	"float_glass_break": {"ro": "s-a spart!", "en": "shattered!"}
 }

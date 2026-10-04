@@ -19,5 +19,8 @@
 	"price_common": 5,
 	"price_rare": 8,
 	"price_legendary": 13,
-	"sell_share_pct": 50
+	"sell_share_pct": 50,
+	"consumable_slots": 2,
+	"price_lesson": 3,
+	"price_engraving": 4
 }

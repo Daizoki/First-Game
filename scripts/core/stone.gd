@@ -16,6 +16,11 @@ var round_power: int = 0
 var material: String = ""
 ## Lunet's rule (Stage 3): drawn face down.
 var face_down: bool = false
+## A bind-rune (the Binding): the second rune on the stone, with its Kin and Position.
+## The Word may read the stone as either rune; both Voices are heard when it scores.
+var bound_rune: String = ""
+var bound_kin: String = ""
+var bound_position: int = 0
 
 
 static func from_rune(rune: Dictionary, stone_uid: int) -> RefCounted:
@@ -38,11 +43,23 @@ func duplicate_stone(new_uid: int) -> RefCounted:
 	copy.base_power = base_power
 	copy.bonus_power = bonus_power
 	copy.material = material
+	copy.bound_rune = bound_rune
+	copy.bound_kin = bound_kin
+	copy.bound_position = bound_position
 	return copy
+
+
+## The stone read as its second rune (a bind-rune; the Word picks the better reading).
+func as_bound() -> RefCounted:
+	var other: RefCounted = duplicate_stone(uid)
+	other.rune_id = bound_rune
+	other.kin = bound_kin
+	other.position = bound_position
+	return other
 
 
 func to_dict() -> Dictionary:
 	return {
 		"uid": uid, "rune": rune_id, "kin": kin, "position": position,
-		"base_power": base_power, "bonus_power": bonus_power, "material": material,
+		"base_power": base_power, "bonus_power": bonus_power, "material": material, "bound_rune": bound_rune,
 	}

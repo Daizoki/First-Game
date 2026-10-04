@@ -31,6 +31,10 @@ var finished: bool = false
 var passed: bool = false
 ## Owned Talismans, left to right (TalismanRules entries); the rounds share this list.
 var talismans: Array = []
+## Lessons and Engravings waiting to be used: {"type": "lesson" | "engraving", "id"}.
+var consumables: Array = []
+## Lessons used in this exam (some Voices count them).
+var lessons_used: int = 0
 ## Spells on/off for the rounds (the simulator compares both).
 var spells_enabled: bool = true
 
@@ -50,6 +54,8 @@ func setup(data: Dictionary, seed_value: int) -> void:
 	money = int(_economy("start_money", 0))
 	word_levels = {}
 	talismans = []
+	consumables = []
+	lessons_used = 0
 	trial_index = 0
 	round_index = 0
 	defeated.clear()
@@ -103,7 +109,7 @@ func target() -> float:
 func round_options() -> Dictionary:
 	return {
 		"bag": bag, "carry": carry, "money": money, "word_levels": word_levels, "rule": rule(),
-		"spells": spells_enabled, "talismans": talismans,
+		"spells": spells_enabled, "talismans": talismans, "consumables": consumables, "lessons_used": lessons_used,
 	}
 
 
@@ -120,6 +126,7 @@ func new_round() -> RoundState:
 ## "exam_over", "exam_passed"}.
 func finish_round(state: RoundState) -> Dictionary:
 	money = state.money
+	lessons_used = state.lessons_used
 	var summary: Dictionary = {
 		"won": state.is_won(), "kind": round_kind(), "defeated": "",
 		"reward": {"round": 0, "casts": 0, "interest": 0, "total": 0},
@@ -167,6 +174,31 @@ func add_talisman(id: String) -> bool:
 	if talismans.size() >= talisman_slots() or not _talisman_table().has(id):
 		return false
 	talismans.append(TalismanRules.make(id, _talisman_table()))
+	return true
+
+
+## Adds a Lesson or an Engraving if a consumable slot is free.
+func add_consumable(type: String, id: String) -> bool:
+	var table: Dictionary = _data.get("lessons" if type == "lesson" else "engravings", {})
+	if consumables.size() >= consumable_slots() or not table.has(id):
+		return false
+	consumables.append({"type": type, "id": id})
+	return true
+
+
+func consumable_slots() -> int:
+	return int(_economy("consumable_slots", 2))
+
+
+## Uses a Lesson outside a round (in the Market): its Word goes up a level.
+func use_lesson(slot: int) -> bool:
+	if slot < 0 or slot >= consumables.size() or str(consumables[slot]["type"]) != "lesson":
+		return false
+	var lesson: Dictionary = (_data.get("lessons", {}) as Dictionary).get(str(consumables[slot]["id"]), {})
+	var word_id: String = str(lesson.get("word", ""))
+	word_levels[word_id] = int(word_levels.get(word_id, 1)) + 1
+	lessons_used += 1
+	consumables.remove_at(slot)
 	return true
 
 

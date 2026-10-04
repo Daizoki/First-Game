@@ -141,7 +141,8 @@ func _ready() -> void:
 		var target: float = float(config.get("target", GameData.rule("test_round_target", 1500)))
 		_round.setup({"runes": GameData.runes, "words": GameData.words, "spells": GameData.spells,
 			"spell_actions": GameData.spell_actions, "rules": GameData.rules, "economy": GameData.economy,
-			"examiners": GameData.examiners, "talismans": GameData.talismans}, rng, target, config)
+			"examiners": GameData.examiners, "talismans": GameData.talismans,
+			"lessons": GameData.lessons, "engravings": GameData.engravings}, rng, target, config)
 		_round.start()
 	_casts_total = _round.casts_left
 	_swaps_total = _round.swaps_left
@@ -157,6 +158,8 @@ func _ready() -> void:
 	_player.total_label = _preview_value
 	_player.talisman_string = _talismans
 	_talismans.moved.connect(_on_talisman_moved)
+	_consumables.consumable_mode = true
+	_consumables.used.connect(_on_consumable_used)
 
 	_hand.max_selection = _round.max_selection()
 	_hand.can_select = func(stone: Stone) -> bool:
@@ -290,6 +293,8 @@ func _refresh_state() -> void:
 	_hand.enabled = not _busy or (_picking and _choice_panel.uses_hand())
 	_talismans.set_owned(_round.talismans, 0 if _round.active_rule() == "trick" else -1)
 	_talismans.enabled = not _busy
+	_consumables.set_owned(_round.consumables)
+	_consumables.enabled = not _busy and EventBus.is_allowed("cast")
 	_scroll_slot.spell_id = _round.scroll_spell()
 	_scroll_slot.armed = _round.scroll_armed()
 	_scroll_slot.enabled = not _busy and EventBus.is_allowed("cast")
@@ -399,7 +404,13 @@ func _unhandled_input(event: InputEvent) -> void:
 ## The middle of the Rune Circle: Word, scoring stones, Power × Resonance, Spells.
 func _on_selection_changed() -> void:
 	if _picking:
-		_choice_panel.set_hand_picks(_hand.selected_indices().size())
+		var picked: Array[int] = _hand.selected_indices()
+		_choice_panel.set_hand_picks(picked.size())
+		# The Reshaping: the runes of the picked stone's Kin.
+		var runes: Array[String] = []
+		if not picked.is_empty():
+			runes = _round.rune_choices(_round.hand[picked[0]])
+		_choice_panel.set_rune_options(runes)
 		return
 	if _busy:
 		return
@@ -614,6 +625,32 @@ func _resolve_picks() -> void:
 
 func _choice_panel_max(limits: Dictionary) -> int:
 	return int(limits.get("max", 0)) if str(limits.get("source", "")) == "hand" else 0
+
+
+## A click on a Lesson or an Engraving: a Lesson raises its Word now; an Engraving asks
+## which stones in hand it changes.
+func _on_consumable_used(slot: int) -> void:
+	if _busy or slot >= _round.consumables.size():
+		return
+	var item: Dictionary = _round.consumables[slot]
+	var lesson: bool = str(item["type"]) == "lesson"
+	if not _round.use_consumable(slot):
+		await _show_toast(Loc.t("consumable_cannot"))
+		return
+	if lesson:
+		var word_id: String = str((GameData.lessons.get(str(item["id"]), {}) as Dictionary).get("word", ""))
+		EventBus.consumable_used.emit("lesson", str(item["id"]))
+		_refresh_state()
+		_on_selection_changed()
+		await _show_toast(Loc.t("lesson_learned", {"word": _word_display_name(word_id), "n": _round.word_level(word_id)}))
+		return
+	EventBus.consumable_used.emit("engraving", str(item["id"]))
+	_busy = true
+	_refresh_state()
+	await _resolve_picks()
+	_busy = false
+	_show_hand()
+	_on_selection_changed()
 
 
 ## A click on the Scroll: ready to happen with the next Cast, or put away again.

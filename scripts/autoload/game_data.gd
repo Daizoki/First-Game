@@ -27,6 +27,8 @@ const COLLECTIONS: Dictionary = {
 	"trials": ["trials.json", "trial"],
 	"examiners": ["examiners.json", "examiner"],
 	"talismans": ["talismans.json", "talisman"],
+	"lessons": ["lessons.json", "lesson"],
+	"engravings": ["engravings.json", "engraving"],
 }
 
 var errors: Array[String] = []
@@ -53,6 +55,9 @@ var trials: Dictionary = {}
 var examiners: Dictionary = {}
 ## The Talismans (data/talismans.json).
 var talismans: Dictionary = {}
+## The Lessons (one per Word) and the Engravings (data/lessons.json, data/engravings.json).
+var lessons: Dictionary = {}
+var engravings: Dictionary = {}
 ## Round rules (hand size, casts, swaps, ...).
 var rules: Dictionary = {}
 ## Prices and safety limits (data/economy.json).
@@ -109,6 +114,8 @@ func load_all(data_dir: String) -> bool:
 	trials = loaded["trials"]
 	examiners = loaded["examiners"]
 	talismans = loaded["talismans"]
+	lessons = loaded["lessons"]
+	engravings = loaded["engravings"]
 	errors = validator.errors
 
 	for message: String in errors:
