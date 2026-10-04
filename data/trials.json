@@ -1,0 +1,10 @@
+[
+	{"id": "trial_1", "number": 1, "base_target": 600},
+	{"id": "trial_2", "number": 2, "base_target": 1000},
+	{"id": "trial_3", "number": 3, "base_target": 1600},
+	{"id": "trial_4", "number": 4, "base_target": 2500},
+	{"id": "trial_5", "number": 5, "base_target": 3800},
+	{"id": "trial_6", "number": 6, "base_target": 5600},
+	{"id": "trial_7", "number": 7, "base_target": 8200},
+	{"id": "trial_8", "number": 8, "base_target": 12000}
+]

@@ -18,6 +18,8 @@ const Stone = preload("res://scripts/core/stone.gd")
 ##               retrigger_scoring, word_upgrade); optional
 ##   lessons_used, talismans: int          once_used: Array[String] (rune ids, this round)
 ##   rng: RandomNumberGenerator
+##   blocked: Array[int] cast indices the examiner's rule keeps from scoring (optional)
+##   zero_score: bool, the examiner's rule makes this Cast score 0 (optional)
 ## Output (Dictionary): events, power, res, score, money, money_at_round_end, swaps,
 ##   grow (Array of {stone, value}), copies (Array[Stone]), once_used, ignore_rule
 static func score_cast(ctx: Dictionary) -> Dictionary:
@@ -60,7 +62,11 @@ static func score_cast(ctx: Dictionary) -> Dictionary:
 	# right after it (if that one scores); The Stutter makes every scoring stone score again.
 	var extra: Dictionary = {}
 	var spell_retrigger: int = int(mods.get("retrigger_scoring", 0))
+	var blocked: Array = ctx.get("blocked", [])
 	for n: int in scoring.size():
+		if blocked.has(scoring[n]):
+			_event(state, {"type": "rule", "kind": "blocked", "index": scoring[n]})
+			continue
 		var times: int = 1 + int(extra.get(n, 0)) + spell_retrigger
 		var t: int = 0
 		while t < times:
@@ -87,6 +93,9 @@ static func score_cast(ctx: Dictionary) -> Dictionary:
 		state["res"] = 1.0
 		_event(state, {"type": "bonus", "kind": "set_res", "value": 1.0})
 	state["score"] = float(state["power"]) * float(state["res"])
+	if bool(ctx.get("zero_score", false)):
+		_event(state, {"type": "rule", "kind": "zero"})
+		state["score"] = 0.0
 	_event(state, {"type": "total", "score": state["score"]})
 	state.erase("ctx")
 	return state

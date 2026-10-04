@@ -61,6 +61,7 @@ func _ready() -> void:
 	EventBus.spell_sentence_cast.connect(func(spell_id: String, actions: Array) -> void:
 		if actions.size() >= 2:
 			fire("two_actions", {"spell": spell_id}))
+	EventBus.examiner_met.connect(func(examiner_id: String) -> void: fire("examiner_met", {"examiner": examiner_id}))
 	EventBus.overlay_opened.connect(func(_overlay: String) -> void: _cover(1))
 	EventBus.overlay_closed.connect(func(_overlay: String) -> void: _cover(-1))
 	EventBus.pause_opened.connect(func() -> void: _cover(1))

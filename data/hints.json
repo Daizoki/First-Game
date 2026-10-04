@@ -71,10 +71,17 @@
 	},
 	{
 		"id": "first_examiner",
-		"enabled": false,
+		"enabled": true,
 		"speaker": "kaldor",
-		"trigger": {"event": "examiner_met"},
+		"trigger": {"event": "examiner_met", "examiner": "kaldor"},
 		"text": {"ro": "Eu sunt Kaldor. Regula mea e scrisă acolo. N-o repet.", "en": "I am Kaldor. My rule is written there. I won't say it twice."}
+	},
+	{
+		"id": "first_rule",
+		"enabled": true,
+		"speaker": "ilinca",
+		"trigger": {"event": "examiner_met"},
+		"text": {"ro": "Al treilea vine Examinatorul. Are o regulă, scrisă pe fișa lui. Citește-o înainte să rostești.", "en": "Third comes the Examiner. They have a rule, written on their card. Read it before you cast."}
 	},
 	{
 		"id": "first_lesson",

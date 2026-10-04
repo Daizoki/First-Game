@@ -7,7 +7,8 @@ const DataValidator = preload("res://scripts/core/data_validator.gd")
 
 ## Hints that are switched on now (the others wait for their stage).
 const ENABLED_NOW: Array[String] = [
-	"first_laguz", "idle_help", "first_wrong_order", "first_scroll", "first_two_actions",
+	"first_laguz", "idle_help", "first_wrong_order", "first_scroll", "first_two_actions", "first_examiner",
+	"first_rule",
 ]
 const MAX_TEXT: int = 120
 
@@ -30,7 +31,7 @@ func _hint(id: String, extra: Dictionary) -> Dictionary:
 
 func test_the_table_is_in_the_data() -> void:
 	var hints: Dictionary = Fixtures.data()["hints"]
-	check_eq(hints.size(), 21, "hints:")
+	check_eq(hints.size(), 22, "hints:")
 	var enabled: Array[String] = []
 	for id: String in hints:
 		var hint: Dictionary = hints[id]
@@ -76,7 +77,7 @@ func test_idle_help_after_40_seconds_in_the_first_three_exams() -> void:
 
 func test_hints_of_later_stages_stay_quiet() -> void:
 	var rules: HintRules = _rules()
-	for event: String in ["shop_opened", "talisman_bought", "examiner_met", "exam_failed", "curse_discovered"]:
+	for event: String in ["shop_opened", "talisman_bought", "exam_failed", "curse_discovered"]:
 		check_eq(rules.on_event(event, {}, _context()), [], "%s:" % event)
 
 
@@ -138,3 +139,11 @@ func test_the_grammar_hints() -> void:
 	var tutorial: Dictionary = _context()
 	tutorial["tutorial"] = true
 	check_eq(rules.on_event("wrong_order", {}, tutorial), [] as Array[String], "quiet in the evening class:")
+
+
+func test_meeting_examiners() -> void:
+	var rules: HintRules = _rules()
+	check_eq(rules.on_event("examiner_met", {"examiner": "varr"}, _context()), ["first_rule"] as Array[String],
+		"any examiner first: Ilinca explains the rule:")
+	check_eq(rules.on_event("examiner_met", {"examiner": "kaldor"}, _context(["first_rule"])),
+		["first_examiner"] as Array[String], "Kaldor introduces himself the first time he is met:")

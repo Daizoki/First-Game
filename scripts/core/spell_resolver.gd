@@ -15,12 +15,12 @@ const WHOLE: Array[String] = ["amount", "count", "max"]
 ## Ops that change the score of the Cast itself (the rest run after the score).
 const SCORE_OPS: Array[String] = [
 	"res_to_one", "res_per_held", "mul_res", "add_power", "retrigger_scoring", "word_upgrade",
-	"mul_res_if_five", "mul_res_if_first_cast",
+	"mul_res_if_five", "mul_res_if_first_cast", "ignore_rule_cast",
 ]
 ## Ops that wait for the player's choice (RoundState.pending).
 const CHOICE_OPS: Array[String] = [
 	"break_chosen_money", "remove_chosen", "change_kin_chosen", "reorder_bag_top", "copy_chosen_to_bag",
-	"free_swap_chosen", "draw_keep", "discard_chosen",
+	"free_swap_chosen", "draw_keep", "discard_chosen", "swap_rule",
 ]
 
 
@@ -124,7 +124,7 @@ static func effect_values(spell: Dictionary, scale: float = 1.0) -> Dictionary:
 static func score_mods(round_state: RoundState, plans: Array[Dictionary], ctx: Dictionary) -> Dictionary:
 	var mods: Dictionary = empty_mods()
 	for plan: Dictionary in plans:
-		if str(plan["timing"]) != "before" or not _active(plan):
+		if str(plan["timing"]) != "before" or not _active(plan) or _no_examiner(round_state, plan):
 			continue
 		var spell: Dictionary = round_state.spell_data(plan["spell"])
 		for r: int in int(plan["repeats"]):
@@ -136,7 +136,7 @@ static func score_mods(round_state: RoundState, plans: Array[Dictionary], ctx: D
 static func empty_mods() -> Dictionary:
 	return {
 		"add_power": 0.0, "add_res": 0.0, "res_mults": [] as Array[float], "res_to_one": false,
-		"retrigger_scoring": 0, "word_upgrade": 0,
+		"retrigger_scoring": 0, "word_upgrade": 0, "ignore_rule": false,
 	}
 
 
@@ -150,6 +150,10 @@ static func after_score(round_state: RoundState, plans: Array[Dictionary], ctx: 
 			round_state.ask({"kind": "price", "spell": plan["spell"], "casts": plan["price"]["casts"],
 				"money": plan["price"]["money"]})
 		if not _active(plan):
+			continue
+		# Against the Examiner, in a round without one: only a few Coins.
+		if _no_examiner(round_state, plan):
+			round_state.money += int(round_state.economy_value("examiner_spell_fallback_money", 3))
 			continue
 		if int(plan["lasts"]) > 0:
 			(round_state.carry["lasting"] as Array).append({
@@ -183,6 +187,11 @@ static func run_ops(round_state: RoundState, plan: Dictionary, ctx: Dictionary, 
 	return extra_score
 
 
+## A spell against the Examiner cast in a round that has none.
+static func _no_examiner(round_state: RoundState, plan: Dictionary) -> bool:
+	return round_state.rule.is_empty() and str(round_state.spell_data(plan["spell"]).get("target", "")) == "algiz"
+
+
 static func _active(plan: Dictionary) -> bool:
 	return not bool(plan["fizzled"]) and not bool(plan["gift"]) and float(plan["scale"]) > 0.0
 
@@ -207,6 +216,8 @@ static func _score_op(round_state: RoundState, op: Dictionary, ctx: Dictionary, 
 			mods["retrigger_scoring"] = int(mods["retrigger_scoring"]) + int(op.get("count", 0))
 		"word_upgrade":
 			mods["word_upgrade"] = int(mods["word_upgrade"]) + int(op.get("count", 0))
+		"ignore_rule_cast":
+			mods["ignore_rule"] = true
 
 
 ## A score op that has no Cast of its own any more applies to the next Cast instead.
@@ -307,7 +318,17 @@ static func _state_op(round_state: RoundState, op: Dictionary, ctx: Dictionary) 
 			next_round["peek"] = maxi(int(next_round.get("peek", 0)), int(op["count"]))
 		"next_round_add_cast":
 			next_round["casts"] = int(next_round.get("casts", 0)) + int(op["count"])
-	# Talisman and Examiner ops arrive with their stage (their spells are switched off).
+		"cancel_rule_round":
+			round_state.cancel_rule()
+		"target_pct_up":
+			round_state.target *= 1.0 + float(op["cost"]) / 100.0
+		"cancel_rule_casts":
+			round_state.rule_skip_casts += int(op["count"])
+		"examiner_target_down":
+			round_state.reduce_target(round_state.target * float(op["percent"]) / 100.0)
+		"peek_examiners":
+			round_state.carry["peek_examiners"] = maxi(int(round_state.carry.get("peek_examiners", 0)), int(op["count"]))
+	# Talisman ops arrive with the Talismans (their spells are switched off until then).
 	return 0.0
 
 

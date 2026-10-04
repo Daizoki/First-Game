@@ -91,6 +91,7 @@ func _process(delta: float) -> void:
 	rotation = base_rotation + sway + (0.06 if hovered and not selected else 0.0)
 	flash = maxf(0.0, flash - delta * 1.6)
 	_glyph.glow = 1.0 + (1.2 if selected else 0.0) + (1.4 if marked else 0.0) + flash * 3.0
+	_glyph.visible = not stone.face_down
 	queue_redraw()
 
 
@@ -112,6 +113,13 @@ func _draw() -> void:
 		closed.append(_outline[0])
 		draw_polyline(closed, INK, 5.0, true)
 	var font: Font = get_theme_default_font()
+	if stone.face_down:
+		# Lunet's Dream: only the back of the stone shows.
+		draw_string(font, Vector2(0, STONE_SIZE.y * 0.62), "?", HORIZONTAL_ALIGNMENT_CENTER, STONE_SIZE.x, 72,
+			Color(BONE, 0.55))
+		if selected and order > 0:
+			_draw_order(font)
+		return
 	draw_string(font, Vector2(18, 38), str(stone.position), HORIZONTAL_ALIGNMENT_LEFT, -1, 30, BONE)
 	_draw_kin_sign(STONE_SIZE - Vector2(30, 30), 13.0)
 	if show_role:

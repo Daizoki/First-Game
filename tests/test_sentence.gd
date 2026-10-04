@@ -82,8 +82,8 @@ func test_laguz_is_water_not_a_wildcard() -> void:
 	check_eq(_parse(["laguz", "isaz"])["status"], SentenceParser.INCOMPLETE, "two Elements, no Target:")
 
 
-func test_talisman_and_examiner_spells_sleep_until_stage_3() -> void:
+func test_talisman_spells_sleep_until_the_talismans_come() -> void:
 	var dormant: Dictionary = _parse(["isaz", "wunjo"])
 	check_eq(dormant["status"], SentenceParser.DORMANT, "into the Talismans:")
 	check_eq(dormant["spell"], "isaz_wunjo", "it is still read:")
-	check_eq(_parse(["kenaz", "algiz"])["status"], SentenceParser.DORMANT, "against the Examiner:")
+	check_eq(_parse(["kenaz", "algiz"])["status"], SentenceParser.SPELL, "against the Examiner: awake in Stage 3:")

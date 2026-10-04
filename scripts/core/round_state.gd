@@ -48,6 +48,15 @@ var overflow_pct: float = 0.0
 var extra_casts: int = 0
 ## Clairvoyance: the next stones of the bag stay visible this round.
 var peek_bonus: int = 0
+## The examiner's rule this round: an entry of data/examiners.json ({} = no rule).
+var rule: Dictionary = {}
+## The rule stopped for the rest of the round (Ice or Strength against the Examiner).
+var rule_cancelled: bool = false
+## Casts the rule skips (Hail against the Examiner).
+var rule_skip_casts: int = 0
+var swaps_used: int = 0
+## Words cast this round, in order (Morrah remembers them).
+var words_cast: Array[String] = []
 
 var _data: Dictionary
 var _hand_size: int = 8
@@ -65,20 +74,30 @@ static func new_carry() -> Dictionary:
 	}
 
 
-## data: {"runes", "words", "spells", "spell_actions", "rules", "economy"} (the GameData tables).
+## data: {"runes", "words", "spells", "spell_actions", "rules", "economy"} (the GameData tables),
+## optionally "examiners" (for Water against the Examiner).
 ## options (all optional): "casts", "swaps" (override the rules), "hand" + "bag_top"
 ## (rune ids drawn first, in order), "bag_only" (the bag holds only those stones),
-## "spells" (false: no spells this round), "carry" (the exam's carry, see new_carry()).
+## "spells" (false: no spells this round), "carry" (the exam's carry, see new_carry()),
+## "bag" (the exam's Bag, kept between rounds), "money", "word_levels" (the exam's, shared),
+## "rule" (the examiner's entry; its "casts" / "swaps" override the others).
 func setup(data: Dictionary, round_rng: RandomNumberGenerator, round_target: float, options: Dictionary = {}) -> void:
 	_data = data
 	rng = round_rng
 	var rules: Dictionary = data["rules"]
-	bag = Bag.new(rng)
-	bag.fill_with_runes(data["runes"], int(rules.get("copies_per_rune", 2)))
+	if options.has("bag"):
+		bag = options["bag"]
+	else:
+		bag = Bag.new(rng)
+		bag.fill_with_runes(data["runes"], int(rules.get("copies_per_rune", 2)))
 	target = round_target
+	money = int(options.get("money", 0))
+	if options.has("word_levels"):
+		word_levels = options["word_levels"]
+	rule = options.get("rule", {})
 	_hand_size = int(rules.get("hand_size", 8))
-	casts_left = int(options.get("casts", rules.get("casts_per_round", 4)))
-	swaps_left = int(options.get("swaps", rules.get("swaps_per_round", 3)))
+	casts_left = int(rule.get("casts", options.get("casts", rules.get("casts_per_round", 4))))
+	swaps_left = int(rule.get("swaps", options.get("swaps", rules.get("swaps_per_round", 3))))
 	spells_enabled = bool(options.get("spells", true))
 	carry = options.get("carry", new_carry())
 	_stacked.clear()
@@ -100,6 +119,10 @@ func start() -> void:
 	overflow_pct = 0.0
 	_money_at_round_end = 0
 	_once_used.clear()
+	rule_cancelled = false
+	rule_skip_casts = 0
+	swaps_used = 0
+	words_cast.clear()
 	pending.clear()
 	offer.clear()
 	round_end_plans.clear()
@@ -108,14 +131,14 @@ func start() -> void:
 	bag.stack_on_top(_stacked)
 	var draw_extra: int = _apply_next_round()
 	target_at_start = target
-	hand.append_array(bag.draw(hand_limit() + draw_extra))
+	hand.append_array(_draw(hand_limit() + draw_extra))
 	if draw_extra > 0 and hand.size() > hand_limit():
 		ask({"kind": "put_back", "count": hand.size() - hand_limit()})
 	_apply_lasting()
 
 
 func refill() -> void:
-	hand.append_array(bag.draw(hand_limit() - hand.size()))
+	hand.append_array(_draw(hand_limit() - hand.size()))
 
 
 func hand_limit() -> int:
@@ -136,12 +159,86 @@ func is_lost() -> bool:
 
 
 func can_cast(indices: Array[int]) -> bool:
-	return casts_left > 0 and pending.is_empty() and _valid_selection(indices) and not is_won()
+	return casts_left > 0 and pending.is_empty() and _valid_selection(indices) and not is_won() \
+		and _count_allowed(indices)
 
 
 func can_swap(indices: Array[int]) -> bool:
 	return swaps_left > 0 and pending.is_empty() and _valid_selection(indices) and not is_won() \
-		and bag.remaining() > 0
+		and bag.remaining() > 0 and money >= swap_cost()
+
+
+# --- The examiner's rule --------------------------------------------------------------------
+
+## The rule in force ("" when there is none or a spell cancelled it).
+func active_rule() -> String:
+	return "" if rule.is_empty() or rule_cancelled else str(rule.get("rule", ""))
+
+
+## Coins the next Swap costs (Ignar's Fee, Aeva's Hourglass after the free ones).
+func swap_cost() -> int:
+	match active_rule():
+		"tax":
+			return int(rule.get("swap_cost", 1))
+		"hourglass":
+			return int(rule.get("swap_cost", 1)) if swaps_used >= int(rule.get("free_swaps", 3)) else 0
+	return 0
+
+
+## How many stones Kaldor's rule wants in this Cast (0 = any number).
+func required_count() -> int:
+	if active_rule() != "exact_count" or rule_skip_casts > 0:
+		return 0
+	return mini(int(rule.get("count", 5)), hand.size())
+
+
+func cancel_rule() -> void:
+	rule_cancelled = true
+
+
+## Water against the Examiner: the rule becomes another examiner's.
+func replace_rule(examiner_id: String) -> bool:
+	var examiners: Dictionary = _data.get("examiners", {})
+	if not examiners.has(examiner_id):
+		return false
+	rule = examiners[examiner_id]
+	rule_cancelled = false
+	return true
+
+
+func _count_allowed(indices: Array[int]) -> bool:
+	var needed: int = required_count()
+	return needed == 0 or indices.size() == needed or _has_algiz(_stones_at(indices))
+
+
+## Does the rule touch this Cast? Not when a spell or Algiz's Voice keeps it away.
+func _rule_applies(cast_stones: Array[Stone], mods: Dictionary) -> bool:
+	return not active_rule().is_empty() and rule_skip_casts == 0 and not bool(mods.get("ignore_rule", false)) \
+		and not _has_algiz(cast_stones)
+
+
+## Algiz's Voice: a cast Algiz keeps the rule away from the Cast.
+func _has_algiz(stones: Array[Stone]) -> bool:
+	if not bool((_data["rules"] as Dictionary).get("rune_voices_start_awake", true)):
+		return false
+	for stone: Stone in stones:
+		var rune: Dictionary = (_data["runes"] as Dictionary).get(stone.rune_id, {})
+		for effect: Dictionary in rune.get("effects", []):
+			if effect.get("trigger") != "on_cast":
+				continue
+			for action: Dictionary in effect["actions"]:
+				if action.get("name", "") == "algiz_ignore_rule":
+					return true
+	return false
+
+
+## Draws stones; Lunet's Dream turns the first few of every draw face down.
+func _draw(count: int) -> Array[Stone]:
+	var drawn: Array[Stone] = bag.draw(count)
+	if active_rule() == "dream":
+		for i: int in mini(int(rule.get("count", 3)), drawn.size()):
+			drawn[i].face_down = true
+	return drawn
 
 
 ## What the round screen shows while stones are selected (before casting).
@@ -220,7 +317,26 @@ func cast(selection: Array[int]) -> Dictionary:
 		"cast": cast_stones, "held": held, "first_cast": casts_used == 0})
 	_merge_mods(mods, _take_next_cast_mods())
 	_lower_word_levels(plans, word["word"])
+	var rule_now: String = active_rule() if _rule_applies(cast_stones, mods) else ""
+	var blocked: Array[int] = []
+	var zero_score: bool = false
+	match rule_now:
+		"lightning":
+			var scoring_now: Array = word["scoring"]
+			if not scoring_now.is_empty():
+				blocked.append(int(scoring_now[rng.randi_range(0, scoring_now.size() - 1)]))
+		"weight":
+			for i: int in word["scoring"]:
+				if cast_stones[i].position <= int(rule.get("max_position", 3)):
+					blocked.append(i)
+		"remember":
+			zero_score = words_cast.has(word["word"])
+		"correction":
+			zero_score = (rule.get("words", []) as Array).has(word["word"])
+	for stone: Stone in cast_stones:
+		stone.face_down = false
 	var result: Dictionary = Scorer.score_cast({
+		"blocked": blocked, "zero_score": zero_score,
 		"cast": cast_stones, "held": held, "word": word, "words": _data["words"], "runes": _data["runes"],
 		"word_level": word_level(word["word"]), "cast_index": casts_used, "is_last_cast": casts_left == 1,
 		"voices_awake": bool(rules.get("rune_voices_start_awake", true)), "spell_mods": mods,
@@ -240,6 +356,16 @@ func cast(selection: Array[int]) -> Dictionary:
 	hand = held
 	casts_left -= 1
 	casts_used += 1
+	words_cast.append(word["word"])
+	if rule_skip_casts > 0:
+		rule_skip_casts -= 1
+	match rule_now:
+		"competition":
+			target *= 1.0 + float(rule.get("percent", 10)) / 100.0
+		"flux":
+			for stone: Stone in hand:
+				bag.put_back(stone)
+			hand.clear()
 	refill()
 	var scoring_stones: Array[Stone] = []
 	for i: int in word["scoring"]:
@@ -257,6 +383,8 @@ func cast(selection: Array[int]) -> Dictionary:
 	result["plans"] = plans
 	result["scroll_used"] = scroll_used
 	result["spell_score"] = spell_score
+	result["rule"] = rule_now
+	result["blocked"] = blocked
 	result["score"] = float(result["score"]) + spell_score
 	result["won"] = is_won()
 	result["lost"] = is_lost()
@@ -267,6 +395,8 @@ func cast(selection: Array[int]) -> Dictionary:
 func swap(indices: Array[int]) -> bool:
 	if not can_swap(indices):
 		return false
+	money -= swap_cost()
+	swaps_used += 1
 	_discard(indices)
 	swaps_left -= 1
 	refill()
@@ -378,6 +508,10 @@ func ask(choice: Dictionary) -> void:
 	_next_choice_id += 1
 	if str(choice["kind"]) == "draw_keep":
 		offer = bag.draw(int(choice.get("count", 1)))
+	if str(choice["kind"]) == "swap_rule":
+		choice["rules"] = _other_rules(int(choice.get("count", 2)))
+		if (choice["rules"] as Array).is_empty():
+			return
 	pending.append(choice)
 
 
@@ -418,6 +552,8 @@ func pick_limits(choice: Dictionary) -> Dictionary:
 			return {"source": "bag_top", "count": bag.peek(count).size()}
 		"draw_keep":
 			return {"source": "offer"}
+		"swap_rule":
+			return {"source": "rule"}
 	return {}
 
 
@@ -505,6 +641,10 @@ func answer(reply: Dictionary) -> bool:
 				bag.draw_pile.erase(stone)
 			for n: int in range(order.size() - 1, -1, -1):
 				bag.draw_pile.append(top[int(order[n])])
+		"swap_rule":
+			var picked_rule: String = str(reply.get("rule", ""))
+			if not (choice.get("rules", []) as Array).has(picked_rule) or not replace_rule(picked_rule):
+				return false
 		"draw_keep":
 			var pick: int = int(reply.get("pick", -1))
 			if offer.is_empty():
@@ -553,6 +693,8 @@ func auto_answer() -> Dictionary:
 				if _power(offer[i]) > _power(offer[best]):
 					best = i
 			return {"pick": best}
+		"swap_rule":
+			return {"rule": (choice.get("rules", [""]) as Array)[0]}
 	return {}
 
 
@@ -656,6 +798,7 @@ func _merge_mods(into: Dictionary, extra: Dictionary) -> void:
 	into["res_to_one"] = bool(into["res_to_one"]) or bool(extra.get("res_to_one", false))
 	into["retrigger_scoring"] = int(into["retrigger_scoring"]) + int(extra.get("retrigger_scoring", 0))
 	into["word_upgrade"] = int(into["word_upgrade"]) + int(extra.get("word_upgrade", 0))
+	into["ignore_rule"] = bool(into.get("ignore_rule", false)) or bool(extra.get("ignore_rule", false))
 
 
 ## The Stutter: the Word loses a level before it scores (never below 1).
@@ -679,8 +822,26 @@ func _discard(indices: Array[int]) -> void:
 		hand.remove_at(i)
 
 
+## A value from economy.json.
+func economy_value(key: String, fallback: Variant) -> Variant:
+	return _economy(key, fallback)
+
+
 func _economy(key: String, fallback: Variant) -> Variant:
 	return (_data.get("economy", {}) as Dictionary).get(key, fallback)
+
+
+## Up to `count` other examiners' ids (never the final one, never the rule in force).
+func _other_rules(count: int) -> Array[String]:
+	var pool: Array[String] = []
+	var examiners: Dictionary = _data.get("examiners", {})
+	for id: String in examiners:
+		if not bool((examiners[id] as Dictionary).get("final", false)) and id != str(rule.get("id", "")):
+			pool.append(id)
+	var picked: Array[String] = []
+	while picked.size() < count and not pool.is_empty():
+		picked.append(pool.pop_at(rng.randi_range(0, pool.size() - 1)))
+	return picked
 
 
 func _kins() -> Array[String]:

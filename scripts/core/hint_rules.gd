@@ -64,6 +64,8 @@ func _matches(trigger: Dictionary, event: String, args: Dictionary, context: Dic
 	match event:
 		"rune_in_hand":
 			return not trigger.has("rune") or (args.get("runes", []) as Array).has(trigger["rune"])
+		"examiner_met":
+			return not trigger.has("examiner") or str(args.get("examiner", "")) == str(trigger["examiner"])
 		"idle":
 			return float(args.get("seconds", 0.0)) >= float(trigger.get("seconds", INF)) and _exams_ok(trigger, context)
 	return true

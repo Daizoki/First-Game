@@ -7,7 +7,8 @@ const Stone = preload("res://scripts/core/stone.gd")
 static var _data: Dictionary = {}
 
 
-## {"runes", "words", "spells", "spell_actions", "rules", "economy", "tutorial", "hints", "characters"}
+## {"runes", "words", "spells", "spell_actions", "rules", "economy", "tutorial", "hints", "characters",
+## "trials", "examiners"}
 ## from data/, loaded once per test run.
 static func data() -> Dictionary:
 	if _data.is_empty():
@@ -17,7 +18,8 @@ static func data() -> Dictionary:
 			"runes": game_data.runes, "words": game_data.words,
 			"spells": game_data.spells, "spell_actions": game_data.spell_actions, "rules": game_data.rules,
 			"economy": game_data.economy, "tutorial": game_data.tutorial,
-			"hints": game_data.hints, "characters": game_data.characters,
+			"hints": game_data.hints, "characters": game_data.characters, "trials": game_data.trials,
+			"examiners": game_data.examiners,
 		}
 		game_data.free()
 	return _data

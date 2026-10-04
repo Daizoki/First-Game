@@ -115,6 +115,14 @@ func ask(choice: Dictionary, limits: Dictionary, ctx: Dictionary) -> void:
 			_confirm.pressed.connect(func() -> void: answered.emit({"order": _order.duplicate()}))
 		"offer":
 			_show_stones(ctx.get("stones", []))
+		"rule":
+			# Water against the Examiner: one of two other examiners' rules.
+			for examiner_id: Variant in choice.get("rules", []):
+				var entry: Dictionary = GameData.examiners.get(examiner_id, {})
+				var rule_button: Button = _button(Loc.text(entry.get("title", {})))
+				rule_button.custom_minimum_size = Vector2(320, 64)
+				rule_button.tooltip_text = Loc.text(entry.get("text", {}))
+				rule_button.pressed.connect(func() -> void: answered.emit({"rule": str(examiner_id)}))
 	visible = true
 	_place()
 

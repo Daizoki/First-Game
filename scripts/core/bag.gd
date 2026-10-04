@@ -31,6 +31,7 @@ func reset_round() -> void:
 	_shuffle(draw_pile)
 	for stone: Stone in stones:
 		stone.round_power = 0
+		stone.face_down = false
 
 
 ## Keeps only one stone per listed rune id (a tutorial bag). Returns the ids it could not find.

@@ -37,6 +37,10 @@ signal overlay_closed(overlay_id: String)
 signal spell_discovered(spell_id: String)
 signal round_won
 signal round_lost
+## The exam screen introduced an examiner round (the examiner's character id).
+signal examiner_met(examiner_id: String)
+## The exam ended: passed all trials, or failed a round.
+signal exam_finished(passed: bool)
 signal book_opened(book_id: String)
 signal book_closed(book_id: String)
 signal pause_opened

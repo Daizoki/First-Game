@@ -24,6 +24,8 @@ const COLLECTIONS: Dictionary = {
 	"characters": ["characters.json", "character"],
 	"dialogs": ["dialogs.json", "dialog"],
 	"hints": ["hints.json", "hint"],
+	"trials": ["trials.json", "trial"],
+	"examiners": ["examiners.json", "examiner"],
 }
 
 var errors: Array[String] = []
@@ -44,6 +46,10 @@ var characters: Dictionary = {}
 var dialogs: Dictionary = {}
 ## Contextual hints shown once (data/hints.json).
 var hints: Dictionary = {}
+## The 8 trials of the exam, in order (data/trials.json).
+var trials: Dictionary = {}
+## The examiners and their rules, by character id (data/examiners.json).
+var examiners: Dictionary = {}
 ## Round rules (hand size, casts, swaps, ...).
 var rules: Dictionary = {}
 ## Prices and safety limits (data/economy.json).
@@ -86,6 +92,8 @@ func load_all(data_dir: String) -> bool:
 	validator.check_runes(COLLECTIONS["runes"][0], loaded["runes"], loaded["kins"])
 	validator.check_spells(COLLECTIONS["spells"][0], loaded["spells"], loaded["runes"])
 	validator.check_spell_actions(COLLECTIONS["spell_actions"][0], loaded["spell_actions"], loaded["runes"])
+	validator.check_exam(COLLECTIONS["trials"][0], loaded["trials"], COLLECTIONS["examiners"][0], loaded["examiners"],
+		economy.get("round_target_mults"))
 
 	kins = loaded["kins"]
 	runes = loaded["runes"]
@@ -95,6 +103,8 @@ func load_all(data_dir: String) -> bool:
 	characters = loaded["characters"]
 	dialogs = loaded["dialogs"]
 	hints = loaded["hints"]
+	trials = loaded["trials"]
+	examiners = loaded["examiners"]
 	errors = validator.errors
 
 	for message: String in errors:

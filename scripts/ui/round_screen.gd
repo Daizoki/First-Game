@@ -32,6 +32,8 @@ const MAIN_MENU_SCENE: String = "res://scenes/main_menu.tscn"
 const SPEEDS: Array[int] = [1, 2, 4]
 const FUTHARK: Array[String] = ["fehu", "uruz", "thurisaz", "ansuz", "raidho"]
 const SHAKE_SHARE: float = 0.35
+## More Swaps than this are shown as "endless" (Aeva's Hourglass).
+const ENDLESS_SWAPS: int = 12
 
 @onready var _trial_label: Label = %TrialLabel
 @onready var _coins_label: Label = %CoinsLabel
@@ -102,6 +104,7 @@ const SHAKE_SHARE: float = 0.35
 ##   casts, swaps, hand, bag_top, bag_only, spells: see RoundState.setup
 ##   examiner: character id    backdrop: "night" | "classroom"
 ##   hide_swap: bool    show_result: bool (default true)
+##   round_state: a RoundState already set up and started (the exam builds its rounds)
 var config: Dictionary = {}
 ## Half-speed score animation (the tutorial explains it phase by phase).
 var slow_scoring: bool = false
@@ -131,12 +134,15 @@ func _ready() -> void:
 		_seed = randi()
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	rng.seed = _seed
-	_round = RoundState.new()
-	var target: float = float(config.get("target", GameData.rule("test_round_target", 1500)))
-	_round.setup({"runes": GameData.runes, "words": GameData.words, "spells": GameData.spells,
-		"spell_actions": GameData.spell_actions, "rules": GameData.rules, "economy": GameData.economy},
-		rng, target, config)
-	_round.start()
+	if config.has("round_state"):
+		_round = config["round_state"]
+	else:
+		_round = RoundState.new()
+		var target: float = float(config.get("target", GameData.rule("test_round_target", 1500)))
+		_round.setup({"runes": GameData.runes, "words": GameData.words, "spells": GameData.spells,
+			"spell_actions": GameData.spell_actions, "rules": GameData.rules, "economy": GameData.economy,
+			"examiners": GameData.examiners}, rng, target, config)
+		_round.start()
 	_casts_total = _round.casts_left
 	_swaps_total = _round.swaps_left
 	_speed = int(SaveManager.get_setting("scoring_speed", GameData.rule("scoring_speed", 1)))
@@ -265,6 +271,12 @@ func _refresh_state() -> void:
 	_candles.left = _round.casts_left
 	_chalk.total = maxi(_swaps_total, _round.swaps_left)
 	_chalk.left = _round.swaps_left
+	# Aeva's Hourglass: Swaps without end, no chalk to draw.
+	var endless: bool = _round.swaps_left > ENDLESS_SWAPS
+	_chalk.visible = not endless and not bool(config.get("hide_swap", false))
+	_swaps_label.text = Loc.t("round_swaps_endless") if endless else Loc.t("round_swaps")
+	var cost: int = _round.swap_cost()
+	_swap_button.text = Loc.t("round_swap_button_cost", {"n": cost}) if cost > 0 else Loc.t("round_swap_button")
 	var selection: Array[int] = _hand.selected_indices()
 	_cast_button.disabled = _busy or not _round.can_cast(selection) or not EventBus.is_allowed("cast")
 	_swap_button.disabled = _busy or not _round.can_swap(selection) or not EventBus.is_allowed("swap")
@@ -402,6 +414,15 @@ func _on_selection_changed() -> void:
 		_preview_value.text = ""
 		_power_value.text = "0"
 		_res_value.text = "0"
+	elif _selection_has_face_down():
+		# Lunet's Dream: a face-down stone keeps its secret until it is cast.
+		_word_name.text = Loc.t("word_hidden")
+		_word_level.text = ""
+		_scoring_count.text = Loc.t("circle_face_down")
+		_preview_value.text = ""
+		_power_value.text = "?"
+		_res_value.text = "?"
+		_preview = {}
 	else:
 		_word_name.text = _word_display_name(preview["word"])
 		_word_level.text = Loc.t("circle_level", {"n": _round.word_level(preview["word"])})
@@ -419,6 +440,13 @@ func _on_selection_changed() -> void:
 func _process(_delta: float) -> void:
 	var covered: bool = _pause_panel.visible or _word_book.visible or _rune_book.visible or _result_panel.visible
 	_set_word_card(not _busy and not covered and not _preview.is_empty() and _mouse_over_circle())
+
+
+func _selection_has_face_down() -> bool:
+	for i: int in _hand.selected_indices():
+		if _round.hand[i].face_down:
+			return true
+	return false
 
 
 func _mouse_over_circle() -> bool:

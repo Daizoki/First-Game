@@ -48,6 +48,11 @@ const ENUMS: Dictionary = {
 	"effect_per": ["word_stone", "lesson_used", "talisman"],
 	"effect_target": ["self", "next"],
 	"effect_special": ["kenaz_peek", "gebo_copy_previous", "algiz_ignore_rule", "berkanan_copy", "laguz_wild"],
+	## The examiners' rules (DESIGN 3.8, scripts/core/round_state.gd).
+	"examiner_rule": [
+		"exact_count", "flux", "lightning", "tax", "dream", "weight", "remember", "correction", "competition",
+		"trick", "hourglass",
+	],
 	"tutorial_event": [
 		"hover", "selection", "cast", "swap", "round_won", "spell_cast", "spell_discovered", "book_opened",
 		"book_closed",
@@ -134,9 +139,27 @@ const SCHEMAS: Dictionary = {
 	"economy": {
 		"required": {
 			"spell_target_floor_pct": "int", "spell_max_extra_casts_per_round": "int", "scroll_slots": "int",
-			"examiner_spell_fallback_money": "int",
+			"examiner_spell_fallback_money": "int", "start_money": "int", "round_target_mults": "number_list",
+			"reward_small": "int", "reward_big": "int", "reward_examiner": "int", "reward_per_cast_left": "int",
+			"interest_per": "int", "interest_max": "int",
 		},
 		"optional": {},
+	},
+	## One of the 8 trials of the exam (data/trials.json).
+	"trial": {
+		"required": {"id": "id", "number": "int", "base_target": "int"},
+		"optional": {},
+	},
+	## An examiner and their rule (data/examiners.json); the id is a character id.
+	"examiner": {
+		"required": {
+			"id": "ref:characters", "rule": "enum:examiner_rule", "title": "loc", "text": "loc", "intro": "loc",
+			"defeated": "loc", "won": "loc",
+		},
+		"optional": {
+			"final": "bool", "count": "int", "percent": "number", "max_position": "int", "words": "word_list",
+			"swap_cost": "int", "free_swaps": "int", "casts": "int", "swaps": "int", "target_mult": "number",
+		},
 	},
 	"character": {
 		"required": {"id": "id", "name": "loc", "kind": "enum:character_kind", "description": "loc", "color": "color"},
@@ -201,7 +224,7 @@ const SCHEMAS: Dictionary = {
 	},
 	"hint_trigger": {
 		"required": {"event": "enum:hint_event"},
-		"optional": {"rune": "ref:runes", "seconds": "number", "max_exams": "int"},
+		"optional": {"rune": "ref:runes", "seconds": "number", "max_exams": "int", "examiner": "ref:characters"},
 	},
 	"rules": {
 		"required": {
@@ -388,6 +411,16 @@ func check_value(file_name: String, label: String, path: String, value: Variant,
 					check_value(file_name, label, "%s[%d]" % [path, i], (value as Array)[i], "enum:spell_scalable")
 		"rune_list":
 			_check_id_list(file_name, label, path, value, "runes")
+		"word_list":
+			_check_id_list(file_name, label, path, value, "words")
+		"number_list":
+			if not (value is Array) or (value as Array).is_empty():
+				add_error(file_name, label, "\"%s\" must be a list of numbers" % path)
+			else:
+				for item: Variant in value:
+					if not (item is int or item is float):
+						add_error(file_name, label, "\"%s\" must hold only numbers" % path)
+						break
 		"action_list":
 			if not (value is Array):
 				add_error(file_name, label, "\"%s\" must be a list of actions" % path)
@@ -432,6 +465,28 @@ func check_spells(file_name: String, spells: Dictionary, runes: Dictionary) -> v
 						found = true
 			if not found:
 				add_error(file_name, id, "\"scalable\" names \"%s\", which no op has" % str(field))
+
+
+## Call after trials.json and examiners.json are loaded: trials numbered 1..n in order,
+## exactly one final examiner, and enough others for every trial before it.
+func check_exam(trials_file: String, trials: Dictionary, examiners_file: String, examiners: Dictionary,
+		round_mults: Variant) -> void:
+	var n: int = 0
+	for id: String in trials:
+		n += 1
+		if int((trials[id] as Dictionary).get("number", 0)) != n:
+			add_error(trials_file, id, "trials must be numbered 1, 2, 3 … in file order")
+	var finals: int = 0
+	for id: String in examiners:
+		if bool((examiners[id] as Dictionary).get("final", false)):
+			finals += 1
+	if finals != 1:
+		add_error(examiners_file, "", "exactly one examiner must have \"final\": true (found %d)" % finals)
+	if examiners.size() - finals < trials.size() - 1:
+		add_error(examiners_file, "", "%d trials need at least %d examiners besides the final one" % [
+			trials.size(), trials.size() - 1])
+	if round_mults is Array and (round_mults as Array).size() != 3:
+		add_error("economy.json", "", "\"round_target_mults\" needs 3 numbers (small, big, examiner)")
 
 
 ## Call after spell_actions.json and runes.json are loaded: one entry per Action rune.

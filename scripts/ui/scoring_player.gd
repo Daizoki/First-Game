@@ -65,6 +65,16 @@ func play(result: Dictionary, cast_views: Array[StoneView], held_views: Array[St
 					POWER_COLOR if key == "float_power" else RES_COLOR, 44)
 				_pop(label)
 				await _wait(STEP)
+			"rule":
+				# The examiner's rule: a struck stone, or a Cast graded 0.
+				if str(event.get("kind", "")) == "blocked":
+					var struck: StoneView = cast_views[event["index"]]
+					struck.dimmed = true
+					_float_at(struck, Loc.t("float_rule_blocked"), BONE)
+				else:
+					float_layer.spawn(Loc.t("float_rule_zero"),
+						total_label.get_global_rect().get_center() - float_layer.global_position, RES_COLOR, 44)
+				await _wait(STEP)
 			"total":
 				total_label.text = "= " + Loc.number(event["score"])
 				total_label.modulate.a = 1.0
