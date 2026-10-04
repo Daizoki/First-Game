@@ -265,6 +265,10 @@ interpretări moderne (secolul XX).
 - O partidă completă: 30–45 de minute.
 
 ## 3.15 Vrăjile (combinații cu efecte complet diferite)
+> **Înlocuită de Gramatica runelor (Etapa 2b, `docs/GRAMATICA.md`):** fiecare rună are un rol (Element, Acțiune,
+> Țintă), iar vraja e o propoziție Element → (cel mult 2 Acțiuni) → Țintă, în ordinea de rostire. Textul de mai jos
+> descrie vechile Vrăji cu rețete fixe; Pasul D al Etapei 2b rescrie secțiunea.
+
 - O **Vrajă** = 2–3 rune anume, rostite în aceeași Rostire. Ordinea nu contează. Excepție fac Cuvintele vechi ascunse
   (ALU, LAÞU, AUJA), unde ordinea contează.
 - Vrăjile se verifică pe **toate pietrele rostite**, nu doar pe cele care punctează în Cuvânt. Poți rosti un Cuvânt și
@@ -359,7 +363,7 @@ Specificația completă e în `docs/INSTRUIRE.md`; aici e ce s-a construit și r
   | 1 | Pietrele și Rostirea | fișa pietrei, Poziția, Neamul, Perechea, cercul, scorul încetinit, lumânările | fixă | 250 | 3 / 0 |
   | 2 | Schimbarea și Cuvintele mari | Schimbarea, maximum 5 pietre, Familia, Cartea Cuvintelor | fixă (+ 2 pietre fixe în săculeț) | 3 000 | 2 / 1 |
   | 3 | Glasul runelor | Glasurile: Hagalaz lovește de două ori, Fehu dă o Monedă | fixă | 240 | 2 / 0 |
-  | 4 | Vrăjile | Iarna (Isaz + Hagalaz + Naudiz), cercul care „se trezește”, Vrajă + Treime | fixă | 140 | 2 / 0 |
+  | 4 | Vrăjile | propoziția Isaz → Tiwaz (Iarna), ordinea greșită (Fehu → Hagalaz), o Acțiune la mijloc (Uruz → Ehwaz → Fehu); se termină după ultimul pas | fixă | 300 | 3 / 0 |
   | 5 | Singur | joc liber cu săculețul întreg (seed fix); după 25 s fără acțiune, un singur indiciu | trasă | 280 | 4 / 3 |
 
 - Pașii unei lecții: bulă de citit (clic), sau „așteaptă” o acțiune (mouse pe o piatră, o selecție anume, Rostire,
@@ -480,3 +484,38 @@ Un efect = **declanșator** + **condiții** + **acțiuni**.
   - Am corectat 5 rânduri în engleză: „Hold the mouse over” → „Hover over” (de 2 ori, ca în indiciul `idle_help`),
     „I'll manage alone” → „I'll manage on my own”, „a coin” → „a Coin” (ca „Coins” din interfață), „colour” →
     „color” (engleza americană, peste tot la fel), „alive at the exam” → „alive in the exam”.
+- **Etapa 2b, pasul A — Gramatica runelor: datele și logica (propuneri de verificat de Relax):**
+  - Fiecare rună are `role` și `phrase` în `runes.json`. Cele 64 de vrăji stau în `data/spells_base.json` (id-ul e
+    `<element>_<țintă>`, de ex. `isaz_tiwaz` = Iarna), cele 8 Acțiuni în `data/spell_actions.json`, limitele în
+    `data/economy.json`. Vechiul `spells.json` (cele 8 Vrăji cu rețete) a fost scos.
+  - Numele propuse pentru toate cele 64 de vrăji sunt în `spells_base.json` (cele date de Relax au rămas: Iarna,
+    Ziua lungă, Târgul, Furtuna, Valul, Lecția, Jarul de mâine). Culoarea strălucirii vine de la Element.
+  - **Lecțiile 1–3 au vrăjile oprite și citesc pietrele de la stânga la dreapta, ca înainte.** Motiv: Glasurile Gebo,
+    Ehwaz și Tiwaz citesc acum ordinea de rostire, iar Familia din Lecția 2 ar fi dat între 900 și 6 528 de puncte după
+    ordinea clicurilor (ținta e 3 000). Ordinea contează abia din Lecția 4, care o predă.
+  - Lecția 4 e deja cea nouă (altfel nu mai mergea fără vechile Vrăji). Pasul 8 e împărțit în două: întâi alegi Uruz →
+    Ehwaz → Fehu, apoi „Rostește.”. Ținta e 300, ca lecția să nu se câștige din greșeală. Pasul D o finisează (lumina
+    pe semnele rolului și pe propoziție vine cu Pasul B).
+  - Interpretări:
+    - Gebo copiază Glasul pietrei rostite chiar înaintea ei, chiar dacă aceea nu punctează. Ehwaz face să mai puncteze
+      piatra rostită după ea, doar dacă aceea punctează. Tiwaz: ×2 dacă e prima piatră rostită.
+    - Raidho pe o vrajă „single” (Ciobul, Altoiul) atinge toate pietrele din mână, la jumătate de putere.
+    - „×1,5” pe un multiplicator crește doar partea de bonus: ×1,5 la putere dublă e ×2, întins de Raidho e ×1,75.
+    - Valorile întregi (Monede, pietre) se rotunjesc.
+    - O Acțiune care nu are ce schimba (de ex. Raidho, Berkanan, Perthro, Naudiz sau Jera pe o vrajă fără număr, sau
+      Jera pe o vrajă „înainte”) nu face nimic; vraja merge normal.
+    - Jera pe o vrajă „mai târziu” o înregistrează la finalul rundei.
+    - Eihwaz: la începutul următoarelor 2 runde vraja se repetă la jumătate de putere. Dacă e o vrajă „înainte”, se
+      aplică primei Rostiri a rundei.
+    - Gebo: dacă locul de Pergament e plin, vraja se aplică pe loc. Pergamentul folosit se aplică împreună cu
+      următoarea Rostire.
+    - Naudiz: prețul se alege după Rostire; fără 4 Monede, se plătește cu o Rostire.
+    - Bâlbâiala scade nivelul Cuvântului înainte de scor, deci Rostirea de acum punctează deja cu nivelul mai mic.
+    - Revărsarea nu urcă niciodată într-un Cuvânt ascuns (n-ar trebui să-i dea numele).
+    - Alegerea (Soarele în Mână): piatra păstrată intră în mână peste cele 8.
+    - Prima rostire a unei propoziții descoperă vraja chiar dacă Perthro a ratat sau Gebo a pus-o pe Pergament.
+  - **Alegerile** (piatra de spart, Neamul nou, ordinea din săculeț, prețul lui Naudiz…) stau în `RoundState.pending`.
+    Până la Pasul B, ecranul de rundă le răspunde singur, cu o regulă simplă: sparge sau aruncă pietrele cele mai slabe,
+    copiază-o pe cea mai puternică, plătește în Monede dacă ai.
+  - Vrăjile spre Talismane și Examinator se citesc deja ca propoziții, dar „dorm” (`enabled: false`) până în Etapa 3.
+

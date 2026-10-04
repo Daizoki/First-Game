@@ -14,7 +14,9 @@ Artă: `docs/ARTA.md`.
 > pașii A–D** — EventBus, stratul de instruire (lumină, bulă, săgeată), intro + Lecțiile 1–5 în `data/tutorial.json`,
 > mâini fixe, blocarea acțiunilor, numele jucătorului, pauza, Setările, fișa pietrei, fișa cercului, Cartea Cuvintelor
 > (buton + tasta C), Cartea de rune (din pauză), indiciile contextuale (`data/hints.json`). Așteaptă testul final al
-> lui Relax. Verificat cu Godot 4.7.2: 91 de teste trec (inclusiv parcurgerea fiecărei lecții).
+> lui Relax. **Etapa 2b (Gramatica runelor, `docs/GRAMATICA.md`) e în lucru: pasul A făcut** — rolurile runelor,
+> cele 64 de vrăji Element → Țintă, cele 8 Acțiuni, `SentenceParser` + `SpellResolver`, Lecția 4 nouă.
+> Verificat cu Godot 4.7.2: 116 teste trec (inclusiv parcurgerea fiecărei lecții).
 
 ## Cum lucrăm
 - Utilizatorul e **Relax** (18 ani, Chișinău; desenează, TikTok/YouTube). **Scrie-i în română.**
@@ -70,9 +72,9 @@ Artă: `docs/ARTA.md`.
   prețuri, dialoguri, texte UI. `GameData` încarcă și validează totul (`scripts/core/data_validator.gd`). Erorile apar
   ca „`data/<fișier> [<id>]: <problemă>`” pe ecranul meniului, fără crash. Câmp nou în JSON → adaugă-l și în schemă.
 - **Efecte în date:** declanșator (`on_score`, `on_held`, `on_cast`, `in_word`, `on_round_end_held`, `passive`) +
-  condiții (`first_in_word`, `first_cast`, `last_cast`, `chance`, `once_per_round`) + acțiuni (`add_power`, `add_res`,
+  condiții (`cast_first`, `first_cast`, `last_cast`, `chance`, `once_per_round`) + acțiuni (`add_power`, `add_res`,
   `mul_res`, `add_money`, `add_swap`, `retrigger`, `grow_power`, `base_power_mult`, `word_level_bonus`,
-  `add_money_at_round_end`, `special`). Lista scurtă de handleri speciali: `kenaz_peek`, `gebo_copy_left`,
+  `add_money_at_round_end`, `special`). Lista scurtă de handleri speciali: `kenaz_peek`, `gebo_copy_previous`,
   `algiz_ignore_rule`, `berkanan_copy`, `laguz_wild`. Valorile permise sunt în `ENUMS` din `data_validator.gd`.
 - **Scorul** (`scripts/core/scorer.gd`) produce o listă de evenimente pe care `scoring_player.gd` le animă. Logica nu
   știe nimic de ecran.
@@ -100,8 +102,13 @@ Artă: `docs/ARTA.md`.
   elementele pe care le construiești (`"enabled": true`, emiți evenimentul lor, test în `tests/test_hints.gd`) și
   adaugi **fișă la mouse** pentru orice element nou pe care îl vede jucătorul (Talismane, consumabile, regula
   Examinatorului, marfa din Piață…). Elementele noi pe care le poate arăta instruirea primesc `tutorial_id`.
-- **Vrăjile** (`data/spells.json`): 2–3 rune, ordinea nu contează, verificate pe toate pietrele rostite; Laguz nu e
-  joker pentru Vrăji; moment `before_score` / `after_score` / `next_cast`; ascunse până la prima rostire.
+- **Vrăjile funcționează după Gramatica runelor (`docs/GRAMATICA.md`, înlocuiește vechea 3.15).** Fiecare rună are
+  `role` (element / action / target) și `phrase`. Vraja = propoziția Element → (0–2 Acțiuni) → Țintă, pietrele una
+  după alta în **ordinea de rostire** (ordinea selecției); contează doar prima propoziție. Datele: `spells_base.json`
+  (64, id `<element>_<țintă>`, `timing` before/after/later, `ops`, `scalable`, `single`, `enabled`),
+  `spell_actions.json` (8), limitele în `economy.json`. Logica: `scripts/core/sentence_parser.gd` (citirea) și
+  `spell_resolver.gd` (efectele). Alegerile jucătorului stau în `RoundState.pending`. Cu vrăjile oprite (lecțiile
+  1–3), pietrele se citesc de la stânga la dreapta. Laguz e Element (Apa), nu joker.
 
 ## Autoload-uri (ordinea contează)
 1. `GameData` — `scripts/autoload/game_data.gd` — date din `data/`, `errors`.
@@ -131,9 +138,10 @@ adăugat în lista `TEST_FILES` din `tests/run_tests.gd`.
 
 ## Structura (țintă v3)
 ```
-docs/        UNIVERS.md, DESIGN.md, ARTA.md, INSTRUIRE.md, TRADUCERI.md (generat)
-data/        kins, runes, words, spells, characters, rules, dialogs, tutorial, hints, ui_text (.json) — există deja
-             talismans, lessons, engravings, examiners, trials, parents, economy — vin în etapele lor
+docs/        UNIVERS.md, DESIGN.md, ARTA.md, INSTRUIRE.md, GRAMATICA.md, TRADUCERI.md (generat)
+data/        kins, runes, words, spells_base, spell_actions, economy, characters, rules, dialogs, tutorial, hints,
+             ui_text (.json) — există deja
+             talismans, lessons, engravings, examiners, trials, parents — vin în etapele lor
 fonts/       Grenze, Grenze Gotisch + licențe OFL
 art/         stones/ runes/ talismans/ lessons/ engravings/ examiners/ portraits/ backgrounds/ ui/
 scenes/      boot, name_entry, main_menu, rune_check, settings, round, spell_reveal, tutorial, tutorial_overlay,
@@ -141,16 +149,18 @@ scenes/      boot, name_entry, main_menu, rune_check, settings, round, spell_rev
              morning (hub), parent_select, trial_select, shop, pack_open, result, rune_book, collection,
              intro, dialog — vin în etapele lor
 scripts/     autoload/ (game_data, run_state, save_manager, loc, event_bus, hints)
-             core/ (stone, bag, word_detector, spell_detector, scorer, round_state, tutorial_flow, hint_rules,
+             core/ (stone, bag, word_detector, sentence_parser, spell_resolver, scorer, round_state, tutorial_flow,
+                    hint_rules,
                     data_validator;
                     examiner_rules, shop_logic vin în Etapa 3)
              ui/ (ecrane + componente: rune_glyph, stone_view, hand_view, rune_circle, candle_row, portrait,
                   talisman_string, night_backdrop, classroom_backdrop, float_layer, scoring_player, spell_reveal,
-                  stone_card, word_card, word_book, rune_book, mini_stone, hint_bubble, round_screen, tutorial,
+                  stone_card, word_card, word_book, rune_book, mini_stone, hint_bubble, spell_text, round_screen, tutorial,
                   tutorial_overlay, boot, name_entry)
 shaders/     spotlight.gdshader (lumina instruirii)
 tools/       gen_round.py (generează scenes/round.tscn), export_translations.py (generează docs/TRADUCERI.md)
-tests/       run_tests.gd, test_case.gd, fixtures.gd, test_data/loc/save/words/scoring/tutorial/hints.gd, simulate.gd
+tests/       run_tests.gd, test_case.gd, fixtures.gd, test_data/loc/save/words/sentence/spells/scoring/tutorial/hints.gd,
+             simulate.gd
 ```
 
 ## Etapele
@@ -159,6 +169,7 @@ tests/       run_tests.gd, test_case.gd, fixtures.gd, test_data/loc/save/words/s
 | 1 | Scheletul: Compatibility + 1920×1080, foldere, autoload-uri, JSON + validare, meniu, setări cu limba, docs, **scena de verificare a celor 24 de rune desenate din cod** | făcută |
 | 2 | Miezul — o rundă: săculețul de 48, mâna de 8, Rostire/Schimbare, sortare/rearanjare, recunoașterea Cuvintelor (cu Laguz și ordinea), Putere × Rezonanță animat, cele 24 de Glasuri, rundă de test; teste; simulatorul + tabelul de probabilități; **primele 8 Vrăji** (detectare, efecte, descoperire, animație simplă); ecranul de rundă așezat ca în 3.16 | făcută (așteaptă testul lui Relax) |
 | 2½ | Instruirea „Seara dinaintea examenului” (`docs/INSTRUIRE.md`): A sistemul, B lecțiile 1–5, C ajutorul permanent + indiciile, D documentele | făcută (așteaptă testul final al lui Relax) |
+| 2b | Gramatica runelor (`docs/GRAMATICA.md`): A datele și logica, B interfața, C balansul, D instruirea și documentele | A făcut |
 | 3 | Examenul complet: 8 Probe × 3 runde, Examinatorii, Monede, Piața de noapte, primele 15 Talismane, Lecții, Gravuri, materiale, legături runice, Săculețe, Picat / Examen trecut | — |
 | 4 | Bucla Aevei: Dimineața, alegerea părintelui, Amintiri, deblocări, salvare (inclusiv examenul în curs), Cartea de rune (cu Vrăjile descoperite), Colecția, numele jucătorului, Paginile rupte în Piață | — |
 | 5 | Povestea și conținutul: intro, replici, final, restul Talismanelor (~30), restul Vrăjilor (30–40, cu blestemele), Cuvintele vechi (ALU, LAÞU, AUJA), balans cu simulatorul | — |

@@ -29,6 +29,8 @@ func fill_with_runes(runes: Dictionary, copies: int) -> void:
 func reset_round() -> void:
 	draw_pile.assign(stones)
 	_shuffle(draw_pile)
+	for stone: Stone in stones:
+		stone.round_power = 0
 
 
 ## Keeps only one stone per listed rune id (a tutorial bag). Returns the ids it could not find.
@@ -87,6 +89,12 @@ func add_copy_of(stone: Stone) -> Stone:
 	stones.append(copy)
 	draw_pile.insert(_rng.randi_range(0, draw_pile.size()), copy)
 	return copy
+
+
+## Puts an owned stone back into the draw pile at a random place (The Return, The Choice).
+func put_back(stone: Stone) -> void:
+	if not draw_pile.has(stone):
+		draw_pile.insert(_rng.randi_range(0, draw_pile.size()), stone)
 
 
 ## Permanently removes a stone (Sfărâmarea, Focul, broken glass).

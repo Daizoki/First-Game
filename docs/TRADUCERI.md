@@ -72,16 +72,19 @@
 |---|---|---|
 | `title` | Vrăjile | Spells |
 | `fail_text` | Mai încearcă. Nu se notează. | Try again. It isn't graded. |
-| `pas 1.text` | Acum ceva ce nu-ți spune nimeni la examen. | Now something nobody tells you at the exam. |
-| `pas 2.text` | Unele rune, puse împreună, fac mai mult decât scor. Se cheamă Vrăji. | Some runes, put together, do more than score. They are called Spells. |
-| `pas 3.text` | Gheață. Grindină. Nevoie. Ce iese din ele? | Ice. Hail. Need. What comes of them? |
-| `pas 3.wrong_text` | Gheața, grindina și nevoia: Isaz, Hagalaz, Naudiz. | Ice, hail and need: Isaz, Hagalaz, Naudiz. |
-| `pas 4.text` | Simți? Cercul s-a trezit. Nu-ți spune ce Vrajă e. Ca s-o afli, trebuie s-o rostești. | Feel that? The circle has woken up. It won't tell you which Spell it is. To find out, you have to cast it. |
-| `pas 5.text` | Hagalaz are Poziția 1. Adaugă Fehu și Tiwaz, tot cu Poziția 1, și ai și o Treime. Vrajă și scor în aceeași Rostire. | Hagalaz has Position 1. Add Fehu and Tiwaz, also Position 1, and you have a Triad too. A Spell and a score in the same Cast. |
-| `pas 5.wrong_text` | Fehu și Tiwaz. Cifra 1, în colț. | Fehu and Tiwaz. The 1 in the corner. |
-| `pas 6.text` | Rostește. | Cast. |
-| `pas 7.text` | Iarna. Uite, Ținta a scăzut. | Winter. Look, the Target dropped. |
-| `pas 8.text` | Sunt peste treizeci de Vrăji și toate se pot ghici din sensul runelor. Nu ți le spun. Nici eu nu le știu pe toate. | There are more than thirty Spells, and every one can be guessed from the meaning of its runes. I won't tell you them. I don't know them all myself. |
+| `pas 1.text` | Acum ceva ce nu-ți spune nimeni la examen. Runele nu sunt doar cifre. Sunt cuvinte. | Now something nobody tells you at the exam. Runes are not just numbers. They are words. |
+| `pas 2.text` | Uită-te la semnul din colț. Triunghiul e un Element, cercul e o Țintă, săgeata e o Acțiune. | Look at the sign in the corner. The triangle is an Element, the circle is a Target, the arrow is an Action. |
+| `pas 3.text` | O vrajă e o propoziție: întâi Elementul, apoi Ținta. Alege Isaz, apoi Tiwaz. În ordinea asta. | A spell is a sentence: first the Element, then the Target. Pick Isaz, then Tiwaz. In that order. |
+| `pas 3.wrong_text` | Întâi Isaz, apoi Tiwaz. Elementul vine primul. | Isaz first, then Tiwaz. The Element comes first. |
+| `pas 4.text` | Citește sub cerc: «Gheața peste Țintă». Ce face? Nu știi până n-o rostești. | Read under the circle: “Ice on the Target”. What does it do? You won't know until you cast it. |
+| `pas 5.text` | Rostește. | Cast. |
+| `pas 6.text` | Acum invers. Alege Fehu, apoi Hagalaz. | Now the other way round. Pick Fehu, then Hagalaz. |
+| `pas 6.wrong_text` | Întâi Fehu, apoi Hagalaz. | Fehu first, then Hagalaz. |
+| `pas 7.text` | Aceleași rune, altă ordine: nimic. Ordinea contează. | Same runes, different order: nothing. Order matters. |
+| `pas 8.text` | Pune o Acțiune la mijloc. Uruz, apoi Ehwaz, apoi Fehu: «Forța aleargă de două ori în Monede». | Put an Action in the middle. Uruz, then Ehwaz, then Fehu: “Strength runs twice into Coins”. |
+| `pas 8.wrong_text` | Uruz, Ehwaz, Fehu. În ordinea asta. | Uruz, Ehwaz, Fehu. In that order. |
+| `pas 9.text` | Rostește. | Cast. |
+| `pas 10.text` | Opt Elemente, opt Acțiuni, opt Ținte. Sute de vrăji, toate citite ca propoziții. Restul îl afli singur. | Eight Elements, eight Actions, eight Targets. Hundreds of spells, all read as sentences. The rest you'll find out yourself. |
 
 ### Lecția 5 — Singur
 
@@ -92,6 +95,183 @@
 | `win_text` | Nu-i rău. Mâine dimineață e examenul. Kaldor nu e la fel de răbdător ca mine. | Not bad. The exam is tomorrow morning. Kaldor is not as patient as I am. |
 | `idle_hint.text` | Caută o Pereche. Sau citește Glasurile. | Look for a Pair. Or read the Voices. |
 | `pas 1.text` | Acum fără mine. Ținta e mică. Nu mă face de rușine. | Now without me. The Target is small. Don't embarrass me. |
+
+## Gramatica runelor (`data/runes.json`, `data/spells_base.json`, `data/spell_actions.json`)
+
+### Rolul fiecărei rune în propoziție
+
+| Rună | Română | English |
+|---|---|---|
+| `fehu · target` | în Monede | into Coins |
+| `uruz · element` | Forța | Strength |
+| `thurisaz · element` | Spinul | Thorn |
+| `ansuz · target` | în Cuvânt | into the Word |
+| `raidho · action` | se întinde | spreads |
+| `kenaz · element` | Focul | Fire |
+| `gebo · action` | se dăruiește | is given away |
+| `wunjo · target` | în Talismane | into the Talismans |
+| `hagalaz · element` | Grindina | Hail |
+| `naudiz · action` | cere un preț | asks a price |
+| `isaz · element` | Gheața | Ice |
+| `jera · action` | se coace | ripens |
+| `eihwaz · action` | durează | endures |
+| `perthro · action` | riscă | gambles |
+| `algiz · target` | asupra Examinatorului | against the Examiner |
+| `sowilo · element` | Soarele | Sun |
+| `tiwaz · target` | peste Țintă | on the Target |
+| `berkanan · action` | crește | grows |
+| `ehwaz · action` | aleargă de două ori | runs twice |
+| `mannaz · target` | în Mână | into the Hand |
+| `laguz · element` | Apa | Water |
+| `ingwaz · target` | în Viitor | into the Future |
+| `dagaz · element` | Ziua | Day |
+| `othala · target` | în Săculeț | into the Bag |
+
+### Cele 64 de vrăji (nume și efect)
+
+| Vraja | Română | English |
+|---|---|---|
+| `kenaz_tiwaz` | Pârjolul | Scorch |
+| `kenaz_tiwaz · efect` | Ținta scade cu {percent}% pentru fiecare piatră care a punctat. | The Target drops by {percent}% for every stone that scored. |
+| `uruz_tiwaz` | Asaltul | Onslaught |
+| `uruz_tiwaz · efect` | Ținta scade cu {percent}% din Puterea acestei Rostiri. | The Target drops by {percent}% of this Cast's Power. |
+| `isaz_tiwaz` | Iarna | Winter |
+| `isaz_tiwaz · efect` | Ținta scade cu {percent}%. | The Target drops by {percent}%. |
+| `hagalaz_tiwaz` | Prăpădul | Havoc |
+| `hagalaz_tiwaz · efect` | Ținta scade cu {percent}%, dar pierzi o Schimbare. | The Target drops by {percent}%, but you lose a Swap. |
+| `laguz_tiwaz` | Viitura | Flash Flood |
+| `laguz_tiwaz · efect` | Ținta scade cu {percent}% acum; ținta rundei următoare crește cu 10%. | The Target drops by {percent}% now; next round's Target rises by 10%. |
+| `sowilo_tiwaz` | Amiaza | High Noon |
+| `sowilo_tiwaz · efect` | Scorul acestei Rostiri se adună încă o dată ({percent}%). | This Cast's score is added once more ({percent}%). |
+| `thurisaz_tiwaz` | Ghimpele | The Barb |
+| `thurisaz_tiwaz · efect` | Ținta scade cu {percent}%, dar Rezonanța acestei Rostiri devine 1. | The Target drops by {percent}%, but this Cast's Resonance becomes 1. |
+| `dagaz_tiwaz` | Ziua lungă | The Long Day |
+| `dagaz_tiwaz · efect` | +{count} Rostire în runda asta. | +{count} Cast this round. |
+| `kenaz_fehu` | Fierăria | The Forge |
+| `kenaz_fehu · efect` | +{amount} Monedă pentru fiecare piatră care a punctat. | +{amount} Coin for every stone that scored. |
+| `uruz_fehu` | Târgul | The Fair |
+| `uruz_fehu · efect` | +{amount} Monede. | +{amount} Coins. |
+| `isaz_fehu` | Cămara | The Larder |
+| `isaz_fehu · efect` | +{amount} Monedă pentru fiecare 5 Monede pe care le ai (cel mult +{max}). | +{amount} Coin for every 5 Coins you have (at most +{max}). |
+| `hagalaz_fehu` | Ciobul | The Shard |
+| `hagalaz_fehu · efect` | Spargi o piatră aleasă din mână (iese definitiv din săculeț) → +{amount} Monede. | Smash a stone you pick from your hand (it leaves the bag for good) → +{amount} Coins. |
+| `laguz_fehu` | Izvorul | The Spring |
+| `laguz_fehu · efect` | +{amount} Monedă pentru fiecare piatră din mână. | +{amount} Coin for every stone in your hand. |
+| `sowilo_fehu` | Aurul | Gold |
+| `sowilo_fehu · efect` | +{amount} Monede pentru fiecare piatră din Neamul lui Fehu din mână. | +{amount} Coins for every stone of Fehu's Kin in your hand. |
+| `thurisaz_fehu` | Camăta | Usury |
+| `thurisaz_fehu · efect` | +{amount} Monede, dar −1 Rostire. | +{amount} Coins, but −1 Cast. |
+| `dagaz_fehu` | Simbria | Wages |
+| `dagaz_fehu · efect` | La finalul rundei, +{amount} Monede pentru fiecare Rostire rămasă. | At the end of the round, +{amount} Coins for every Cast left. |
+| `kenaz_othala` | Călirea | Tempering |
+| `kenaz_othala · efect` | {count} pietre aleatorii din săculeț primesc +{amount} Putere, permanent. | {count} random stones in the bag get +{amount} Power for good. |
+| `uruz_othala` | Ucenicia | Apprenticeship |
+| `uruz_othala · efect` | Pietrele care au punctat primesc +{amount} Putere, permanent. | The stones that scored get +{amount} Power for good. |
+| `isaz_othala` | Întoarcerea | The Return |
+| `isaz_othala · efect` | Pietrele rostite acum se întorc imediat în săculeț. | The stones cast now go straight back into the bag. |
+| `hagalaz_othala` | Cernerea | Sifting |
+| `hagalaz_othala · efect` | Scoți definitiv până la {count} pietre alese din mână. | Remove up to {count} stones you pick from your hand, for good. |
+| `laguz_othala` | Înfierea | Adoption |
+| `laguz_othala · efect` | Muți {count} pietre alese din mână în alt Neam, la alegere. | Move {count} stones you pick from your hand into another Kin of your choice. |
+| `sowilo_othala` | Prevestirea | Foresight |
+| `sowilo_othala · efect` | Vezi primele {count} pietre din săculeț și le pui în ce ordine vrei. | See the top {count} stones of the bag and put them in any order. |
+| `thurisaz_othala` | Altoiul | The Graft |
+| `thurisaz_othala · efect` | O piatră aleatorie din mână se sparge; adaugi în săculeț {count} copii ale unei pietre alese. | A random stone in your hand breaks; add {count} copies of a stone you pick to the bag. |
+| `dagaz_othala` | Ecoul | Echo |
+| `dagaz_othala · efect` | Adaugi în săculeț câte {count} copie a fiecărei pietre care a punctat. | Add {count} copy of every stone that scored to the bag. |
+| `kenaz_mannaz` | Vatra | The Hearth |
+| `kenaz_mannaz · efect` | +{count} piatră în mână pentru restul rundei. | +{count} stone in your hand for the rest of the round. |
+| `uruz_mannaz` | Încurajarea | Encouragement |
+| `uruz_mannaz · efect` | Pietrele rămase în mână primesc +{amount} Putere în runda asta. | The stones left in your hand get +{amount} Power this round. |
+| `isaz_mannaz` | Răbdarea | Patience |
+| `isaz_mannaz · efect` | +{amount} Rezonanță pentru fiecare piatră rămasă în mână. | +{amount} Resonance for every stone left in your hand. |
+| `hagalaz_mannaz` | Furtuna | The Storm |
+| `hagalaz_mannaz · efect` | Arunci toată mâna și tragi alta, gratis. | Throw away your whole hand and draw a new one, for free. |
+| `laguz_mannaz` | Valul | The Wave |
+| `laguz_mannaz · efect` | Schimbi până la {count} pietre, gratis. | Swap up to {count} stones, for free. |
+| `sowilo_mannaz` | Alegerea | The Choice |
+| `sowilo_mannaz · efect` | Tragi {count} pietre și păstrezi una la alegere; celelalte se întorc în săculeț. | Draw {count} stones and keep the one you pick; the others go back into the bag. |
+| `thurisaz_mannaz` | Jertfa | The Offering |
+| `thurisaz_mannaz · efect` | Arunci 2 pietre alese → +{count} Rostire. | Throw away 2 stones you pick → +{count} Cast. |
+| `dagaz_mannaz` | Răgazul | Respite |
+| `dagaz_mannaz · efect` | +{count} Schimbare. | +{count} Swap. |
+| `kenaz_ansuz` | Văpaia | Blaze |
+| `kenaz_ansuz · efect` | ×{factor} Rezonanță. | ×{factor} Resonance. |
+| `uruz_ansuz` | Strigătul | The Shout |
+| `uruz_ansuz · efect` | +{amount} Putere. | +{amount} Power. |
+| `isaz_ansuz` | Lecția | The Lesson |
+| `isaz_ansuz · efect` | Cuvântul rostit crește cu {count} nivel, permanent. | The Word you cast goes up {count} level for good. |
+| `hagalaz_ansuz` | Bâlbâiala | The Stutter |
+| `hagalaz_ansuz · efect` | Pietrele care punctează mai punctează de {count} ori, dar Cuvântul scade cu 1 nivel (minimum 1). | The scoring stones score {count} more time, but the Word drops 1 level (at least 1). |
+| `laguz_ansuz` | Revărsarea | Overflow |
+| `laguz_ansuz · efect` | Cuvântul punctează ca următorul Cuvânt din listă (Pereche → Două perechi…). | The Word scores as the next Word on the list (Pair → Two Pairs…). |
+| `sowilo_ansuz` | Lumina plină | Full Light |
+| `sowilo_ansuz · efect` | ×{factor} Rezonanță dacă rostești 5 pietre. | ×{factor} Resonance if you cast 5 stones. |
+| `thurisaz_ansuz` | Rana | The Wound |
+| `thurisaz_ansuz · efect` | ×{factor} Rezonanță, dar o piatră aleatorie din Cuvânt se sparge definitiv. | ×{factor} Resonance, but a random stone of the Word breaks for good. |
+| `dagaz_ansuz` | Zorii | Dawn |
+| `dagaz_ansuz · efect` | ×{factor} Rezonanță dacă e prima Rostire a rundei. | ×{factor} Resonance if it is the round's first Cast. |
+| `kenaz_ingwaz` | Jarul de mâine | Tomorrow's Embers |
+| `kenaz_ingwaz · efect` | Următoarea Rostire are ×{factor} Rezonanță. | Your next Cast has ×{factor} Resonance. |
+| `uruz_ingwaz` | Avântul | Momentum |
+| `uruz_ingwaz · efect` | Următoarea Rostire are +{amount} Putere. | Your next Cast has +{amount} Power. |
+| `isaz_ingwaz` | Merindea | Provisions |
+| `isaz_ingwaz · efect` | Scorul peste țintă din runda asta trece în runda următoare ({percent}%). | The score above this round's Target carries into the next round ({percent}%). |
+| `hagalaz_ingwaz` | Avansul | Head Start |
+| `hagalaz_ingwaz · efect` | Runda următoare începe cu {percent}% din țintă atinsă, dar cu −1 Schimbare. | Next round starts with {percent}% of the Target reached, but with −1 Swap. |
+| `laguz_ingwaz` | Mareea | The Tide |
+| `laguz_ingwaz · efect` | La începutul rundei următoare tragi {count} pietre în plus și păstrezi 8. | At the start of next round, draw {count} extra stones and keep 8. |
+| `sowilo_ingwaz` | Clarviziunea | Clairvoyance |
+| `sowilo_ingwaz · efect` | În runda următoare vezi mereu următoarele {count} pietre din săculeț. | Next round, you always see the next {count} stones of the bag. |
+| `thurisaz_ingwaz` | Datoria | The Debt |
+| `thurisaz_ingwaz · efect` | Următoarea Rostire are ×{factor} Rezonanță, cea de după ×0,5. | Your next Cast has ×{factor} Resonance, the one after ×0.5. |
+| `dagaz_ingwaz` | Ziua de mâine | Tomorrow |
+| `dagaz_ingwaz · efect` | Runda următoare are +{count} Rostire. | Next round has +{count} Cast. |
+| `kenaz_wunjo (doarme)` | Scânteia | Spark |
+| `kenaz_wunjo (doarme) · efect` | Talismanul din stânga se declanșează de două ori la Rostirea asta. | The leftmost Talisman triggers twice on this Cast. |
+| `uruz_wunjo (doarme)` | Fanfara | Fanfare |
+| `uruz_wunjo (doarme) · efect` | +{amount} Putere pentru fiecare Talisman. | +{amount} Power for every Talisman. |
+| `isaz_wunjo (doarme)` | Conserva | Preserves |
+| `isaz_wunjo (doarme) · efect` | Talismanele care se consumă nu scad în runda asta. | Talismans that wear out don't wear this round. |
+| `hagalaz_wunjo (doarme)` | Lichidarea | Clearance |
+| `hagalaz_wunjo (doarme) · efect` | Vinzi un Talisman ales pe prețul întreg. | Sell a Talisman you pick for its full price. |
+| `laguz_wunjo (doarme)` | Metamorfoza | Metamorphosis |
+| `laguz_wunjo (doarme) · efect` | Un Talisman ales devine altul, aleatoriu, de aceeași raritate. | A Talisman you pick becomes another random one of the same rarity. |
+| `sowilo_wunjo (doarme)` | Vitrina | The Shop Window |
+| `sowilo_wunjo (doarme) · efect` | La următoarea Piață apare sigur un Talisman Rar. | A Rare Talisman surely appears at the next Market. |
+| `thurisaz_wunjo (doarme)` | Sacrificiul | The Sacrifice |
+| `thurisaz_wunjo (doarme) · efect` | Distrugi un Talisman ales → ×{factor} Rezonanță tot restul Probei. | Destroy a Talisman you pick → ×{factor} Resonance for the rest of the Trial. |
+| `dagaz_wunjo (doarme)` | Ziua de târg | Market Day |
+| `dagaz_wunjo (doarme) · efect` | +{count} Talisman în oferta Pieței următoare. | +{count} Talisman in the next Market's offer. |
+| `kenaz_algiz (doarme)` | Fumul | Smoke |
+| `kenaz_algiz (doarme) · efect` | Regula Examinatorului nu se aplică acestei Rostiri. | The Examiner's rule does not apply to this Cast. |
+| `uruz_algiz (doarme)` | Revolta | Revolt |
+| `uruz_algiz (doarme) · efect` | Regula e anulată tot restul rundei, dar ținta crește cu 10%. | The rule is cancelled for the rest of the round, but the Target rises by 10%. |
+| `isaz_algiz (doarme)` | Înghețul | The Freeze |
+| `isaz_algiz (doarme) · efect` | Regula e anulată tot restul rundei. | The rule is cancelled for the rest of the round. |
+| `hagalaz_algiz (doarme)` | Asurzirea | Deafening |
+| `hagalaz_algiz (doarme) · efect` | Regula e anulată pentru următoarele {count} Rostiri. | The rule is cancelled for the next {count} Casts. |
+| `laguz_algiz (doarme)` | Schimbul | The Trade |
+| `laguz_algiz (doarme) · efect` | Schimbi regula cu una din {count} reguli ale altor Examinatori, la alegere. | Swap the rule for one of {count} other Examiners' rules, your choice. |
+| `sowilo_algiz (doarme)` | Iscoada | The Scout |
+| `sowilo_algiz (doarme) · efect` | Vezi Examinatorii și regulile lor din următoarele {count} Probe. | See the Examiners and their rules for the next {count} Trials. |
+| `thurisaz_algiz (doarme)` | Înțepătura | The Sting |
+| `thurisaz_algiz (doarme) · efect` | Ținta Examinatorului scade cu {percent}%; regula rămâne. | The Examiner's Target drops by {percent}%; the rule stays. |
+| `dagaz_algiz (doarme)` | Amânarea | Extension |
+| `dagaz_algiz (doarme) · efect` | +{count} Rostire în runda asta. | +{count} Cast this round. |
+
+### Cele 8 Acțiuni
+
+| Acțiune | Română | English |
+|---|---|---|
+| `raidho` | Dacă vraja atinge o singură piatră sau un singur Talisman, le atinge pe toate, la jumătate de putere; altfel, valorile ×1,5. | If the spell touches a single stone or Talisman, it touches all of them at half strength; otherwise its values ×1.5. |
+| `ehwaz` | Efectul se aplică de 2 ori. | The effect happens twice. |
+| `eihwaz` | Efectul se aplică din nou la începutul următoarelor 2 runde, la jumătate de putere. | The effect happens again at the start of the next 2 rounds, at half strength. |
+| `berkanan` | +50% pentru fiecare dată când ai mai rostit aceeași vrajă în acest examen. | +50% for every time you have already cast this spell in this exam. |
+| `jera` | Efectul vine abia la finalul rundei, dar dublu. | The effect only comes at the end of the round, but doubled. |
+| `perthro` | 50%: efect ×3; 50%: nimic. | 50%: effect ×3; 50%: nothing. |
+| `naudiz` | Alegi pe loc: pierzi 1 Rostire sau 4 Monede; efect ×2,5. | Choose on the spot: lose 1 Cast or 4 Coins; effect ×2.5. |
+| `gebo` | Vraja nu se aplică acum: primești un Pergament cu ea și îl folosești când vrei. | The spell doesn't happen now: you get a Scroll with it and use it whenever you want. |
 
 ## Indiciile (`data/hints.json`)
 
@@ -225,5 +405,14 @@
 | `rune_book_hint` | Cele 24 de rune, cu sensul și Glasul lor · Vrăjile pe care le-ai descoperit | The 24 runes with their meaning and Voice · the Spells you have discovered |
 | `rune_book_position` | Poziția {n} · Putere {power} | Position {n} · Power {power} |
 | `rune_book_spells` | Vrăjile · {n} din {total} descoperite | Spells · {n} of {total} discovered |
-| `rune_book_spell_hidden` | Încă n-ai rostit-o. | You haven't cast it yet. |
 | `rune_book_close` | Închide | Close |
+| `spell_unknown` | {sentence} · ??? | {sentence} · ??? |
+| `spell_dormant` | {sentence} · se trezește mai târziu | {sentence} · wakes up later |
+| `spell_incomplete` | {sentence} → … · propoziție neterminată | {sentence} → … · unfinished sentence |
+| `spell_wrong_order` | Ordinea e greșită: Elementul vine primul. | Wrong order: the Element comes first. |
+| `spell_interrupted` | Propoziția e întreruptă: între Element și Țintă încap cel mult două Acțiuni. | The sentence is broken: at most two Actions fit between the Element and the Target. |
+| `float_set_res` | Rez. = {n} | Res. = {n} |
+| `action_learned` | Ai învățat: {phrase} | You learned: {phrase} |
+| `spell_scroll_kept` | {name} așteaptă pe Pergament. | {name} waits on a Scroll. |
+| `spell_fizzled` | {name}: n-a mers de data asta. | {name}: no luck this time. |
+| `rune_book_spells_left` | Încă {n} vrăji așteaptă să fie descoperite. | {n} more spells wait to be discovered. |

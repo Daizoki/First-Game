@@ -21,6 +21,8 @@ const StoneCard = preload("res://scripts/ui/stone_card.gd")
 const WordBook = preload("res://scripts/ui/word_book.gd")
 const WordCard = preload("res://scripts/ui/word_card.gd")
 const RuneBook = preload("res://scripts/ui/rune_book.gd")
+const SpellText = preload("res://scripts/ui/spell_text.gd")
+const SentenceParser = preload("res://scripts/core/sentence_parser.gd")
 
 const MAIN_MENU_SCENE: String = "res://scenes/main_menu.tscn"
 const SPEEDS: Array[int] = [1, 2, 4]
@@ -90,7 +92,7 @@ const SHAKE_SHARE: float = 0.35
 
 ## Set before the screen enters the tree (the tutorial does it). Every key is optional:
 ##   title, rule: {"ro", "en"} texts for the card    target: int    seed: int
-##   casts, swaps, hand, bag_top, bag_only: see RoundState.setup
+##   casts, swaps, hand, bag_top, bag_only, spells: see RoundState.setup
 ##   examiner: character id    backdrop: "night" | "classroom"
 ##   hide_swap: bool    show_result: bool (default true)
 var config: Dictionary = {}
@@ -123,7 +125,8 @@ func _ready() -> void:
 	_round = RoundState.new()
 	var target: float = float(config.get("target", GameData.rule("test_round_target", 1500)))
 	_round.setup({"runes": GameData.runes, "words": GameData.words, "spells": GameData.spells,
-		"rules": GameData.rules}, rng, target, config)
+		"spell_actions": GameData.spell_actions, "rules": GameData.rules, "economy": GameData.economy},
+		rng, target, config)
 	_round.start()
 	_casts_total = _round.casts_left
 	_swaps_total = _round.swaps_left
@@ -281,6 +284,10 @@ func selection_info() -> Dictionary:
 	return {"word": preview.get("word", ""), "spells": preview.get("spells", []), "runes": runes}
 
 
+func clear_selection() -> void:
+	_hand.clear_selection()
+
+
 ## UI elements with this tutorial id (metadata "tutorial_id"), or the stones of
 ## "stone:<rune_id>" in hand.
 func find_ui(id: String) -> Array[Control]:
@@ -382,7 +389,7 @@ func _on_selection_changed() -> void:
 		_preview_value.text = "%s × %s" % [Loc.number(preview["power"]), Loc.number(preview["res"])]
 		_power_value.text = Loc.number(preview["power"])
 		_res_value.text = Loc.number(preview["res"])
-		_show_spells(preview["spells"])
+		_show_sentence(preview.get("sentence", {}))
 	_preview_value.modulate.a = 1.0
 	_refresh_state()
 
@@ -417,28 +424,18 @@ func _set_word_card(wanted: bool) -> void:
 	_hand.mark_scoring(_preview["scoring"])
 
 
-func _show_spells(spell_ids: Array) -> void:
-	if spell_ids.is_empty():
-		return
-	var known: PackedStringArray = []
-	var hidden: bool = false
-	var color: Color = Color(0, 0, 0, 0)
-	for id: String in spell_ids:
-		var spell: Dictionary = GameData.spells[id]
-		if SaveManager.has_discovery("spells", id):
-			known.append(Loc.text(spell["name"]))
-			color = Color.html(str(spell.get("color", "#e9e3d2")))
+## The sentence the selection reads (step B of the grammar gives it its own slots).
+func _show_sentence(parsed: Dictionary) -> void:
+	_spell_line.text = SpellText.circle_line(parsed)
+	var color: Color = Color("#e9e3d2")
+	if str(parsed.get("status", "")) == SentenceParser.SPELL:
+		var spell_id: String = parsed["spell"]
+		if SaveManager.has_discovery("spells", spell_id):
+			color = Color.html(str(GameData.spells[spell_id].get("color", "#e9e3d2")))
 		else:
-			hidden = true
-	if hidden:
-		_spell_line.text = Loc.t("circle_awakening")
-		_circle.awakening = true
-		if color.a == 0.0:
-			color = Color("#e9e3d2")
-	if not known.is_empty():
-		_spell_line.text = Loc.t("circle_spell", {"name": ", ".join(known)}) + ("  ·  " + _spell_line.text if hidden else "")
+			_circle.awakening = true
+		_circle.glow_color = color
 	_spell_line.add_theme_color_override("font_color", color)
-	_circle.glow_color = color
 
 
 func _word_display_name(word_id: String) -> String:
@@ -481,15 +478,20 @@ func _on_cast_pressed() -> void:
 	EventBus.cast.emit(info["word"], info["runes"])
 	_busy = true
 	_refresh_state()
-	var cast_views: Array[StoneView] = []
 	var held_views: Array[StoneView] = []
 	for i: int in _round.hand.size():
-		var view: StoneView = _hand.view_at(i)
-		if selection.has(i):
-			cast_views.append(view)
-		else:
-			held_views.append(view)
+		if not selection.has(i):
+			held_views.append(_hand.view_at(i))
 	var result: Dictionary = _round.cast(selection)
+	# The scorer's indices follow the casting order.
+	var cast_views: Array[StoneView] = []
+	for stone: Stone in result["cast_stones"]:
+		cast_views.append(_hand.view_for(stone))
+	# The spells' picks get their own screen in step B of the grammar; until then the
+	# round answers them itself.
+	_round.answer_all_automatically()
+	result["won"] = _round.is_won()
+	result["lost"] = _round.is_lost()
 	_player.speed = float(_speed) * (0.5 if slow_scoring else 1.0)
 	await _player.play(result, cast_views, held_views)
 	await _add_score(float(result["score"]))
@@ -530,8 +532,11 @@ func _announce(result: Dictionary) -> void:
 		await _show_toast(Loc.t("word_discovered", {"name": Loc.text(word["name"])}))
 	if word_id == "chant" and _spells_out(result["cast_stones"]) == FUTHARK:
 		await _show_toast(Loc.t("futhark_message"))
-	for id: String in result["spells"]:
+	for plan: Dictionary in result["plans"]:
+		var id: String = plan["spell"]
 		var spell: Dictionary = GameData.spells[id]
+		if not result["spells"].has(id):
+			continue
 		if SaveManager.add_discovery("spells", id):
 			var memories: int = int(GameData.rule("memories_per_spell", 5))
 			SaveManager.data["memories"] = int(SaveManager.data.get("memories", 0)) + memories
@@ -539,8 +544,15 @@ func _announce(result: Dictionary) -> void:
 			_spell_reveal.reveal(spell, memories)
 			await _spell_reveal.closed
 			EventBus.spell_discovered.emit(id)
+		elif bool(plan["fizzled"]):
+			await _show_toast(Loc.t("spell_fizzled", {"name": Loc.text(spell["name"])}))
+		elif bool(plan["gift"]):
+			await _show_toast(Loc.t("spell_scroll_kept", {"name": Loc.text(spell["name"])}))
 		else:
-			await _show_toast("%s: %s" % [Loc.text(spell["name"]), Loc.text(spell["effect"])])
+			await _show_toast("%s: %s" % [Loc.text(spell["name"]), SpellText.effect(spell, float(plan["scale"]))])
+		for action_id: String in plan["actions"]:
+			if SaveManager.add_discovery("actions", action_id):
+				await _show_toast(Loc.t("action_learned", {"phrase": Loc.text(GameData.runes[action_id]["phrase"])}))
 		EventBus.spell_cast.emit(id)
 	_refresh_state()
 

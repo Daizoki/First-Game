@@ -1,6 +1,6 @@
-# Writes docs/TRADUCERI.md: every Romanian text of the evening class, the hints and the UI,
-# side by side with its English translation, so Relax can check the English. Run from the
-# project root after changing a text:
+# Writes docs/TRADUCERI.md: every Romanian text of the evening class, the spells of the rune
+# grammar, the hints and the UI, side by side with its English translation, so Relax can
+# check the English. Run from the project root after changing a text:
 #   python3 tools/export_translations.py
 
 import json
@@ -59,6 +59,21 @@ def tutorial_section():
     return out
 
 
+def spells_section():
+    out = ["## Gramatica runelor (`data/runes.json`, `data/spells_base.json`, `data/spell_actions.json`)", ""]
+    rows = [(rune["id"] + " · " + rune["role"], rune["phrase"]["ro"], rune["phrase"]["en"]) for rune in load("runes.json")]
+    out += ["### Rolul fiecărei rune în propoziție", ""] + table(rows, "Rună") + [""]
+    rows = []
+    for spell in load("spells_base.json"):
+        where = spell["id"] + ("" if spell["enabled"] else " (doarme)")
+        rows.append((where, spell["name"]["ro"], spell["name"]["en"]))
+        rows.append((where + " · efect", spell["effect"]["ro"], spell["effect"]["en"]))
+    out += ["### Cele 64 de vrăji (nume și efect)", ""] + table(rows, "Vraja") + [""]
+    rows = [(action["id"], action["effect"]["ro"], action["effect"]["en"]) for action in load("spell_actions.json")]
+    out += ["### Cele 8 Acțiuni", ""] + table(rows, "Acțiune") + [""]
+    return out
+
+
 def hints_section():
     rows = [(hint["id"] + ("" if hint["enabled"] else " (oprit)"), hint["text"]["ro"], hint["text"]["en"])
             for hint in load("hints.json")]
@@ -78,7 +93,7 @@ def main():
         "> textul în JSON și rulează din nou scriptul. `{name}`, `{n}` … sunt locuri pe care jocul le completează.",
         "",
     ]
-    lines += tutorial_section() + hints_section() + ui_section()
+    lines += tutorial_section() + spells_section() + hints_section() + ui_section()
     with open(OUT, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
     print(f"wrote {OUT}")

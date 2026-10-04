@@ -86,6 +86,7 @@ func advance() -> Dictionary:
 
 ## Feeds one game event: "hover" {rune}, "selection" {word, runes}, "cast" {word, runes},
 ## "swap" {count}, "spell_cast" / "spell_discovered" {spell}, "book_opened" / "book_closed" {book},
+## (a "selection" wait with "in_order" needs the "exact" runes in that order: a spell is a sentence)
 ## "round_won", "round_lost".
 func handle(event: String, args: Dictionary = {}) -> Dictionary:
 	if lesson().is_empty():
@@ -133,6 +134,8 @@ func _judge(wait: Dictionary, args: Dictionary) -> String:
 				ok = false
 			if wait.has("exact") and not _same_runes(runes, wait["exact"]):
 				ok = false
+			if bool(wait.get("in_order", false)) and wait.has("exact") and runes != _strings(wait["exact"]):
+				ok = false
 			if ok:
 				return "yes"
 			if str(wait["event"]) == "cast" or runes.size() >= _min_count(wait):
@@ -149,7 +152,7 @@ func _judge(wait: Dictionary, args: Dictionary) -> String:
 func _after_step(say: Variant) -> Dictionary:
 	while won and is_waiting() and PLAY_EVENTS.has(str((step()["wait_for"] as Dictionary)["event"])):
 		step_index += 1
-	if steps_done() and won:
+	if steps_done() and (won or bool(lesson().get("end_after_steps", false))):
 		return _result("lesson_done", say)
 	return _result("advance", say)
 
@@ -170,6 +173,13 @@ func _runes(args: Dictionary) -> Array[String]:
 	for id: Variant in args.get("runes", []):
 		runes.append(str(id))
 	return runes
+
+
+func _strings(values: Array) -> Array[String]:
+	var result: Array[String] = []
+	for value: Variant in values:
+		result.append(str(value))
+	return result
 
 
 func _contains_all(runes: Array[String], wanted: Array) -> bool:

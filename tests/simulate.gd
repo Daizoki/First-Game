@@ -64,6 +64,7 @@ func _play_rounds(data: Dictionary, rng: RandomNumberGenerator, rounds: int) -> 
 				round_state.swap(_non_scoring(round_state, choice))
 				continue
 			var result: Dictionary = round_state.cast(choice)
+			round_state.answer_all_automatically()
 			best_cast = maxf(best_cast, float(result["score"]))
 			for id: String in result["spells"]:
 				spells_seen[id] = int(spells_seen.get(id, 0)) + 1

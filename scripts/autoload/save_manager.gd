@@ -30,8 +30,8 @@ static func default_data() -> Dictionary:
 		"unlocks": {},
 		## What the player has seen at least once.
 		"collection": {"talismans": [], "engravings": [], "examiners": []},
-		## Permanent discoveries: Spells, hidden Words, old words (ALU, LAÞU, AUJA).
-		"discoveries": {"spells": [], "words": [], "old_words": []},
+		## Permanent discoveries: spells, the Actions learned, hidden Words, old words (ALU, LAÞU, AUJA).
+		"discoveries": {"spells": [], "actions": [], "words": [], "old_words": []},
 		"stats": {"best_cast_score": 0.0, "best_trial": 0, "exams_passed": 0},
 		## Story memory across attempts.
 		"flags": {},

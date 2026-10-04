@@ -275,6 +275,9 @@ func _play_lesson(lesson: Dictionary, actions: Array) -> String:
 				var word: String = state.preview(indices).get("word", "")
 				last = flow.handle("cast", {"word": word, "runes": selected})["result"]
 				var result: Dictionary = state.cast(indices)
+				state.answer_all_automatically()
+				result["won"] = state.is_won()
+				result["lost"] = state.is_lost()
 				for spell: String in result["spells"]:
 					last = flow.handle("spell_cast", {"spell": spell})["result"]
 				if result["won"]:
@@ -415,28 +418,39 @@ func test_lesson_3_plays_to_the_end() -> void:
 	check_eq(result, "lesson_done", "lesson 3:")
 
 
-func test_lesson_4_spell_and_triad_in_one_cast() -> void:
+func test_lesson_4_sentences_in_order() -> void:
 	var lesson: Dictionary = _lesson("spells")
 	var state: RoundState = _round(lesson)
-	var preview: Dictionary = state.preview(_indices(state, ["isaz", "hagalaz", "naudiz", "fehu", "tiwaz"]))
-	check_eq(preview["word"], "triad", "the five stones:")
-	check_eq(preview["spells"], ["winter"] as Array[String], "spells:")
-	var result: Dictionary = _cast(state, ["isaz", "hagalaz", "naudiz", "fehu", "tiwaz"])
-	check(float(result["score"]) < float(lesson["target"]), "the Triad alone is below the target")
-	check(result["won"], "Winter lowers the target enough: %s of %s" % [state.score, state.target])
-	# The same Cast with no Spells in the game.
-	var data: Dictionary = Fixtures.data().duplicate(true)
-	data["spells"] = {}
-	var plain: RoundState = RoundState.new()
-	plain.setup(data, Fixtures.rng(int(lesson["seed"])), float(lesson["target"]), lesson)
-	plain.start()
-	check(not _cast(plain, ["isaz", "hagalaz", "naudiz", "fehu", "tiwaz"])["won"], "without Winter it is not won")
+	check_eq(state.preview(_indices(state, ["isaz", "tiwaz"]))["spells"], ["isaz_tiwaz"] as Array[String],
+		"Isaz then Tiwaz:")
+	check_eq(state.preview(_indices(state, ["tiwaz", "isaz"]))["spells"], [] as Array[String], "Tiwaz then Isaz:")
+	check_eq(state.preview(_indices(state, ["fehu", "hagalaz"]))["sentence"]["status"], "wrong_order",
+		"Fehu then Hagalaz:")
+	var winter: Dictionary = _cast(state, ["isaz", "tiwaz"])
+	check_eq(winter["spells"], ["isaz_tiwaz"] as Array[String], "Winter cast:")
+	check_eq(state.target, float(lesson["target"]) * 0.85, "the target drops by 15%:")
+	var money: int = state.money
+	var fair: Dictionary = _cast(state, ["uruz", "ehwaz", "fehu"])
+	check_eq(fair["spells"], ["uruz_fehu"] as Array[String], "Strength runs twice into Coins:")
+	check_eq(state.money - money, 8, "4 × 2 Coins:")
+	check(not state.is_won(), "the lesson is not about the score: %s of %s" % [state.score, state.target])
+
+
+func test_lesson_4_wants_the_order_it_names() -> void:
+	var flow: TutorialFlow = TutorialFlow.new()
+	flow.setup({"lessons": [_lesson("spells")]})
+	flow.advance()
+	flow.advance()
+	check_eq(flow.handle("selection", {"word": "single", "runes": ["tiwaz", "isaz"]})["result"], "wrong",
+		"Tiwaz then Isaz:")
+	check_eq(flow.handle("selection", {"word": "single", "runes": ["isaz", "tiwaz"]})["result"], "advance",
+		"Isaz then Tiwaz:")
 
 
 func test_lesson_4_plays_to_the_end() -> void:
 	var result: String = _play_lesson(_lesson("spells"), [
-		["advance"], ["advance"], ["select", ["isaz", "hagalaz", "naudiz"]], ["advance"],
-		["select", ["isaz", "hagalaz", "naudiz", "fehu", "tiwaz"]], ["cast"], ["advance"], ["advance"],
+		["advance"], ["advance"], ["select", ["isaz", "tiwaz"]], ["advance"], ["cast"],
+		["select", ["fehu", "hagalaz"]], ["advance"], ["select", ["uruz", "ehwaz", "fehu"]], ["cast"], ["advance"],
 	])
 	check_eq(result, "lesson_done", "lesson 4:")
 

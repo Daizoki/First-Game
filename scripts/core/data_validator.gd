@@ -7,29 +7,47 @@ const LANGUAGES: Array = ["ro", "en"]
 
 ## Positions inside a kin go from 1 to this number.
 const KIN_SIZE: int = 8
-## A Spell is made of this many runes (inclusive range).
-const SPELL_MIN_RUNES: int = 2
-const SPELL_MAX_RUNES: int = 3
 
 ## Allowed values for "enum:<name>" fields.
 const ENUMS: Dictionary = {
 	"kin_sign": ["coin", "hail", "star"],
 	"character_kind": ["god", "human", "demigod"],
-	"spell_moment": ["before_score", "after_score", "next_cast"],
-	"spell_category": ["target", "economy", "bag", "actions", "talismans", "examiner", "risk", "permanent", "score"],
+	## The rune grammar (DESIGN 3.15): Element -> (Action, up to 2) -> Target.
+	"rune_role": ["element", "action", "target"],
+	"spell_timing": ["before", "after", "later"],
+	## What a base spell does (scripts/core/spell_resolver.gd). Talisman and Examiner ops are
+	## written down already; their spells stay "enabled": false until Stage 3.
+	"spell_op": [
+		"reduce_target_pct", "reduce_target_pct_per_scoring", "reduce_target_by_power", "lose_swap",
+		"next_round_target_pct", "cast_score_pct", "res_to_one", "add_cast",
+		"add_money", "money_per_scoring", "money_interest", "break_chosen_money", "money_per_hand_stone",
+		"money_per_kin_in_hand", "lose_cast", "money_per_cast_left_at_end",
+		"grow_random_bag", "grow_scoring", "return_cast_to_bag", "remove_chosen", "change_kin_chosen",
+		"reorder_bag_top", "break_random_hand", "copy_chosen_to_bag", "copy_scoring_to_bag",
+		"hand_size_bonus", "power_to_held", "res_per_held", "redraw_hand", "free_swap_chosen", "draw_keep",
+		"discard_chosen", "add_swap",
+		"mul_res", "add_power", "word_level_up", "retrigger_scoring", "word_level_down", "word_upgrade",
+		"mul_res_if_five", "break_random_word_stone", "mul_res_if_first_cast",
+		"next_cast_mul_res", "next_cast_add_power", "carry_overflow", "next_round_head_start",
+		"next_round_lose_swap", "next_round_draw_extra", "next_round_peek", "next_next_cast_mul_res",
+		"next_round_add_cast",
+		"talisman_retrigger_left", "power_per_talisman", "talismans_no_wear", "sell_talisman_full",
+		"transform_talisman", "shop_rare_talisman", "destroy_talisman_res", "shop_extra_talisman",
+		"ignore_rule_cast", "cancel_rule_round", "target_pct_up", "cancel_rule_casts", "swap_rule",
+		"peek_examiners", "examiner_target_down",
+	],
+	## Numbers an Action may scale ("cost" never scales).
+	"spell_scalable": ["percent", "amount", "count", "factor", "max"],
+	"spell_action_kind": ["spread", "twice", "lasts", "grows", "ripens", "gambles", "price", "gift"],
 	"effect_trigger": ["on_score", "on_held", "on_cast", "in_word", "on_round_end_held", "passive"],
-	"effect_condition": ["first_in_word", "first_cast", "last_cast", "chance", "once_per_round"],
+	"effect_condition": ["cast_first", "first_cast", "last_cast", "chance", "once_per_round"],
 	"effect_action": [
 		"add_power", "add_res", "mul_res", "add_money", "add_swap", "retrigger", "grow_power",
 		"base_power_mult", "word_level_bonus", "add_money_at_round_end", "special",
 	],
 	"effect_per": ["word_stone", "lesson_used", "talisman"],
-	"effect_target": ["self", "right"],
-	"effect_special": ["kenaz_peek", "gebo_copy_left", "algiz_ignore_rule", "berkanan_copy", "laguz_wild"],
-	"spell_action": [
-		"reduce_target_pct", "add_money", "refund_cast", "next_cast_mul_res", "word_level_up",
-		"grant_random_talisman", "market_discount_pct", "hand_size_bonus",
-	],
+	"effect_target": ["self", "next"],
+	"effect_special": ["kenaz_peek", "gebo_copy_previous", "algiz_ignore_rule", "berkanan_copy", "laguz_wild"],
 	"tutorial_event": [
 		"hover", "selection", "cast", "swap", "round_won", "spell_cast", "spell_discovered", "book_opened",
 		"book_closed",
@@ -53,8 +71,8 @@ const ENUMS: Dictionary = {
 }
 
 ## Field kinds:
-##   id, string, int, number, bool, loc, color, dict, array, segments, spell_runes,
-##   rune_list (rune ids), loc_map ({"key": loc}), spotlight_list (ui ids or "stone:<rune>"),
+##   id, string, int, number, bool, loc, color, dict, array, segments,
+##   rune_list (rune ids), scalable_list (names from ENUMS["spell_scalable"]), loc_map ({"key": loc}), spotlight_list (ui ids or "stone:<rune>"),
 ##   action_list (tutorial actions), enum:<name>, ref:<collection>, object:<schema>, array:<schema>
 const SCHEMAS: Dictionary = {
 	"kin": {
@@ -64,7 +82,8 @@ const SCHEMAS: Dictionary = {
 	"rune": {
 		"required": {
 			"id": "id", "name": "loc", "glyph": "string", "kin": "ref:kins", "position": "int",
-			"base_power": "int", "meaning": "loc", "voice": "loc", "segments": "segments",
+			"base_power": "int", "role": "enum:rune_role", "phrase": "loc", "meaning": "loc", "voice": "loc",
+			"segments": "segments",
 		},
 		"optional": {"effects": "array:effect"},
 	},
@@ -80,10 +99,6 @@ const SCHEMAS: Dictionary = {
 		"required": {"type": "enum:effect_action"},
 		"optional": {"value": "number", "per": "enum:effect_per", "target": "enum:effect_target", "name": "enum:effect_special"},
 	},
-	"spell_action": {
-		"required": {"type": "enum:spell_action", "value": "number"},
-		"optional": {},
-	},
 	"word": {
 		"required": {
 			"id": "id", "name": "loc", "description": "loc", "rank": "int",
@@ -91,12 +106,36 @@ const SCHEMAS: Dictionary = {
 		},
 		"optional": {"hidden": "bool", "example": "rune_list"},
 	},
+	## A base spell: Element -> Target (data/spells_base.json).
 	"spell": {
 		"required": {
-			"id": "id", "name": "loc", "runes": "spell_runes", "logic": "loc", "effect": "loc",
-			"moment": "enum:spell_moment", "category": "enum:spell_category",
+			"id": "id", "element": "ref:runes", "target": "ref:runes", "name": "loc", "effect": "loc",
+			"timing": "enum:spell_timing", "enabled": "bool", "color": "color", "ops": "array:spell_op",
+			"scalable": "scalable_list",
 		},
-		"optional": {"curse": "bool", "color": "color", "actions": "array:spell_action"},
+		"optional": {"single": "bool"},
+	},
+	"spell_op": {
+		"required": {"op": "enum:spell_op"},
+		"optional": {
+			"percent": "number", "amount": "number", "count": "number", "factor": "number", "max": "number",
+			"per": "number", "cost": "number", "kin": "ref:kins",
+		},
+	},
+	## An Action rune placed between Element and Target (data/spell_actions.json).
+	"spell_action": {
+		"required": {"id": "ref:runes", "kind": "enum:spell_action_kind", "effect": "loc"},
+		"optional": {
+			"factor": "number", "single_factor": "number", "count": "number", "percent": "number",
+			"chance": "number", "cost_casts": "int", "cost_money": "int",
+		},
+	},
+	"economy": {
+		"required": {
+			"spell_target_floor_pct": "int", "spell_max_extra_casts_per_round": "int", "scroll_slots": "int",
+			"examiner_spell_fallback_money": "int",
+		},
+		"optional": {},
 	},
 	"character": {
 		"required": {"id": "id", "name": "loc", "kind": "enum:character_kind", "description": "loc", "color": "color"},
@@ -132,7 +171,7 @@ const SCHEMAS: Dictionary = {
 		},
 		"optional": {
 			"hand": "rune_list", "bag_top": "rune_list", "bag_only": "bool", "win_text": "loc",
-			"idle_hint": "object:tutorial_idle",
+			"idle_hint": "object:tutorial_idle", "spells": "bool", "end_after_steps": "bool",
 		},
 	},
 	"tutorial_step": {
@@ -140,7 +179,7 @@ const SCHEMAS: Dictionary = {
 		"optional": {
 			"speaker": "ref:characters", "spotlight": "spotlight_list", "wait_for": "object:tutorial_wait",
 			"allow": "action_list", "selectable": "rune_list", "wrong_text": "loc", "slow_scoring": "bool",
-			"phase_captions": "loc_map", "labels": "enum:tutorial_labels",
+			"phase_captions": "loc_map", "labels": "enum:tutorial_labels", "clear_selection": "bool",
 		},
 	},
 	"tutorial_wait": {
@@ -148,7 +187,7 @@ const SCHEMAS: Dictionary = {
 		"optional": {
 			"rune": "ref:runes", "word": "ref:words", "include": "rune_list", "exact": "rune_list",
 			"prefer": "rune_list", "alt_text": "loc", "spell": "ref:spells", "min_count": "int",
-			"book": "enum:book",
+			"book": "enum:book", "in_order": "bool",
 		},
 	},
 	"tutorial_idle": {
@@ -340,8 +379,12 @@ func check_value(file_name: String, label: String, path: String, value: Variant,
 				add_error(file_name, label, "\"%s\" must be a list [ ... ]" % path)
 		"segments":
 			_check_segments(file_name, label, path, value)
-		"spell_runes":
-			_check_spell_runes(file_name, label, path, value)
+		"scalable_list":
+			if not (value is Array):
+				add_error(file_name, label, "\"%s\" must be a list of value names" % path)
+			else:
+				for i: int in (value as Array).size():
+					check_value(file_name, label, "%s[%d]" % [path, i], (value as Array)[i], "enum:spell_scalable")
 		"rune_list":
 			_check_id_list(file_name, label, path, value, "runes")
 		"action_list":
@@ -362,22 +405,42 @@ func check_value(file_name: String, label: String, path: String, value: Variant,
 			add_error(file_name, label, "internal: unknown field kind \"%s\" for \"%s\"" % [kind, path])
 
 
-## Call after spells.json is loaded: no two Spells may use the same runes (order does not matter).
-func check_spells(file_name: String, spells: Dictionary) -> void:
+## Call after spells_base.json and runes.json are loaded: every spell is an Element ->
+## Target pair, each pair appears exactly once, and every scalable value exists in an op.
+func check_spells(file_name: String, spells: Dictionary, runes: Dictionary) -> void:
 	var seen: Dictionary = {}
 	for id: String in spells:
-		var runes: Variant = (spells[id] as Dictionary).get("runes")
-		if not (runes is Array):
-			continue
-		var names: PackedStringArray = []
-		for rune: Variant in runes:
-			names.append(str(rune))
-		names.sort()
-		var key: String = "+".join(names)
+		var spell: Dictionary = spells[id]
+		var element: String = str(spell.get("element", ""))
+		var target: String = str(spell.get("target", ""))
+		if runes.has(element) and str((runes[element] as Dictionary).get("role", "")) != "element":
+			add_error(file_name, id, "\"element\" must be an Element rune (%s is not)" % element)
+		if runes.has(target) and str((runes[target] as Dictionary).get("role", "")) != "target":
+			add_error(file_name, id, "\"target\" must be a Target rune (%s is not)" % target)
+		var key: String = element + ">" + target
 		if seen.has(key):
-			add_error(file_name, id, "same runes as spell \"%s\" (%s)" % [seen[key], key])
+			add_error(file_name, id, "same Element and Target as spell \"%s\"" % seen[key])
 		else:
 			seen[key] = id
+		var ops: Variant = spell.get("ops")
+		for field: Variant in spell.get("scalable", []):
+			var found: bool = false
+			if ops is Array:
+				for op: Variant in ops:
+					if op is Dictionary and (op as Dictionary).has(field):
+						found = true
+			if not found:
+				add_error(file_name, id, "\"scalable\" names \"%s\", which no op has" % str(field))
+
+
+## Call after spell_actions.json and runes.json are loaded: one entry per Action rune.
+func check_spell_actions(file_name: String, actions: Dictionary, runes: Dictionary) -> void:
+	for id: String in actions:
+		if runes.has(id) and str((runes[id] as Dictionary).get("role", "")) != "action":
+			add_error(file_name, id, "%s is not an Action rune" % id)
+	for id: String in runes:
+		if str((runes[id] as Dictionary).get("role", "")) == "action" and not actions.has(id):
+			add_error(file_name, "", "the Action rune \"%s\" has no entry" % id)
 
 
 ## JSON numbers arrive as floats; whole numbers become ints so code can use them directly.
@@ -433,22 +496,6 @@ func _check_segments(file_name: String, label: String, path: String, value: Vari
 				add_error(file_name, label, "\"%s\" numbers must be between 0 and 1 (got %s)" % [
 					line_path, JSON.stringify(number)])
 				break
-
-
-func _check_spell_runes(file_name: String, label: String, path: String, value: Variant) -> void:
-	if not (value is Array):
-		add_error(file_name, label, "\"%s\" must be a list of rune ids, e.g. [\"isaz\", \"hagalaz\"]" % path)
-		return
-	var runes: Array = value
-	if runes.size() < SPELL_MIN_RUNES or runes.size() > SPELL_MAX_RUNES:
-		add_error(file_name, label, "\"%s\" must have %d or %d runes (got %d)" % [
-			path, SPELL_MIN_RUNES, SPELL_MAX_RUNES, runes.size()])
-	for i: int in runes.size():
-		var rune_path: String = "%s[%d]" % [path, i]
-		if not (runes[i] is String):
-			add_error(file_name, label, "\"%s\" must be a rune id" % rune_path)
-		else:
-			_add_ref(file_name, label, rune_path, "runes", runes[i])
 
 
 ## A list of ids that must exist in another collection (e.g. rune ids).

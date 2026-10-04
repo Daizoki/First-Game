@@ -13,6 +13,8 @@ func _valid_rune() -> Dictionary:
 		"kin": "fehu",
 		"position": 1,
 		"base_power": 3,
+		"role": "target",
+		"phrase": {"ro": "în Monede", "en": "into Coins"},
 		"meaning": {"ro": "vite, avere", "en": "cattle, wealth"},
 		"voice": {"ro": "+1 Monedă când punctează.", "en": "+1 Coin when it scores."},
 		"segments": [[0.35, 0.05, 0.35, 0.95], [0.35, 0.3, 0.7, 0.08]],
@@ -26,8 +28,10 @@ func test_real_data_loads_without_errors() -> void:
 	check_eq(game_data.kins.size(), 3, "kins:")
 	check_eq(game_data.runes.size(), 24, "runes:")
 	check_eq(game_data.words.size(), 10, "words:")
-	check_eq(game_data.spells.size(), 17, "spells:")
-	check(game_data.spells.has("winter"), "spells.json should contain winter (Iarna)")
+	check_eq(game_data.spells.size(), 64, "spells (8 Elements × 8 Targets):")
+	check(game_data.spells.has("isaz_tiwaz"), "spells_base.json should contain isaz_tiwaz (Iarna)")
+	check_eq(game_data.spell_actions.size(), 8, "Actions:")
+	check_eq(game_data.economy.get("spell_target_floor_pct"), 40, "target floor:")
 	check(game_data.characters.has("ilinca"), "characters.json should contain ilinca")
 	check(game_data.characters.has("vera"), "characters.json should contain vera")
 	check_eq(game_data.rule("hand_size"), 8, "hand size:")
@@ -148,38 +152,57 @@ func test_normalize_numbers() -> void:
 	check(list[1] is float, "0.5 should stay float")
 
 
-func _spell(id: String, runes: Array) -> Dictionary:
+func _spell(id: String, element: String, target: String) -> Dictionary:
 	return {
-		"id": id,
+		"id": id, "element": element, "target": target,
 		"name": {"ro": id, "en": id},
-		"runes": runes,
-		"logic": {"ro": "a + b", "en": "a + b"},
-		"effect": {"ro": "+6 Monede.", "en": "+6 Coins."},
-		"moment": "after_score",
-		"category": "economy",
+		"effect": {"ro": "+{amount} Monede.", "en": "+{amount} Coins."},
+		"timing": "after", "enabled": true, "color": "#ffffff",
+		"ops": [{"op": "add_money", "amount": 4}], "scalable": ["amount"],
 	}
 
 
-func test_spell_rune_count_and_moment_are_checked() -> void:
-	var bad: Dictionary = _spell("solo", ["fehu"])
-	bad["moment"] = "later"
-	var validator: DataValidator = DataValidator.new()
-	validator.validate_collection("spells.json", [bad, _spell("big", ["fehu", "gebo", "isaz", "jera"])], "spell")
-	check(has_error(validator.errors, ["[solo]", "must have 2 or 3 runes (got 1)"]), "1-rune spell not reported")
-	check(has_error(validator.errors, ["[big]", "(got 4)"]), "4-rune spell not reported")
-	check(has_error(validator.errors, ["[solo]", "\"moment\" must be one of"]), "bad moment not reported")
+func _roles() -> Dictionary:
+	return {"uruz": {"role": "element"}, "isaz": {"role": "element"}, "fehu": {"role": "target"},
+		"ehwaz": {"role": "action"}}
 
 
-func test_spells_with_same_runes_are_reported() -> void:
+func test_spell_timing_op_and_scalable_are_checked() -> void:
+	var bad: Dictionary = _spell("odd", "uruz", "fehu")
+	bad["timing"] = "someday"
+	bad["ops"] = [{"op": "make_gold", "amount": 4}]
+	bad["scalable"] = ["amount", "colour"]
 	var validator: DataValidator = DataValidator.new()
-	var spells: Dictionary = validator.validate_collection("spells.json",
-		[_spell("market", ["fehu", "gebo"]), _spell("copy", ["gebo", "fehu"])], "spell")
-	validator.check_spells("spells.json", spells)
-	check(has_error(validator.errors, ["[copy]", "same runes as spell \"market\""]), "duplicate spell not reported")
+	validator.validate_collection("spells_base.json", [bad], "spell")
+	check(has_error(validator.errors, ["[odd]", "\"timing\" must be one of"]), "bad timing not reported")
+	check(has_error(validator.errors, ["[odd]", "make_gold"]), "unknown op not reported")
+	check(has_error(validator.errors, ["[odd]", "colour"]), "unknown scalable value not reported")
+
+
+func test_spell_roles_and_pairs_are_checked() -> void:
+	var validator: DataValidator = DataValidator.new()
+	var spells: Dictionary = validator.validate_collection("spells_base.json", [
+		_spell("fair", "uruz", "fehu"), _spell("again", "uruz", "fehu"), _spell("backwards", "fehu", "isaz"),
+		_spell("lost", "isaz", "fehu"),
+	], "spell")
+	(spells["lost"] as Dictionary)["scalable"] = ["percent"]
+	validator.check_spells("spells_base.json", spells, _roles())
+	check(has_error(validator.errors, ["[again]", "same Element and Target as spell \"fair\""]), "duplicate pair not reported")
+	check(has_error(validator.errors, ["[backwards]", "must be an Element rune"]), "a Target as Element not reported")
+	check(has_error(validator.errors, ["[backwards]", "must be a Target rune"]), "an Element as Target not reported")
+	check(has_error(validator.errors, ["[lost]", "percent"]), "a scalable value no op has not reported")
+	check(not has_error(validator.errors, ["[fair]"]), "a good spell should pass")
+
+
+func test_spell_actions_cover_the_action_runes() -> void:
+	var validator: DataValidator = DataValidator.new()
+	validator.check_spell_actions("spell_actions.json", {"uruz": {}}, _roles())
+	check(has_error(validator.errors, ["[uruz]", "not an Action rune"]), "an Element as Action not reported")
+	check(has_error(validator.errors, ["ehwaz", "has no entry"]), "a missing Action not reported")
 
 
 func test_spell_unknown_rune_is_reported() -> void:
 	var validator: DataValidator = DataValidator.new()
-	var spells: Dictionary = validator.validate_collection("spells.json", [_spell("odd", ["fehu", "zap"])], "spell")
-	validator.check_references({"spells": spells, "runes": {"fehu": {}}})
+	var spells: Dictionary = validator.validate_collection("spells_base.json", [_spell("odd", "uruz", "zap")], "spell")
+	validator.check_references({"spells": spells, "runes": {"uruz": {}}, "kins": {}})
 	check(has_error(validator.errors, ["[odd]", "zap", "runes.json"]), "unknown rune not reported")

@@ -8,8 +8,10 @@ var rune_id: String = ""
 var kin: String = ""
 var position: int = 0
 var base_power: int = 0
-## Permanent extra Power gained during the exam (Eihwaz, Ingwaz, the Forest spell...).
+## Permanent extra Power gained during the exam (Eihwaz, Ingwaz, spells into the Bag...).
 var bonus_power: int = 0
+## Extra Power for the current round only (Encouragement); cleared when a round starts.
+var round_power: int = 0
 ## Stage 3: "bone", "amber", "gold", "iron", "glass" or "" for none.
 var material: String = ""
 ## Lunet's rule (Stage 3): drawn face down.

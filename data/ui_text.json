@@ -104,6 +104,15 @@
 	"rune_book_hint": {"ro": "Cele 24 de rune, cu sensul și Glasul lor · Vrăjile pe care le-ai descoperit", "en": "The 24 runes with their meaning and Voice · the Spells you have discovered"},
 	"rune_book_position": {"ro": "Poziția {n} · Putere {power}", "en": "Position {n} · Power {power}"},
 	"rune_book_spells": {"ro": "Vrăjile · {n} din {total} descoperite", "en": "Spells · {n} of {total} discovered"},
-	"rune_book_spell_hidden": {"ro": "Încă n-ai rostit-o.", "en": "You haven't cast it yet."},
-	"rune_book_close": {"ro": "Închide", "en": "Close"}
+	"rune_book_close": {"ro": "Închide", "en": "Close"},
+	"spell_unknown": {"ro": "{sentence} · ???", "en": "{sentence} · ???"},
+	"spell_dormant": {"ro": "{sentence} · se trezește mai târziu", "en": "{sentence} · wakes up later"},
+	"spell_incomplete": {"ro": "{sentence} → … · propoziție neterminată", "en": "{sentence} → … · unfinished sentence"},
+	"spell_wrong_order": {"ro": "Ordinea e greșită: Elementul vine primul.", "en": "Wrong order: the Element comes first."},
+	"spell_interrupted": {"ro": "Propoziția e întreruptă: între Element și Țintă încap cel mult două Acțiuni.", "en": "The sentence is broken: at most two Actions fit between the Element and the Target."},
+	"float_set_res": {"ro": "Rez. = {n}", "en": "Res. = {n}"},
+	"action_learned": {"ro": "Ai învățat: {phrase}", "en": "You learned: {phrase}"},
+	"spell_scroll_kept": {"ro": "{name} așteaptă pe Pergament.", "en": "{name} waits on a Scroll."},
+	"spell_fizzled": {"ro": "{name}: n-a mers de data asta.", "en": "{name}: no luck this time."},
+	"rune_book_spells_left": {"ro": "Încă {n} vrăji așteaptă să fie descoperite.", "en": "{n} more spells wait to be discovered."}
 }

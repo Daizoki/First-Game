@@ -55,10 +55,15 @@ func play(result: Dictionary, cast_views: Array[StoneView], held_views: Array[St
 				if _show_voice(view, event):
 					await _wait(STEP * 0.8)
 			"bonus":
+				# Spells that change the Cast: +Power, +Resonance, ×Resonance, Resonance = 1.
 				_set_counters(event)
-				float_layer.spawn(Loc.t("float_mul_res", {"n": Loc.number(event["value"])}),
-					res_label.get_global_rect().get_center() - float_layer.global_position, RES_COLOR, 44)
-				_pop(res_label)
+				var key: String = {"add_power": "float_power", "add_res": "float_add_res",
+					"set_res": "float_set_res"}.get(str(event.get("kind", "")), "float_mul_res")
+				var label: Label = power_label if key == "float_power" else res_label
+				float_layer.spawn(Loc.t(key, {"n": Loc.number(event["value"])}),
+					label.get_global_rect().get_center() - float_layer.global_position,
+					POWER_COLOR if key == "float_power" else RES_COLOR, 44)
+				_pop(label)
 				await _wait(STEP)
 			"total":
 				total_label.text = "= " + Loc.number(event["score"])

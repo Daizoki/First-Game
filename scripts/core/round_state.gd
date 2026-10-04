@@ -1,12 +1,17 @@
 extends RefCounted
-## One round (DESIGN 3.2): the hand, Casts and Swaps, the target and the score, the Spells.
-## Pure logic used by the round screen, the tests and the simulator.
+## One round (DESIGN 3.2): the hand, Casts and Swaps, the target and the score, the spells of
+## the rune grammar (3.15). Pure logic used by the round screen, the tests and the simulator.
+##
+## The order of `indices` given to preview() and cast() is the casting order (the order in
+## which the player selected the stones): spells and some Voices read it. With spells off
+## (the evening class before it teaches the grammar) stones are read left to right in hand.
 
 const Stone = preload("res://scripts/core/stone.gd")
 const Bag = preload("res://scripts/core/bag.gd")
 const WordDetector = preload("res://scripts/core/word_detector.gd")
-const SpellDetector = preload("res://scripts/core/spell_detector.gd")
 const Scorer = preload("res://scripts/core/scorer.gd")
+const SentenceParser = preload("res://scripts/core/sentence_parser.gd")
+const SpellResolver = preload("res://scripts/core/spell_resolver.gd")
 
 var bag: Bag
 var hand: Array[Stone] = []
@@ -20,27 +25,53 @@ var money: int = 0
 var word_levels: Dictionary = {}
 var lessons_used: int = 0
 var talismans_owned: int = 0
-## Side effects for the rest of the exam (Stage 3 uses them).
-var pending_talismans: int = 0
-var market_discount_pct: int = 0
+## Spells off (the first lessons of the evening class): stones are read in hand order.
+var spells_enabled: bool = true
+## What spells leave for later Casts and rounds of the same exam. Stage 3 passes one
+## Dictionary to every round of an exam (new_carry()).
+var carry: Dictionary = {}
+## The player's picks that spells wait for, oldest first (see answer()).
+var pending: Array[Dictionary] = []
+## Stones drawn for a pick (The Choice); they are in neither the hand nor the pile.
+var offer: Array[Stone] = []
+## The target when the round started (spells cannot push it below a share of it).
+var target_at_start: float = 0.0
+var hand_bonus: int = 0
+var rng: RandomNumberGenerator
+## Plans that ripen at the end of the round (Jera): [{"plan", "ctx"}].
+var round_end_plans: Array[Dictionary] = []
+## Wages: Coins per Cast left at the end of the round.
+var money_per_cast_left: int = 0
+## Provisions: share (%) of the score above the target that goes to the next round.
+var overflow_pct: float = 0.0
+## Casts added by spells this round (capped by economy.json).
+var extra_casts: int = 0
+## Clairvoyance: the next stones of the bag stay visible this round.
+var peek_bonus: int = 0
 
 var _data: Dictionary
-var _rng: RandomNumberGenerator
 var _hand_size: int = 8
-var _hand_bonus: int = 0
-var _res_mult_next: float = 1.0
 var _money_at_round_end: int = 0
 var _once_used: Array[String] = []
 ## Rune ids drawn first, in this order (a fixed tutorial hand, then its next stones).
 var _stacked: Array[String] = []
+var _next_choice_id: int = 1
 
 
-## data: {"runes", "words", "spells", "rules"} (the GameData tables).
+static func new_carry() -> Dictionary:
+	return {
+		"spell_counts": {}, "next_round": {}, "next_casts": [], "lasting": [], "scroll": {},
+		"scroll_armed": false,
+	}
+
+
+## data: {"runes", "words", "spells", "spell_actions", "rules", "economy"} (the GameData tables).
 ## options (all optional): "casts", "swaps" (override the rules), "hand" + "bag_top"
-## (rune ids drawn first, in order), "bag_only" (the bag holds only those stones).
-func setup(data: Dictionary, rng: RandomNumberGenerator, round_target: float, options: Dictionary = {}) -> void:
+## (rune ids drawn first, in order), "bag_only" (the bag holds only those stones),
+## "spells" (false: no spells this round), "carry" (the exam's carry, see new_carry()).
+func setup(data: Dictionary, round_rng: RandomNumberGenerator, round_target: float, options: Dictionary = {}) -> void:
 	_data = data
-	_rng = rng
+	rng = round_rng
 	var rules: Dictionary = data["rules"]
 	bag = Bag.new(rng)
 	bag.fill_with_runes(data["runes"], int(rules.get("copies_per_rune", 2)))
@@ -48,6 +79,8 @@ func setup(data: Dictionary, rng: RandomNumberGenerator, round_target: float, op
 	_hand_size = int(rules.get("hand_size", 8))
 	casts_left = int(options.get("casts", rules.get("casts_per_round", 4)))
 	swaps_left = int(options.get("swaps", rules.get("swaps_per_round", 3)))
+	spells_enabled = bool(options.get("spells", true))
+	carry = options.get("carry", new_carry())
 	_stacked.clear()
 	for id: Variant in options.get("hand", []):
 		_stacked.append(str(id))
@@ -60,14 +93,25 @@ func setup(data: Dictionary, rng: RandomNumberGenerator, round_target: float, op
 func start() -> void:
 	score = 0.0
 	casts_used = 0
-	_hand_bonus = 0
-	_res_mult_next = 1.0
+	hand_bonus = 0
+	extra_casts = 0
+	peek_bonus = 0
+	money_per_cast_left = 0
+	overflow_pct = 0.0
 	_money_at_round_end = 0
 	_once_used.clear()
+	pending.clear()
+	offer.clear()
+	round_end_plans.clear()
 	hand.clear()
 	bag.reset_round()
 	bag.stack_on_top(_stacked)
-	refill()
+	var draw_extra: int = _apply_next_round()
+	target_at_start = target
+	hand.append_array(bag.draw(hand_limit() + draw_extra))
+	if draw_extra > 0 and hand.size() > hand_limit():
+		ask({"kind": "put_back", "count": hand.size() - hand_limit()})
+	_apply_lasting()
 
 
 func refill() -> void:
@@ -75,7 +119,7 @@ func refill() -> void:
 
 
 func hand_limit() -> int:
-	return _hand_size + _hand_bonus
+	return _hand_size + hand_bonus
 
 
 func max_selection() -> int:
@@ -86,59 +130,98 @@ func is_won() -> bool:
 	return score >= target
 
 
+## Lost when nothing can be cast any more (decided only once no pick is waiting).
 func is_lost() -> bool:
-	return not is_won() and (casts_left <= 0 or hand.is_empty())
+	return pending.is_empty() and not is_won() and (casts_left <= 0 or hand.is_empty())
 
 
 func can_cast(indices: Array[int]) -> bool:
-	return casts_left > 0 and _valid_selection(indices) and not is_won()
+	return casts_left > 0 and pending.is_empty() and _valid_selection(indices) and not is_won()
 
 
 func can_swap(indices: Array[int]) -> bool:
-	return swaps_left > 0 and _valid_selection(indices) and not is_won() and bag.remaining() > 0
+	return swaps_left > 0 and pending.is_empty() and _valid_selection(indices) and not is_won() \
+		and bag.remaining() > 0
 
 
 ## What the round screen shows while stones are selected (before casting).
-func preview(indices: Array[int]) -> Dictionary:
-	if not _valid_selection(indices):
+func preview(selection: Array[int]) -> Dictionary:
+	if not _valid_selection(selection):
 		return {}
+	var indices: Array[int] = _cast_order(selection)
 	var selected: Array[Stone] = _stones_at(indices)
 	var word: Dictionary = WordDetector.detect(selected, _data["words"])
 	var word_data: Dictionary = (_data["words"] as Dictionary)[word["word"]]
 	var level: int = word_level(word["word"])
 	var scoring_hand: Array[int] = []
 	for i: int in word["scoring"]:
-		scoring_hand.append(_sorted(indices)[i])
+		scoring_hand.append(indices[i])
+	var sentence: Dictionary = _parse(selected)
+	var spells: Array[String] = []
+	if str(sentence.get("status", "")) == SentenceParser.SPELL:
+		spells.append(sentence["spell"])
 	return {
 		"word": word["word"],
 		"scoring": scoring_hand,
 		"power": float(word_data["base_power"]) + float(word_data["level_power"]) * (level - 1),
 		"res": float(word_data["base_res"]) + float(word_data["level_res"]) * (level - 1),
-		"spells": SpellDetector.detect(selected, _data["spells"]),
+		"sentence": sentence,
+		"spells": spells,
 	}
 
 
-## Casts the selected stones. Returns everything the screen needs to animate the result.
-func cast(indices: Array[int]) -> Dictionary:
-	if not can_cast(indices):
+## Casts the selected stones, in this order. Returns everything the screen needs to animate
+## the result. If spells wait for picks afterwards, `pending` is not empty: answer them,
+## then check is_won() / is_lost().
+func cast(selection: Array[int]) -> Dictionary:
+	if not can_cast(selection):
 		return {}
-	var order: Array[int] = _sorted(indices)
-	var cast_stones: Array[Stone] = _stones_at(order)
+	var indices: Array[int] = _cast_order(selection)
+	var cast_stones: Array[Stone] = _stones_at(indices)
 	var held: Array[Stone] = []
 	for i: int in hand.size():
-		if not order.has(i):
+		if not indices.has(i):
 			held.append(hand[i])
 	var word: Dictionary = WordDetector.detect(cast_stones, _data["words"])
-	var spells: Array[String] = SpellDetector.detect(cast_stones, _data["spells"])
 	var rules: Dictionary = _data["rules"]
 
+	var sentence: Dictionary = _parse(cast_stones)
+	var plans: Array[Dictionary] = []
+	var spells: Array[String] = []
+	if str(sentence.get("status", "")) == SentenceParser.SPELL:
+		var spell_id: String = sentence["spell"]
+		var counts: Dictionary = carry["spell_counts"]
+		var plan: Dictionary = SpellResolver.make_plan(sentence, _data["spells"], _data["spell_actions"],
+			int(counts.get(spell_id, 0)), rng)
+		counts[spell_id] = int(counts.get(spell_id, 0)) + 1
+		spells.append(spell_id)
+		if bool(plan["gift"]):
+			if (carry["scroll"] as Dictionary).is_empty() and int(_economy("scroll_slots", 1)) > 0:
+				var kept: Dictionary = plan.duplicate(true)
+				kept["gift"] = false
+				kept["price"] = {}
+				carry["scroll"] = {"spell": spell_id, "plan": kept}
+			else:
+				plan["gift"] = false
+				(plan["ignored"] as Array).append("gebo")
+		plans.append(plan)
+	var scroll_used: String = ""
+	if bool(carry["scroll_armed"]) and not (carry["scroll"] as Dictionary).is_empty():
+		scroll_used = carry["scroll"]["spell"]
+		plans.append(carry["scroll"]["plan"])
+		carry["scroll"] = {}
+		carry["scroll_armed"] = false
+
+	var mods: Dictionary = SpellResolver.score_mods(self, plans, {
+		"cast": cast_stones, "held": held, "first_cast": casts_used == 0})
+	_merge_mods(mods, _take_next_cast_mods())
+	_lower_word_levels(plans, word["word"])
 	var result: Dictionary = Scorer.score_cast({
 		"cast": cast_stones, "held": held, "word": word, "words": _data["words"], "runes": _data["runes"],
 		"word_level": word_level(word["word"]), "cast_index": casts_used, "is_last_cast": casts_left == 1,
-		"voices_awake": bool(rules.get("rune_voices_start_awake", true)), "res_mult": _res_mult_next,
-		"lessons_used": lessons_used, "talismans": talismans_owned, "once_used": _once_used, "rng": _rng,
+		"voices_awake": bool(rules.get("rune_voices_start_awake", true)), "spell_mods": mods,
+		"lessons_used": lessons_used, "talismans": talismans_owned, "once_used": _once_used, "rng": rng,
 	})
-	_res_mult_next = 1.0
 	_once_used.assign(result["once_used"])
 	score += float(result["score"])
 	money += int(result["money"])
@@ -153,12 +236,24 @@ func cast(indices: Array[int]) -> Dictionary:
 	hand = held
 	casts_left -= 1
 	casts_used += 1
+	refill()
+	var scoring_stones: Array[Stone] = []
+	for i: int in word["scoring"]:
+		scoring_stones.append(cast_stones[i])
+	var spell_score: float = SpellResolver.after_score(self, plans, {
+		"word": word["word"], "cast": cast_stones, "scoring": scoring_stones,
+		"power": result["power"], "score": result["score"]})
+	score += spell_score
+	refill()
 	result["word"] = word["word"]
 	result["cast_stones"] = cast_stones
 	result["scoring"] = word["scoring"]
+	result["sentence"] = sentence
 	result["spells"] = spells
-	result["spell_effects"] = _apply_spells(spells, word["word"])
-	refill()
+	result["plans"] = plans
+	result["scroll_used"] = scroll_used
+	result["spell_score"] = spell_score
+	result["score"] = float(result["score"]) + spell_score
 	result["won"] = is_won()
 	result["lost"] = is_lost()
 	return result
@@ -168,16 +263,14 @@ func cast(indices: Array[int]) -> Dictionary:
 func swap(indices: Array[int]) -> bool:
 	if not can_swap(indices):
 		return false
-	var order: Array[int] = _sorted(indices)
-	order.reverse()
-	for i: int in order:
-		hand.remove_at(i)
+	_discard(indices)
 	swaps_left -= 1
 	refill()
 	return true
 
 
-## End of the round: Ingwaz grows if still in hand, Jera pays out. Returns what happened.
+## End of the round: Ingwaz grows if still in hand, Jera pays out, ripened spells (Jera
+## the Action) happen, Wages pay, Provisions carry the extra score. Returns what happened.
 func finish() -> Dictionary:
 	var grown: Array[Stone] = []
 	if bool((_data["rules"] as Dictionary).get("rune_voices_start_awake", true)):
@@ -190,19 +283,30 @@ func finish() -> Dictionary:
 					if action["type"] == "grow_power":
 						stone.bonus_power += int(action.get("value", 0))
 						grown.append(stone)
-	money += _money_at_round_end
-	var paid: int = _money_at_round_end
+	var money_before: int = money
+	for entry: Dictionary in round_end_plans:
+		SpellResolver.run_ops(self, entry["plan"], entry["ctx"], false)
+	round_end_plans.clear()
+	money += _money_at_round_end + money_per_cast_left * casts_left
 	_money_at_round_end = 0
-	return {"grown": grown, "money": paid}
+	if overflow_pct > 0.0:
+		var next_round: Dictionary = carry["next_round"]
+		next_round["overflow"] = float(next_round.get("overflow", 0.0)) \
+			+ maxf(0.0, score - target) * overflow_pct / 100.0
+	return {"grown": grown, "money": money - money_before}
 
 
 func word_level(word_id: String) -> int:
 	return int(word_levels.get(word_id, 1))
 
 
-## The next stones of the bag when Kenaz is in hand (empty otherwise).
+func spell_data(spell_id: String) -> Dictionary:
+	return (_data["spells"] as Dictionary).get(spell_id, {})
+
+
+## The next stones of the bag when Kenaz is in hand or Clairvoyance is on (empty otherwise).
 func kenaz_peek() -> Array[Stone]:
-	var count: int = 0
+	var count: int = peek_bonus
 	for stone: Stone in hand:
 		var rune: Dictionary = (_data["runes"] as Dictionary).get(stone.rune_id, {})
 		for effect: Dictionary in rune.get("effects", []):
@@ -234,51 +338,354 @@ func move_stone(from: int, to: int) -> void:
 	hand.insert(clampi(to, 0, hand.size()), stone)
 
 
-func _apply_spells(spells: Array[String], word_id: String) -> Array[Dictionary]:
-	var applied: Array[Dictionary] = []
-	for id: String in spells:
-		var spell: Dictionary = (_data["spells"] as Dictionary)[id]
-		for action: Dictionary in spell.get("actions", []):
-			var value: float = float(action.get("value", 0))
-			match str(action["type"]):
-				"reduce_target_pct":
-					target = maxf(0.0, target * (1.0 - value / 100.0))
-				"add_money":
-					money += int(value)
-				"refund_cast":
-					casts_left += int(value)
-				"next_cast_mul_res":
-					_res_mult_next *= value
-				"word_level_up":
-					word_levels[word_id] = word_level(word_id) + int(value)
-				"grant_random_talisman":
-					pending_talismans += int(value)
-				"market_discount_pct":
-					market_discount_pct = maxi(market_discount_pct, int(value))
-				"hand_size_bonus":
-					_hand_bonus += int(value)
-			applied.append({"spell": id, "type": action["type"], "value": value})
-	return applied
+# --- Spell helpers (SpellResolver calls these) -------------------------------------------
+
+## Lowers the target, never below the floor from economy.json (40% of the round's start).
+func reduce_target(amount: float) -> void:
+	var floor_value: float = target_at_start * float(_economy("spell_target_floor_pct", 40)) / 100.0
+	target = maxf(minf(target, floor_value), target - maxf(0.0, amount))
 
 
-func _valid_selection(indices: Array[int]) -> bool:
-	if indices.is_empty() or indices.size() > max_selection():
+## Adds Casts from a spell, at most economy.json's limit per round.
+func add_casts(count: int) -> void:
+	var allowed: int = maxi(0, int(_economy("spell_max_extra_casts_per_round", 2)) - extra_casts)
+	var added: int = clampi(count, 0, allowed)
+	casts_left += added
+	extra_casts += added
+
+
+## A stone breaks: it leaves the hand and the bag for good.
+func break_stone(stone: Stone) -> void:
+	hand.erase(stone)
+	bag.remove(stone)
+
+
+## Score modifiers waiting for a later Cast (0 = the next one).
+func next_cast_mods(index: int) -> Dictionary:
+	var queue: Array = carry["next_casts"]
+	while queue.size() <= index:
+		queue.append(SpellResolver.empty_mods())
+	return queue[index]
+
+
+## A spell waits for the player's pick.
+func ask(choice: Dictionary) -> void:
+	choice["id"] = _next_choice_id
+	_next_choice_id += 1
+	if str(choice["kind"]) == "draw_keep":
+		offer = bag.draw(int(choice.get("count", 1)))
+	pending.append(choice)
+
+
+# --- The player's picks --------------------------------------------------------------------
+
+## The pick waiting now ({} if none). "kind" says what to pick:
+##   "price" {casts, money}: answer {"option": "cast" | "money"}
+##   "break_chosen_money" / "discard_chosen" / "put_back": exactly `count` (or `cost`) stones
+##   "remove_chosen" / "free_swap_chosen": up to `count` stones
+##   "change_kin_chosen": up to `count` stones and a kin: {"stones", "kin"}
+##   "copy_chosen_to_bag": one stone
+##   "reorder_bag_top": {"order": positions in bag.peek(count), first drawn first}
+##   "draw_keep": {"pick": index in `offer`}
+## Stones are hand indices: {"stones": [2, 5]}.
+func current_choice() -> Dictionary:
+	return pending[0] if not pending.is_empty() else {}
+
+
+## Answers the current pick. Returns false (and changes nothing) if the answer does not fit.
+func answer(reply: Dictionary) -> bool:
+	var choice: Dictionary = current_choice()
+	if choice.is_empty():
 		return false
+	var kind: String = choice["kind"]
+	var picked: Array[int] = []
+	for i: Variant in reply.get("stones", []):
+		picked.append(int(i))
+	var count: int = int(choice.get("count", choice.get("cost", 1)))
+	match kind:
+		"price":
+			var option: String = str(reply.get("option", ""))
+			if option == "money" and money >= int(choice["money"]):
+				money -= int(choice["money"])
+			elif option == "cast" or option == "money":
+				casts_left = maxi(0, casts_left - int(choice["casts"]))
+			else:
+				return false
+		"break_chosen_money", "discard_chosen", "put_back", "copy_chosen_to_bag":
+			var needed: int = 1 if kind == "copy_chosen_to_bag" else mini(count, hand.size())
+			if not _valid_picks(picked) or picked.size() != needed:
+				return false
+			var stones: Array[Stone] = _stones_at(picked)
+			match kind:
+				"break_chosen_money":
+					for stone: Stone in stones:
+						break_stone(stone)
+						money += int(choice.get("amount", 0))
+				"discard_chosen":
+					_discard(picked)
+				"put_back":
+					for stone: Stone in stones:
+						hand.erase(stone)
+						bag.put_back(stone)
+				"copy_chosen_to_bag":
+					for i: int in count:
+						bag.add_copy_of(stones[0])
+		"remove_chosen", "free_swap_chosen", "change_kin_chosen":
+			if not _valid_picks(picked) or picked.size() > count:
+				return false
+			var kin: String = str(reply.get("kin", ""))
+			if kind == "change_kin_chosen" and not picked.is_empty() and not _kins().has(kin):
+				return false
+			var stones: Array[Stone] = _stones_at(picked)
+			match kind:
+				"remove_chosen":
+					for stone: Stone in stones:
+						break_stone(stone)
+				"free_swap_chosen":
+					_discard(picked)
+				"change_kin_chosen":
+					for stone: Stone in stones:
+						stone.kin = kin
+		"reorder_bag_top":
+			var top: Array[Stone] = bag.peek(count)
+			var order: Array = reply.get("order", [])
+			if order.size() != top.size():
+				return false
+			var seen: Array[int] = []
+			for i: Variant in order:
+				if int(i) < 0 or int(i) >= top.size() or seen.has(int(i)):
+					return false
+				seen.append(int(i))
+			for stone: Stone in top:
+				bag.draw_pile.erase(stone)
+			for n: int in range(order.size() - 1, -1, -1):
+				bag.draw_pile.append(top[int(order[n])])
+		"draw_keep":
+			var pick: int = int(reply.get("pick", -1))
+			if offer.is_empty():
+				pass
+			elif pick < 0 or pick >= offer.size():
+				return false
+			else:
+				hand.append(offer[pick])
+				for i: int in offer.size():
+					if i != pick:
+						bag.put_back(offer[i])
+			offer.clear()
+	pending.pop_front()
+	if kind != "put_back" and kind != "draw_keep":
+		refill()
+	return true
+
+
+## A sensible answer to the current pick (the simulator, the tests, and the round screen
+## until the picks have their own screen).
+func auto_answer() -> Dictionary:
+	var choice: Dictionary = current_choice()
+	var count: int = int(choice.get("count", choice.get("cost", 1)))
+	match str(choice.get("kind", "")):
+		"price":
+			return {"option": "money" if money >= int(choice["money"]) else "cast"}
+		"break_chosen_money", "discard_chosen", "put_back", "remove_chosen", "free_swap_chosen":
+			return {"stones": _weakest(count)}
+		"copy_chosen_to_bag":
+			return {"stones": _strongest(1)}
+		"change_kin_chosen":
+			var kin: String = _most_common_kin()
+			var stones: Array[int] = []
+			for i: int in _weakest(hand.size()):
+				if hand[i].kin != kin and stones.size() < count:
+					stones.append(i)
+			return {"stones": stones, "kin": kin}
+		"reorder_bag_top":
+			var order: Array[int] = []
+			for i: int in bag.peek(count).size():
+				order.append(i)
+			return {"order": order}
+		"draw_keep":
+			var best: int = 0
+			for i: int in offer.size():
+				if _power(offer[i]) > _power(offer[best]):
+					best = i
+			return {"pick": best}
+	return {}
+
+
+## Answers every waiting pick with auto_answer().
+func answer_all_automatically() -> void:
+	var guard: int = 0
+	while not pending.is_empty() and guard < 100:
+		if not answer(auto_answer()):
+			pending.pop_front()
+			offer.clear()
+		guard += 1
+
+
+# --- The Scroll (Gebo) ---------------------------------------------------------------------
+
+func has_scroll() -> bool:
+	return not (carry["scroll"] as Dictionary).is_empty()
+
+
+## The spell kept on the Scroll ("" if none).
+func scroll_spell() -> String:
+	return str((carry["scroll"] as Dictionary).get("spell", ""))
+
+
+## The Scroll's spell happens together with the next Cast.
+func use_scroll() -> bool:
+	if not has_scroll():
+		return false
+	carry["scroll_armed"] = true
+	return true
+
+
+func _cast_order(selection: Array[int]) -> Array[int]:
+	var order: Array[int] = []
+	order.assign(selection)
+	if not spells_enabled:
+		order.sort()
+	return order
+
+
+func _parse(stones: Array[Stone]) -> Dictionary:
+	if not spells_enabled:
+		return {}
+	var ids: Array[String] = []
+	for stone: Stone in stones:
+		ids.append(stone.rune_id)
+	return SentenceParser.parse(ids, _data["runes"], _data["spells"])
+
+
+## next_round from the carry: target change, head start, extra score, Swaps, Casts, peek.
+## Returns how many extra stones to draw (The Tide).
+func _apply_next_round() -> int:
+	var next_round: Dictionary = carry["next_round"]
+	target *= 1.0 + float(next_round.get("target_pct", 0.0)) / 100.0
+	score = target * float(next_round.get("head_start_pct", 0.0)) / 100.0 + float(next_round.get("overflow", 0.0))
+	swaps_left = maxi(0, swaps_left + int(next_round.get("swaps", 0)))
+	peek_bonus = int(next_round.get("peek", 0))
+	var draw_extra: int = int(next_round.get("draw_extra", 0))
+	var casts: int = int(next_round.get("casts", 0))
+	carry["next_round"] = {}
+	add_casts(casts)
+	return draw_extra
+
+
+## Eihwaz: lasting spells happen again at the start of the round, at half strength.
+func _apply_lasting() -> void:
+	var lasting: Array = carry["lasting"]
+	for entry: Dictionary in lasting.duplicate():
+		var spell: Dictionary = spell_data(entry["spell"])
+		if spell.is_empty():
+			lasting.erase(entry)
+			continue
+		var plan: Dictionary = {
+			"spell": entry["spell"], "timing": spell["timing"], "scale": entry["scale"],
+			"repeats": entry["repeats"], "spread": entry["spread"], "lasts": 0, "lasts_factor": 1.0,
+			"ripens": false, "gift": false, "price": {}, "fizzled": false, "ignored": [], "actions": [],
+		}
+		SpellResolver.run_ops(self, plan, {}, true)
+		entry["rounds_left"] = int(entry["rounds_left"]) - 1
+		if int(entry["rounds_left"]) <= 0:
+			lasting.erase(entry)
+
+
+func _take_next_cast_mods() -> Dictionary:
+	var queue: Array = carry["next_casts"]
+	return queue.pop_front() if not queue.is_empty() else SpellResolver.empty_mods()
+
+
+func _merge_mods(into: Dictionary, extra: Dictionary) -> void:
+	into["add_power"] = float(into["add_power"]) + float(extra.get("add_power", 0.0))
+	into["add_res"] = float(into["add_res"]) + float(extra.get("add_res", 0.0))
+	(into["res_mults"] as Array).append_array(extra.get("res_mults", []))
+	into["res_to_one"] = bool(into["res_to_one"]) or bool(extra.get("res_to_one", false))
+	into["retrigger_scoring"] = int(into["retrigger_scoring"]) + int(extra.get("retrigger_scoring", 0))
+	into["word_upgrade"] = int(into["word_upgrade"]) + int(extra.get("word_upgrade", 0))
+
+
+## The Stutter: the Word loses a level before it scores (never below 1).
+func _lower_word_levels(plans: Array[Dictionary], word_id: String) -> void:
+	for plan: Dictionary in plans:
+		if str(plan["timing"]) != "before" or bool(plan["fizzled"]) or bool(plan["gift"]):
+			continue
+		for r: int in int(plan["repeats"]):
+			for op: Dictionary in SpellResolver.scaled_ops(spell_data(plan["spell"]), float(plan["scale"])):
+				if op["op"] == "word_level_down":
+					word_levels[word_id] = maxi(1, word_level(word_id) - int(op.get("cost", 1)))
+
+
+## Stones leave the hand for this round (Swap, discards).
+func _discard(indices: Array[int]) -> void:
+	var order: Array[int] = []
+	order.assign(indices)
+	order.sort()
+	order.reverse()
+	for i: int in order:
+		hand.remove_at(i)
+
+
+func _economy(key: String, fallback: Variant) -> Variant:
+	return (_data.get("economy", {}) as Dictionary).get(key, fallback)
+
+
+func _kins() -> Array[String]:
+	var kins: Array[String] = []
+	for stone: Stone in bag.stones:
+		if not kins.has(stone.kin):
+			kins.append(stone.kin)
+	for kin: String in WordDetector.KINS:
+		if not kins.has(kin):
+			kins.append(kin)
+	return kins
+
+
+func _most_common_kin() -> String:
+	var counts: Dictionary = {}
+	var best: String = WordDetector.KINS[0]
+	for stone: Stone in hand:
+		counts[stone.kin] = int(counts.get(stone.kin, 0)) + 1
+		if int(counts[stone.kin]) > int(counts.get(best, 0)):
+			best = stone.kin
+	return best
+
+
+func _power(stone: Stone) -> int:
+	return stone.base_power + stone.bonus_power
+
+
+## Hand indices of the `count` weakest stones.
+func _weakest(count: int) -> Array[int]:
+	var order: Array[int] = []
+	for i: int in hand.size():
+		order.append(i)
+	order.sort_custom(func(a: int, b: int) -> bool: return _power(hand[a]) < _power(hand[b]))
+	return order.slice(0, mini(count, order.size()))
+
+
+func _strongest(count: int) -> Array[int]:
+	var order: Array[int] = _weakest(hand.size())
+	order.reverse()
+	return order.slice(0, mini(count, order.size()))
+
+
+func _valid_picks(indices: Array[int]) -> bool:
 	for i: int in indices:
 		if i < 0 or i >= hand.size() or indices.count(i) > 1:
 			return false
 	return true
 
 
-func _sorted(indices: Array[int]) -> Array[int]:
-	var order: Array[int] = []
-	order.assign(indices)
-	order.sort()
-	return order
+func _valid_selection(indices: Array[int]) -> bool:
+	if indices.is_empty() or indices.size() > max_selection():
+		return false
+	return _valid_picks(indices)
 
 
+## The stones at these hand indices, in this order.
 func _stones_at(indices: Array[int]) -> Array[Stone]:
 	var stones: Array[Stone] = []
-	for i: int in _sorted(indices):
+	for i: int in indices:
 		stones.append(hand[i])
 	return stones

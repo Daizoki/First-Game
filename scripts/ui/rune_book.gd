@@ -1,12 +1,14 @@
 extends Control
 ## The Book of Runes (from the pause menu): the 24 runes by Kin, each with its historical
-## meaning, Position, Power and Voice; then the Spells. A Spell shows its runes, name and
-## effect once discovered; until then it is "???" with blank stones.
+## meaning, Position, Power and Voice; then the spells discovered so far (Element -> Target,
+## name, effect) and how many are still waiting. Step B of the grammar turns this part into
+## the 8 × 8 Table of Spells.
 
 signal closed
 
 const MiniStone = preload("res://scripts/ui/mini_stone.gd")
 const RuneGlyphScript = preload("res://scripts/ui/rune_glyph.gd")
+const SpellText = preload("res://scripts/ui/spell_text.gd")
 
 const PANEL_SIZE: Vector2 = Vector2(1680, 980)
 const RUNE_COLUMNS: int = 4
@@ -96,13 +98,19 @@ func _build() -> void:
 		_content.add_child(grid)
 		for rune: Dictionary in GameData.runes_in_kin(kin_id):
 			grid.add_child(_rune_entry(rune))
-	var found: int = 0
+	var found: Array[String] = []
+	var total: int = 0
 	for id: String in GameData.spells:
+		if not bool(GameData.spells[id].get("enabled", false)):
+			continue
+		total += 1
 		if SaveManager.has_discovery("spells", id):
-			found += 1
-	_label(_content, Loc.t("rune_book_spells", {"n": found, "total": GameData.spells.size()}), 40, &"TitleLabel")
-	for id: String in GameData.spells:
+			found.append(id)
+	_label(_content, Loc.t("rune_book_spells", {"n": found.size(), "total": total}), 40, &"TitleLabel")
+	for id: String in found:
 		_content.add_child(_spell_row(id))
+	if found.size() < total:
+		_label(_content, Loc.t("rune_book_spells_left", {"n": total - found.size()}), 22, &"SecondaryLabel")
 
 
 func _rune_entry(rune: Dictionary) -> Control:
@@ -129,7 +137,6 @@ func _rune_entry(rune: Dictionary) -> Control:
 
 func _spell_row(spell_id: String) -> Control:
 	var spell: Dictionary = GameData.spells[spell_id]
-	var known: bool = SaveManager.has_discovery("spells", spell_id)
 	var row: PanelContainer = PanelContainer.new()
 	row.theme_type_variation = &"TooltipPanel"
 	var line: HBoxContainer = HBoxContainer.new()
@@ -139,26 +146,21 @@ func _spell_row(spell_id: String) -> Control:
 	stones.custom_minimum_size = Vector2(3 * 50, 0)
 	stones.add_theme_constant_override("separation", 4)
 	line.add_child(stones)
-	for id: Variant in spell["runes"]:
+	for id: Variant in [spell["element"], spell["target"]]:
 		var mini: MiniStone = MiniStone.new()
 		mini.rune_id = str(id)
-		mini.blank = not known
 		stones.add_child(mini)
-	var name_label: Label = _label(line, Loc.text(spell["name"]) if known else Loc.t("word_hidden"), 32, &"TitleLabel")
+	var name_label: Label = _label(line, Loc.text(spell["name"]), 32, &"TitleLabel")
 	name_label.custom_minimum_size = Vector2(260, 0)
 	name_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	if known:
-		name_label.add_theme_color_override("font_color", Color.html(str(spell.get("color", "#e9e3d2"))))
+	name_label.add_theme_color_override("font_color", Color.html(str(spell.get("color", "#e9e3d2"))))
 	var text: VBoxContainer = VBoxContainer.new()
 	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	text.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	text.add_theme_constant_override("separation", 0)
 	line.add_child(text)
-	if known:
-		_wrapped(text, Loc.text(spell["logic"]), 20, &"SecondaryLabel")
-		_wrapped(text, Loc.text(spell["effect"]), 24, &"")
-	else:
-		_wrapped(text, Loc.t("rune_book_spell_hidden"), 22, &"SecondaryLabel")
+	_wrapped(text, SpellText.sentence([spell["element"], spell["target"]]), 20, &"SecondaryLabel")
+	_wrapped(text, SpellText.effect(spell), 24, &"")
 	return row
 
 

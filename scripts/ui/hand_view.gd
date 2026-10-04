@@ -22,6 +22,8 @@ var max_selection: int = 5
 var can_select: Callable = Callable()
 
 var _views: Array[StoneView] = []
+## Selected stones in the order they were picked (the casting order of the spell grammar).
+var _selection_order: Array[StoneView] = []
 var _pressed: StoneView = null
 var _press_position: Vector2 = Vector2.ZERO
 var _dragging: bool = false
@@ -50,21 +52,28 @@ func set_stones(stones: Array[Stone]) -> void:
 			by_uid.erase(stone.uid)
 		next.append(view)
 	for view: StoneView in by_uid.values():
+		_selection_order.erase(view)
 		view.queue_free()
 	_views = next
 	for i: int in _views.size():
 		move_child(_views[i], i)
 
 
+## The selected stones' hand indices in the order they were selected (the casting order).
 func selected_indices() -> Array[int]:
 	var result: Array[int] = []
+	for view: StoneView in _selection_order:
+		var i: int = _views.find(view)
+		if i >= 0 and view.selected:
+			result.append(i)
 	for i: int in _views.size():
-		if _views[i].selected:
+		if _views[i].selected and not result.has(i):
 			result.append(i)
 	return result
 
 
 func clear_selection() -> void:
+	_selection_order.clear()
 	for view: StoneView in _views:
 		view.selected = false
 	selection_changed.emit()
@@ -161,6 +170,9 @@ func _toggle(view: StoneView) -> void:
 	if not view.selected and can_select.is_valid() and not bool(can_select.call(view.stone)):
 		return
 	view.selected = not view.selected
+	_selection_order.erase(view)
+	if view.selected:
+		_selection_order.append(view)
 	selection_changed.emit()
 
 

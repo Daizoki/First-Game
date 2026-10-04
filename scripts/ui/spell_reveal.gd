@@ -7,6 +7,7 @@ extends Control
 signal closed
 
 const RuneGlyphScript = preload("res://scripts/ui/rune_glyph.gd")
+const SpellText = preload("res://scripts/ui/spell_text.gd")
 
 const CIRCLE_RADIUS: float = 170.0
 const CIRCLE_CENTER_Y: float = 350.0
@@ -36,11 +37,11 @@ func reveal(spell: Dictionary, memories: int) -> void:
 	_color = Color.html(str(spell.get("color", "#e9e3d2")))
 	_runes.clear()
 	var parts: PackedStringArray = []
-	for rune_id: Variant in spell["runes"]:
+	# The sentence that makes it: Element -> Target ("Isaz · Gheața  →  Tiwaz · peste Țintă").
+	for rune_id: Variant in [spell["element"], spell["target"]]:
 		var rune: Dictionary = GameData.runes.get(rune_id, {})
 		_runes.append(rune)
-		var meaning: String = Loc.text(rune.get("meaning", {})).split(",")[0].split(";")[0]
-		parts.append("%s · %s" % [Loc.text(rune.get("name", {})), meaning.strip_edges()])
+		parts.append("%s · %s" % [Loc.text(rune.get("name", {})), Loc.text(rune.get("phrase", {}))])
 	_pops.clear()
 	_pops.resize(_runes.size())
 	_pops.fill(0.0)
@@ -50,8 +51,8 @@ func reveal(spell: Dictionary, memories: int) -> void:
 	_title.text = Loc.t("spell_reveal_title")
 	_spell_name.text = Loc.text(spell["name"])
 	_spell_name.add_theme_color_override("font_color", _color)
-	_formula.text = "  +  ".join(parts)
-	_effect.text = Loc.text(spell["effect"])
+	_formula.text = SpellText.ARROW.join(parts)
+	_effect.text = SpellText.effect(spell)
 	_memories.text = Loc.t("spell_reveal_memories", {"n": memories})
 	_continue.text = Loc.t("spell_reveal_continue")
 	for label: Label in [_title, _spell_name, _formula, _effect, _memories, _continue]:

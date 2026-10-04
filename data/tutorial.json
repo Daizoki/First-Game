@@ -58,6 +58,7 @@
 			"casts": 3,
 			"swaps": 0,
 			"seed": 1001,
+			"spells": false,
 			"fail_text": {
 				"ro": "Mai încearcă. Nu se notează.",
 				"en": "Try again. It isn't graded."
@@ -209,6 +210,7 @@
 			"casts": 2,
 			"swaps": 1,
 			"seed": 2002,
+			"spells": false,
 			"fail_text": {
 				"ro": "Mai încearcă. Nu se notează.",
 				"en": "Try again. It isn't graded."
@@ -329,6 +331,7 @@
 			"casts": 2,
 			"swaps": 0,
 			"seed": 3003,
+			"spells": false,
 			"fail_text": {
 				"ro": "Mai încearcă. Nu se notează.",
 				"en": "Try again. It isn't graded."
@@ -415,19 +418,20 @@
 			},
 			"hand": [
 				"isaz",
-				"hagalaz",
-				"naudiz",
-				"fehu",
 				"tiwaz",
-				"gebo",
-				"sowilo",
-				"berkanan"
+				"fehu",
+				"hagalaz",
+				"uruz",
+				"ehwaz",
+				"mannaz",
+				"gebo"
 			],
 			"bag_only": true,
-			"target": 140,
-			"casts": 2,
+			"target": 300,
+			"casts": 3,
 			"swaps": 0,
 			"seed": 4004,
+			"end_after_steps": true,
 			"fail_text": {
 				"ro": "Mai încearcă. Nu se notează.",
 				"en": "Try again. It isn't graded."
@@ -435,78 +439,58 @@
 			"steps": [
 				{
 					"text": {
-						"ro": "Acum ceva ce nu-ți spune nimeni la examen.",
-						"en": "Now something nobody tells you at the exam."
+						"ro": "Acum ceva ce nu-ți spune nimeni la examen. Runele nu sunt doar cifre. Sunt cuvinte.",
+						"en": "Now something nobody tells you at the exam. Runes are not just numbers. They are words."
 					}
 				},
 				{
 					"text": {
-						"ro": "Unele rune, puse împreună, fac mai mult decât scor. Se cheamă Vrăji.",
-						"en": "Some runes, put together, do more than score. They are called Spells."
-					}
-				},
-				{
-					"text": {
-						"ro": "Gheață. Grindină. Nevoie. Ce iese din ele?",
-						"en": "Ice. Hail. Need. What comes of them?"
+						"ro": "Uită-te la semnul din colț. Triunghiul e un Element, cercul e o Țintă, săgeata e o Acțiune.",
+						"en": "Look at the sign in the corner. The triangle is an Element, the circle is a Target, the arrow is an Action."
 					},
 					"spotlight": [
 						"stone:isaz",
-						"stone:hagalaz",
-						"stone:naudiz"
-					],
-					"labels": "meaning",
-					"wait_for": {
-						"event": "selection",
-						"include": [
-							"isaz",
-							"hagalaz",
-							"naudiz"
-						]
-					},
-					"allow": [
-						"select"
-					],
-					"wrong_text": {
-						"ro": "Gheața, grindina și nevoia: Isaz, Hagalaz, Naudiz.",
-						"en": "Ice, hail and need: Isaz, Hagalaz, Naudiz."
-					}
-				},
-				{
-					"text": {
-						"ro": "Simți? Cercul s-a trezit. Nu-ți spune ce Vrajă e. Ca s-o afli, trebuie s-o rostești.",
-						"en": "Feel that? The circle has woken up. It won't tell you which Spell it is. To find out, you have to cast it."
-					},
-					"spotlight": [
-						"circle"
+						"stone:tiwaz",
+						"stone:ehwaz"
 					]
 				},
 				{
 					"text": {
-						"ro": "Hagalaz are Poziția 1. Adaugă Fehu și Tiwaz, tot cu Poziția 1, și ai și o Treime. Vrajă și scor în aceeași Rostire.",
-						"en": "Hagalaz has Position 1. Add Fehu and Tiwaz, also Position 1, and you have a Triad too. A Spell and a score in the same Cast."
+						"ro": "O vrajă e o propoziție: întâi Elementul, apoi Ținta. Alege Isaz, apoi Tiwaz. În ordinea asta.",
+						"en": "A spell is a sentence: first the Element, then the Target. Pick Isaz, then Tiwaz. In that order."
 					},
 					"spotlight": [
-						"stone:fehu",
+						"stone:isaz",
 						"stone:tiwaz"
 					],
 					"wait_for": {
 						"event": "selection",
 						"exact": [
 							"isaz",
-							"hagalaz",
-							"naudiz",
-							"fehu",
 							"tiwaz"
-						]
+						],
+						"in_order": true
 					},
 					"allow": [
 						"select"
 					],
+					"selectable": [
+						"isaz",
+						"tiwaz"
+					],
 					"wrong_text": {
-						"ro": "Fehu și Tiwaz. Cifra 1, în colț.",
-						"en": "Fehu and Tiwaz. The 1 in the corner."
+						"ro": "Întâi Isaz, apoi Tiwaz. Elementul vine primul.",
+						"en": "Isaz first, then Tiwaz. The Element comes first."
 					}
+				},
+				{
+					"text": {
+						"ro": "Citește sub cerc: «Gheața peste Țintă». Ce face? Nu știi până n-o rostești.",
+						"en": "Read under the circle: “Ice on the Target”. What does it do? You won't know until you cast it."
+					},
+					"spotlight": [
+						"circle"
+					]
 				},
 				{
 					"text": {
@@ -518,7 +502,7 @@
 					],
 					"wait_for": {
 						"event": "spell_cast",
-						"spell": "winter"
+						"spell": "isaz_tiwaz"
 					},
 					"allow": [
 						"cast"
@@ -526,18 +510,95 @@
 				},
 				{
 					"text": {
-						"ro": "Iarna. Uite, Ținta a scăzut.",
-						"en": "Winter. Look, the Target dropped."
+						"ro": "Acum invers. Alege Fehu, apoi Hagalaz.",
+						"en": "Now the other way round. Pick Fehu, then Hagalaz."
 					},
 					"spotlight": [
-						"target",
-						"score"
+						"stone:fehu",
+						"stone:hagalaz"
+					],
+					"wait_for": {
+						"event": "selection",
+						"exact": [
+							"fehu",
+							"hagalaz"
+						],
+						"in_order": true
+					},
+					"allow": [
+						"select"
+					],
+					"selectable": [
+						"fehu",
+						"hagalaz"
+					],
+					"wrong_text": {
+						"ro": "Întâi Fehu, apoi Hagalaz.",
+						"en": "Fehu first, then Hagalaz."
+					}
+				},
+				{
+					"text": {
+						"ro": "Aceleași rune, altă ordine: nimic. Ordinea contează.",
+						"en": "Same runes, different order: nothing. Order matters."
+					},
+					"spotlight": [
+						"circle"
 					]
 				},
 				{
 					"text": {
-						"ro": "Sunt peste treizeci de Vrăji și toate se pot ghici din sensul runelor. Nu ți le spun. Nici eu nu le știu pe toate.",
-						"en": "There are more than thirty Spells, and every one can be guessed from the meaning of its runes. I won't tell you them. I don't know them all myself."
+						"ro": "Pune o Acțiune la mijloc. Uruz, apoi Ehwaz, apoi Fehu: «Forța aleargă de două ori în Monede».",
+						"en": "Put an Action in the middle. Uruz, then Ehwaz, then Fehu: “Strength runs twice into Coins”."
+					},
+					"spotlight": [
+						"stone:uruz",
+						"stone:ehwaz",
+						"stone:fehu"
+					],
+					"wait_for": {
+						"event": "selection",
+						"exact": [
+							"uruz",
+							"ehwaz",
+							"fehu"
+						],
+						"in_order": true
+					},
+					"allow": [
+						"select"
+					],
+					"selectable": [
+						"uruz",
+						"ehwaz",
+						"fehu"
+					],
+					"wrong_text": {
+						"ro": "Uruz, Ehwaz, Fehu. În ordinea asta.",
+						"en": "Uruz, Ehwaz, Fehu. In that order."
+					},
+					"clear_selection": true
+				},
+				{
+					"text": {
+						"ro": "Rostește.",
+						"en": "Cast."
+					},
+					"spotlight": [
+						"btn_cast"
+					],
+					"wait_for": {
+						"event": "spell_cast",
+						"spell": "uruz_fehu"
+					},
+					"allow": [
+						"cast"
+					]
+				},
+				{
+					"text": {
+						"ro": "Opt Elemente, opt Acțiuni, opt Ținte. Sute de vrăji, toate citite ca propoziții. Restul îl afli singur.",
+						"en": "Eight Elements, eight Actions, eight Targets. Hundreds of spells, all read as sentences. The rest you'll find out yourself."
 					}
 				}
 			]

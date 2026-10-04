@@ -10,6 +10,7 @@ const DataValidator = preload("res://scripts/core/data_validator.gd")
 const DATA_DIR: String = "res://data/"
 const UI_TEXT_FILE: String = "ui_text.json"
 const RULES_FILE: String = "rules.json"
+const ECONOMY_FILE: String = "economy.json"
 const TUTORIAL_FILE: String = "tutorial.json"
 const RUNE_ART_PATH: String = "res://art/runes/%s.png"
 
@@ -18,7 +19,8 @@ const COLLECTIONS: Dictionary = {
 	"kins": ["kins.json", "kin"],
 	"runes": ["runes.json", "rune"],
 	"words": ["words.json", "word"],
-	"spells": ["spells.json", "spell"],
+	"spells": ["spells_base.json", "spell"],
+	"spell_actions": ["spell_actions.json", "spell_action"],
 	"characters": ["characters.json", "character"],
 	"dialogs": ["dialogs.json", "dialog"],
 	"hints": ["hints.json", "hint"],
@@ -33,8 +35,10 @@ var kins: Dictionary = {}
 var runes: Dictionary = {}
 ## Word types (Pereche, Șir, ...).
 var words: Dictionary = {}
-## Secret rune combinations with unique effects.
+## The base spells: one per Element -> Target pair (DESIGN 3.15, the rune grammar).
 var spells: Dictionary = {}
+## The 8 Actions that can stand between Element and Target, by rune id.
+var spell_actions: Dictionary = {}
 ## Every named god, human and demigod.
 var characters: Dictionary = {}
 var dialogs: Dictionary = {}
@@ -42,6 +46,8 @@ var dialogs: Dictionary = {}
 var hints: Dictionary = {}
 ## Round rules (hand size, casts, swaps, ...).
 var rules: Dictionary = {}
+## Prices and safety limits (data/economy.json).
+var economy: Dictionary = {}
 ## key -> {"ro": "...", "en": "..."}
 var ui_text: Dictionary = {}
 ## The evening class: intro and lessons (data/tutorial.json).
@@ -67,6 +73,9 @@ func load_all(data_dir: String) -> bool:
 	var raw_rules: Variant = _read_json(data_dir, RULES_FILE, validator)
 	rules = {} if raw_rules == null else validator.validate_single(RULES_FILE, raw_rules, "rules")
 
+	var raw_economy: Variant = _read_json(data_dir, ECONOMY_FILE, validator)
+	economy = {} if raw_economy == null else validator.validate_single(ECONOMY_FILE, raw_economy, "economy")
+
 	var raw_tutorial: Variant = _read_json(data_dir, TUTORIAL_FILE, validator)
 	tutorial = {} if raw_tutorial == null else validator.validate_single(TUTORIAL_FILE, raw_tutorial, "tutorial")
 
@@ -75,12 +84,14 @@ func load_all(data_dir: String) -> bool:
 
 	validator.check_references(loaded)
 	validator.check_runes(COLLECTIONS["runes"][0], loaded["runes"], loaded["kins"])
-	validator.check_spells(COLLECTIONS["spells"][0], loaded["spells"])
+	validator.check_spells(COLLECTIONS["spells"][0], loaded["spells"], loaded["runes"])
+	validator.check_spell_actions(COLLECTIONS["spell_actions"][0], loaded["spell_actions"], loaded["runes"])
 
 	kins = loaded["kins"]
 	runes = loaded["runes"]
 	words = loaded["words"]
 	spells = loaded["spells"]
+	spell_actions = loaded["spell_actions"]
 	characters = loaded["characters"]
 	dialogs = loaded["dialogs"]
 	hints = loaded["hints"]

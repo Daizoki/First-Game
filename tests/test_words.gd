@@ -1,9 +1,8 @@
 extends "res://tests/test_case.gd"
-## Word recognition (3.4) and Spell detection (3.15).
+## Word recognition (3.4). Spells: tests/test_sentence.gd and tests/test_spells.gd.
 
 const Fixtures = preload("res://tests/fixtures.gd")
 const WordDetector = preload("res://scripts/core/word_detector.gd")
-const SpellDetector = preload("res://scripts/core/spell_detector.gd")
 
 
 func _word(ids: Array) -> Dictionary:
@@ -63,23 +62,3 @@ func test_available_in_hand() -> void:
 	for word: String in ["single", "pair", "two_pairs", "triad", "family", "row"]:
 		check(found.has(word), "%s should be available" % word)
 	check(not found.has("four"), "four should not be available")
-
-
-func test_winter_spell_with_a_triad() -> void:
-	var cast: Array = ["hagalaz", "fehu", "tiwaz", "isaz", "naudiz"]
-	check_eq(_word(cast)["word"], "triad", "three stones on position 1:")
-	var spells: Array[String] = SpellDetector.detect(Fixtures.stones(cast), Fixtures.data()["spells"])
-	check(spells.has("winter"), "isaz + hagalaz + naudiz should cast Winter")
-
-
-func test_spell_order_does_not_matter_and_laguz_is_not_wild() -> void:
-	var spells: Dictionary = Fixtures.data()["spells"]
-	check(SpellDetector.detect(Fixtures.stones(["gebo", "isaz", "fehu"]), spells).has("market"), "gebo + fehu = market")
-	check(not SpellDetector.detect(Fixtures.stones(["gebo", "laguz"]), spells).has("market"), "laguz is not fehu")
-
-
-func test_inactive_spells_are_skipped() -> void:
-	var spells: Dictionary = Fixtures.data()["spells"]
-	var flood: Array = ["laguz", "uruz"]
-	check(not SpellDetector.detect(Fixtures.stones(flood), spells).has("flood"), "flood has no actions yet")
-	check(SpellDetector.detect(Fixtures.stones(flood), spells, false).has("flood"), "flood exists as data")

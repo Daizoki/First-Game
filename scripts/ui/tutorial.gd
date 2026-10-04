@@ -150,7 +150,8 @@ func _start_lesson(index: int) -> void:
 		"rule": Loc.both("tutorial_lesson_title", {"n": index + 1, "title": lesson["title"]}),
 		"target": lesson["target"], "casts": lesson["casts"], "swaps": lesson["swaps"], "seed": lesson["seed"],
 		"hand": lesson.get("hand", []), "bag_top": lesson.get("bag_top", []),
-		"bag_only": lesson.get("bag_only", false), "examiner": _speaker, "backdrop": "classroom",
+		"bag_only": lesson.get("bag_only", false), "spells": lesson.get("spells", true),
+		"examiner": _speaker, "backdrop": "classroom",
 		"hide_swap": int(lesson["swaps"]) == 0, "show_result": false,
 	})
 	_game_slot.add_child(round_screen)
@@ -175,6 +176,8 @@ func _show_step() -> void:
 	if step.is_empty():
 		_overlay.clear()
 		return
+	if bool(step.get("clear_selection", false)):
+		_round.call("clear_selection")
 	var targets: Array[Control] = []
 	for id: Variant in step.get("spotlight", []):
 		targets.append_array(_round.call("find_ui", str(id)) as Array[Control])

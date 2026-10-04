@@ -1,7 +1,10 @@
 extends PanelContainer
 ## The card shown while the mouse is over the middle of the Rune Circle: which Word the
 ## selection forms, what it means, how many stones score (they glow in hand meanwhile),
-## Power × Resonance and the Spells in it.
+## Power × Resonance and the sentence the stones read (its spell, once discovered).
+
+const SpellText = preload("res://scripts/ui/spell_text.gd")
+const SentenceParser = preload("res://scripts/core/sentence_parser.gd")
 
 const GAP: float = 18.0
 const MARGIN: float = 16.0
@@ -45,7 +48,7 @@ func show_word(word_name: String, description: String, preview: Dictionary, leve
 	_description.text = description
 	_scoring.text = Loc.t("word_card_scoring", {"n": (preview["scoring"] as Array).size(), "total": count})
 	_values.text = Loc.t("word_card_values", {"power": Loc.number(preview["power"]), "res": Loc.number(preview["res"])})
-	_spells.text = _spell_text(preview["spells"])
+	_spells.text = _spell_text(preview.get("sentence", {}))
 	_spells.visible = not _spells.text.is_empty()
 	visible = true
 	reset_size()
@@ -56,18 +59,12 @@ func hide_card() -> void:
 	_anchor = null
 
 
-func _spell_text(spell_ids: Array) -> String:
-	var lines: PackedStringArray = []
-	var hidden: bool = false
-	for id: String in spell_ids:
-		var spell: Dictionary = GameData.spells[id]
-		if SaveManager.has_discovery("spells", id):
-			lines.append("%s: %s" % [Loc.text(spell["name"]), Loc.text(spell["effect"])])
-		else:
-			hidden = true
-	if hidden:
-		lines.append(Loc.t("circle_awakening"))
-	return "\n".join(lines)
+func _spell_text(parsed: Dictionary) -> String:
+	if str(parsed.get("status", "")) == SentenceParser.SPELL \
+			and SaveManager.has_discovery("spells", str(parsed["spell"])):
+		var spell: Dictionary = GameData.spells[parsed["spell"]]
+		return "%s\n%s: %s" % [SpellText.sentence(parsed["parts"]), Loc.text(spell["name"]), SpellText.effect(spell)]
+	return SpellText.circle_line(parsed)
 
 
 func _process(_delta: float) -> void:
