@@ -6,7 +6,9 @@ const HintRules = preload("res://scripts/core/hint_rules.gd")
 const DataValidator = preload("res://scripts/core/data_validator.gd")
 
 ## Hints that are switched on now (the others wait for their stage).
-const ENABLED_NOW: Array[String] = ["first_laguz", "idle_help"]
+const ENABLED_NOW: Array[String] = [
+	"first_laguz", "idle_help", "first_wrong_order", "first_scroll", "first_two_actions",
+]
 const MAX_TEXT: int = 120
 
 
@@ -28,7 +30,7 @@ func _hint(id: String, extra: Dictionary) -> Dictionary:
 
 func test_the_table_is_in_the_data() -> void:
 	var hints: Dictionary = Fixtures.data()["hints"]
-	check_eq(hints.size(), 18, "hints:")
+	check_eq(hints.size(), 21, "hints:")
 	var enabled: Array[String] = []
 	for id: String in hints:
 		var hint: Dictionary = hints[id]
@@ -123,3 +125,16 @@ func test_validator_checks_hints() -> void:
 	check(has_error(errors, ["[odd]", "dancing"]), "an unknown event should be an error")
 	check(has_error(errors, ["[lost]", "nowhere"]), "following a missing hint should be an error")
 	check(not has_error(errors, ["[fine]"]), "a good hint should pass: " + "\n".join(PackedStringArray(errors)))
+
+
+func test_the_grammar_hints() -> void:
+	var rules: HintRules = _rules()
+	check_eq(rules.on_event("wrong_order", {}, _context()), ["first_wrong_order"] as Array[String], "wrong order:")
+	check_eq(rules.on_event("scroll_gained", {"spell": "uruz_fehu"}, _context()), ["first_scroll"] as Array[String],
+		"first Scroll:")
+	check_eq(rules.on_event("two_actions", {"spell": "isaz_tiwaz"}, _context()), ["first_two_actions"] as Array[String],
+		"two Actions:")
+	check_eq(rules.on_event("wrong_order", {}, _context(["first_wrong_order"])), [] as Array[String], "only once:")
+	var tutorial: Dictionary = _context()
+	tutorial["tutorial"] = true
+	check_eq(rules.on_event("wrong_order", {}, tutorial), [] as Array[String], "quiet in the evening class:")

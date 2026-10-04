@@ -14,9 +14,10 @@ Artă: `docs/ARTA.md`.
 > pașii A–D** — EventBus, stratul de instruire (lumină, bulă, săgeată), intro + Lecțiile 1–5 în `data/tutorial.json`,
 > mâini fixe, blocarea acțiunilor, numele jucătorului, pauza, Setările, fișa pietrei, fișa cercului, Cartea Cuvintelor
 > (buton + tasta C), Cartea de rune (din pauză), indiciile contextuale (`data/hints.json`). Așteaptă testul final al
-> lui Relax. **Etapa 2b (Gramatica runelor, `docs/GRAMATICA.md`) e în lucru: pasul A făcut** — rolurile runelor,
-> cele 64 de vrăji Element → Țintă, cele 8 Acțiuni, `SentenceParser` + `SpellResolver`, Lecția 4 nouă.
-> Verificat cu Godot 4.7.2: 116 teste trec (inclusiv parcurgerea fiecărei lecții).
+> lui Relax. **Etapa 2b (Gramatica runelor, `docs/GRAMATICA.md`) e în lucru: pașii A și B făcuți** — rolurile runelor,
+> cele 64 de vrăji Element → Țintă, cele 8 Acțiuni, `SentenceParser` + `SpellResolver`, Lecția 4 nouă; interfața:
+> semnul rolului, numerele de ordine, propoziția sub cerc, panoul de alegeri, Pergamentul, Tabla Vrăjilor.
+> Verificat cu Godot 4.7.2: 121 de teste trec (inclusiv parcurgerea fiecărei lecții).
 
 ## Cum lucrăm
 - Utilizatorul e **Relax** (18 ani, Chișinău; desenează, TikTok/YouTube). **Scrie-i în română.**
@@ -117,8 +118,8 @@ Artă: `docs/ARTA.md`.
 3. `Loc` — `scripts/autoload/loc.gd` — limba curentă, semnalul `language_changed`.
 4. `RunState` — `scripts/autoload/run_state.gd` — examenul în curs.
 5. `EventBus` — `scripts/autoload/event_bus.gd` — evenimentele jocului (`round_started`/`closed`, `hand_changed`,
-   `stone_hovered`, `selection_changed`, `cast`, `swap`, `scoring_phase`, `spell_discovered`, `round_won`/`lost`,
-   `book_opened`/`closed` …) și „poarta” de acțiuni (`allowed_actions`, `selectable_runes`). Jocul doar emite și
+   `stone_hovered`, `selection_changed`, `cast`, `swap`, `scoring_phase`, `spell_discovered`, `sentence_read`,
+   `scroll_gained`, `overlay_opened`/`closed`, `round_won`/`lost`, `book_opened`/`closed` …) și „poarta” de acțiuni (`allowed_actions`, `selectable_runes`). Jocul doar emite și
    verifică poarta; instruirea și indiciile doar ascultă.
 6. `Hints` — `scripts/autoload/hints.gd` — indiciile contextuale: ascultă EventBus-ul, întreabă
    `scripts/core/hint_rules.gd` (testabil) ce indiciu e de arătat și afișează bula (`scripts/ui/hint_bubble.gd`).
@@ -155,8 +156,9 @@ scripts/     autoload/ (game_data, run_state, save_manager, loc, event_bus, hint
                     examiner_rules, shop_logic vin în Etapa 3)
              ui/ (ecrane + componente: rune_glyph, stone_view, hand_view, rune_circle, candle_row, portrait,
                   talisman_string, night_backdrop, classroom_backdrop, float_layer, scoring_player, spell_reveal,
-                  stone_card, word_card, word_book, rune_book, mini_stone, hint_bubble, spell_text, round_screen, tutorial,
-                  tutorial_overlay, boot, name_entry)
+                  stone_card, word_card, word_book, rune_book, mini_stone, hint_bubble, spell_text, role_sign,
+                  sentence_bar, choice_panel, scroll_slot, action_learned, round_screen, tutorial, tutorial_overlay,
+                  boot, name_entry)
 shaders/     spotlight.gdshader (lumina instruirii)
 tools/       gen_round.py (generează scenes/round.tscn), export_translations.py (generează docs/TRADUCERI.md)
 tests/       run_tests.gd, test_case.gd, fixtures.gd, test_data/loc/save/words/sentence/spells/scoring/tutorial/hints.gd,
@@ -169,7 +171,7 @@ tests/       run_tests.gd, test_case.gd, fixtures.gd, test_data/loc/save/words/s
 | 1 | Scheletul: Compatibility + 1920×1080, foldere, autoload-uri, JSON + validare, meniu, setări cu limba, docs, **scena de verificare a celor 24 de rune desenate din cod** | făcută |
 | 2 | Miezul — o rundă: săculețul de 48, mâna de 8, Rostire/Schimbare, sortare/rearanjare, recunoașterea Cuvintelor (cu Laguz și ordinea), Putere × Rezonanță animat, cele 24 de Glasuri, rundă de test; teste; simulatorul + tabelul de probabilități; **primele 8 Vrăji** (detectare, efecte, descoperire, animație simplă); ecranul de rundă așezat ca în 3.16 | făcută (așteaptă testul lui Relax) |
 | 2½ | Instruirea „Seara dinaintea examenului” (`docs/INSTRUIRE.md`): A sistemul, B lecțiile 1–5, C ajutorul permanent + indiciile, D documentele | făcută (așteaptă testul final al lui Relax) |
-| 2b | Gramatica runelor (`docs/GRAMATICA.md`): A datele și logica, B interfața, C balansul, D instruirea și documentele | A făcut |
+| 2b | Gramatica runelor (`docs/GRAMATICA.md`): A datele și logica, B interfața, C balansul, D instruirea și documentele | A, B făcuți |
 | 3 | Examenul complet: 8 Probe × 3 runde, Examinatorii, Monede, Piața de noapte, primele 15 Talismane, Lecții, Gravuri, materiale, legături runice, Săculețe, Picat / Examen trecut | — |
 | 4 | Bucla Aevei: Dimineața, alegerea părintelui, Amintiri, deblocări, salvare (inclusiv examenul în curs), Cartea de rune (cu Vrăjile descoperite), Colecția, numele jucătorului, Paginile rupte în Piață | — |
 | 5 | Povestea și conținutul: intro, replici, final, restul Talismanelor (~30), restul Vrăjilor (30–40, cu blestemele), Cuvintele vechi (ALU, LAÞU, AUJA), balans cu simulatorul | — |

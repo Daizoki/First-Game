@@ -6,6 +6,7 @@ extends Control
 
 const Stone = preload("res://scripts/core/stone.gd")
 const RuneGlyphScript = preload("res://scripts/ui/rune_glyph.gd")
+const RoleSign = preload("res://scripts/ui/role_sign.gd")
 
 const STONE_SIZE: Vector2 = Vector2(150, 190)
 const STONE_ART: String = "res://art/stones/stone.png"
@@ -27,6 +28,10 @@ var flash: float = 0.0
 var marked: bool = false
 ## Selected but would not score (faded while the circle's card is shown).
 var dimmed: bool = false: set = set_dimmed
+## Place in the casting order (1-5) shown on the selected stone; 0 = none.
+var order: int = 0: set = set_order
+## The role sign (off while the rune grammar is not taught yet).
+var show_role: bool = true
 
 var _glyph: RuneGlyphScript
 var _outline: PackedVector2Array = []
@@ -58,6 +63,11 @@ func setup(value: Stone) -> void:
 
 func set_selected(value: bool) -> void:
 	selected = value
+	queue_redraw()
+
+
+func set_order(value: int) -> void:
+	order = value
 	queue_redraw()
 
 
@@ -104,6 +114,18 @@ func _draw() -> void:
 	var font: Font = get_theme_default_font()
 	draw_string(font, Vector2(18, 38), str(stone.position), HORIZONTAL_ALIGNMENT_LEFT, -1, 30, BONE)
 	_draw_kin_sign(STONE_SIZE - Vector2(30, 30), 13.0)
+	if show_role:
+		RoleSign.draw(self, RoleSign.role_of(stone.rune_id), Vector2(STONE_SIZE.x - 32.0, 30.0), 11.0)
+	if selected and order > 0:
+		_draw_order(font)
+
+
+## The casting-order number: a bone disc at the top of the stone.
+func _draw_order(font: Font) -> void:
+	var at: Vector2 = Vector2(STONE_SIZE.x * 0.5, 4.0)
+	draw_circle(at, 21.0, INK)
+	draw_circle(at, 18.0, BONE)
+	draw_string(font, at + Vector2(-18.0, 10.0), str(order), HORIZONTAL_ALIGNMENT_CENTER, 36.0, 28, INK)
 
 
 func _draw_kin_sign(at: Vector2, radius: float) -> void:

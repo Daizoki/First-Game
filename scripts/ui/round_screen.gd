@@ -23,6 +23,10 @@ const WordCard = preload("res://scripts/ui/word_card.gd")
 const RuneBook = preload("res://scripts/ui/rune_book.gd")
 const SpellText = preload("res://scripts/ui/spell_text.gd")
 const SentenceParser = preload("res://scripts/core/sentence_parser.gd")
+const SentenceBar = preload("res://scripts/ui/sentence_bar.gd")
+const ScrollSlot = preload("res://scripts/ui/scroll_slot.gd")
+const ChoicePanel = preload("res://scripts/ui/choice_panel.gd")
+const ActionLearned = preload("res://scripts/ui/action_learned.gd")
 
 const MAIN_MENU_SCENE: String = "res://scenes/main_menu.tscn"
 const SPEEDS: Array[int] = [1, 2, 4]
@@ -56,7 +60,10 @@ const SHAKE_SHARE: float = 0.35
 @onready var _word_level: Label = %WordLevel
 @onready var _scoring_count: Label = %ScoringCount
 @onready var _preview_value: Label = %PreviewValue
-@onready var _spell_line: Label = %SpellLine
+@onready var _sentence_bar: SentenceBar = %SentenceBar
+@onready var _scroll_slot: ScrollSlot = %ScrollSlot
+@onready var _choice_panel: ChoicePanel = %ChoicePanel
+@onready var _action_learned: ActionLearned = %ActionLearned
 @onready var _talismans: TalismanString = %Talismans
 @onready var _consumables: TalismanString = %Consumables
 @onready var _kenaz_panel: Control = %KenazPanel
@@ -114,6 +121,8 @@ var _word_card: WordCard
 ## The selection's preview (RoundState.preview), kept for the circle's card.
 var _preview: Dictionary = {}
 var _word_card_shown: bool = false
+## A spell's pick waits for the player (the hand picks stones for it).
+var _picking: bool = false
 
 
 func _ready() -> void:
@@ -143,16 +152,22 @@ func _ready() -> void:
 
 	_hand.max_selection = _round.max_selection()
 	_hand.can_select = func(stone: Stone) -> bool:
-		return EventBus.is_allowed("select") and EventBus.can_select(stone.rune_id)
+		return _picking or (EventBus.is_allowed("select") and EventBus.can_select(stone.rune_id))
+	# Before the evening class teaches the grammar, stones have no roles and no casting order.
+	_hand.show_order = _round.spells_enabled
+	_hand.show_roles = _round.spells_enabled
 	_hand.selection_changed.connect(_on_selection_changed)
 	_hand.stone_moved.connect(_on_stone_moved)
 	_card = StoneCard.new()
+	_card.show_role = _round.spells_enabled
 	add_child(_card)
 	_word_card = WordCard.new()
 	add_child(_word_card)
 	_hand.hover_changed.connect(func(view: StoneView) -> void:
 		_card.show_stone(view.stone if view != null else null, view)
 		EventBus.stone_hovered.emit(view.stone.rune_id if view != null else ""))
+	_scroll_slot.visible = _round.spells_enabled
+	_scroll_slot.pressed.connect(_on_scroll_pressed)
 	_cast_button.pressed.connect(_on_cast_pressed)
 	_swap_button.pressed.connect(_on_swap_pressed)
 	_sort_position.pressed.connect(_on_sort.bind(true))
@@ -258,7 +273,10 @@ func _refresh_state() -> void:
 	_speed_button.disabled = not EventBus.is_allowed("speed")
 	_menu_button.disabled = not EventBus.is_allowed("menu")
 	_word_book_button.disabled = not EventBus.is_allowed("word_book")
-	_hand.enabled = not _busy
+	_hand.enabled = not _busy or (_picking and _choice_panel.uses_hand())
+	_scroll_slot.spell_id = _round.scroll_spell()
+	_scroll_slot.armed = _round.scroll_armed()
+	_scroll_slot.enabled = not _busy and EventBus.is_allowed("cast")
 	_refresh_kenaz()
 
 
@@ -364,6 +382,9 @@ func _unhandled_input(event: InputEvent) -> void:
 
 ## The middle of the Rune Circle: Word, scoring stones, Power × Resonance, Spells.
 func _on_selection_changed() -> void:
+	if _picking:
+		_choice_panel.set_hand_picks(_hand.selected_indices().size())
+		return
 	if _busy:
 		return
 	var info: Dictionary = selection_info()
@@ -373,7 +394,7 @@ func _on_selection_changed() -> void:
 	_set_word_card(false)
 	_circle.glow_color = Color(0, 0, 0, 0)
 	_circle.awakening = false
-	_spell_line.text = ""
+	_sentence_bar.clear()
 	if preview.is_empty():
 		_word_name.text = Loc.t("circle_hint")
 		_word_level.text = ""
@@ -389,7 +410,7 @@ func _on_selection_changed() -> void:
 		_preview_value.text = "%s × %s" % [Loc.number(preview["power"]), Loc.number(preview["res"])]
 		_power_value.text = Loc.number(preview["power"])
 		_res_value.text = Loc.number(preview["res"])
-		_show_sentence(preview.get("sentence", {}))
+		_show_sentence(preview.get("sentence", {}), preview.get("plan", {}))
 	_preview_value.modulate.a = 1.0
 	_refresh_state()
 
@@ -424,18 +445,21 @@ func _set_word_card(wanted: bool) -> void:
 	_hand.mark_scoring(_preview["scoring"])
 
 
-## The sentence the selection reads (step B of the grammar gives it its own slots).
-func _show_sentence(parsed: Dictionary) -> void:
-	_spell_line.text = SpellText.circle_line(parsed)
-	var color: Color = Color("#e9e3d2")
-	if str(parsed.get("status", "")) == SentenceParser.SPELL:
+## The sentence the selection reads, in its slots under the circle; the circle glows in the
+## spell's color (and pulses while the spell is still a mystery).
+func _show_sentence(parsed: Dictionary, plan: Dictionary) -> void:
+	_sentence_bar.show_sentence(parsed, plan)
+	var status: String = str(parsed.get("status", ""))
+	if status == SentenceParser.SPELL:
 		var spell_id: String = parsed["spell"]
+		var color: Color = Color("#e9e3d2")
 		if SaveManager.has_discovery("spells", spell_id):
 			color = Color.html(str(GameData.spells[spell_id].get("color", "#e9e3d2")))
 		else:
 			_circle.awakening = true
 		_circle.glow_color = color
-	_spell_line.add_theme_color_override("font_color", color)
+	if not status.is_empty():
+		EventBus.sentence_read.emit(status, str(parsed.get("spell", "")), (parsed.get("actions", []) as Array).size())
 
 
 func _word_display_name(word_id: String) -> String:
@@ -482,16 +506,14 @@ func _on_cast_pressed() -> void:
 	for i: int in _round.hand.size():
 		if not selection.has(i):
 			held_views.append(_hand.view_at(i))
+	_sentence_bar.clear()
 	var result: Dictionary = _round.cast(selection)
 	# The scorer's indices follow the casting order.
 	var cast_views: Array[StoneView] = []
 	for stone: Stone in result["cast_stones"]:
 		cast_views.append(_hand.view_for(stone))
-	# The spells' picks get their own screen in step B of the grammar; until then the
-	# round answers them itself.
-	_round.answer_all_automatically()
 	result["won"] = _round.is_won()
-	result["lost"] = _round.is_lost()
+	result["lost"] = false
 	_player.speed = float(_speed) * (0.5 if slow_scoring else 1.0)
 	await _player.play(result, cast_views, held_views)
 	await _add_score(float(result["score"]))
@@ -502,11 +524,64 @@ func _on_cast_pressed() -> void:
 		tween.tween_property(view, "modulate:a", 0.0, 0.25 / float(_speed))
 	await get_tree().create_timer(0.25 / float(_speed)).timeout
 	_show_hand()
+	await _resolve_picks()
 	_busy = false
 	_on_selection_changed()
 	EventBus.cast_resolved.emit()
-	if result["won"] or result["lost"]:
+	if _round.is_won() or _round.is_lost():
 		_finish_round()
+
+
+## The spells' picks, one after another. Stones are picked in the hand; where the player may
+## not select (a tutorial step) the round answers by itself.
+func _resolve_picks() -> void:
+	while not _round.pending.is_empty():
+		var choice: Dictionary = _round.current_choice()
+		var limits: Dictionary = _round.pick_limits(choice)
+		if not EventBus.is_allowed("select") or limits.is_empty():
+			if not _round.answer(_round.auto_answer()):
+				_round.skip_choice()
+			_show_hand()
+			continue
+		_picking = true
+		_hand.clear_selection()
+		_hand.show_order = false
+		_hand.max_selection = maxi(1, _choice_panel_max(limits))
+		var stones: Array = []
+		match str(limits["source"]):
+			"bag_top":
+				stones = _round.bag.peek(int(limits["count"]))
+			"offer":
+				stones = _round.offer
+		_choice_panel.ask(choice, limits, {"money": _round.money, "stones": stones, "kins": _round.kin_choices()})
+		_refresh_state()
+		var reply: Dictionary = await _choice_panel.answered
+		if str(limits["source"]) == "hand":
+			reply["stones"] = _hand.selected_indices()
+		if not _round.answer(reply):
+			_round.skip_choice()
+		_choice_panel.close()
+		_picking = false
+		_hand.clear_selection()
+		_hand.max_selection = _round.max_selection()
+		_hand.show_order = _round.spells_enabled
+		_show_hand()
+		_refresh_state()
+
+
+func _choice_panel_max(limits: Dictionary) -> int:
+	return int(limits.get("max", 0)) if str(limits.get("source", "")) == "hand" else 0
+
+
+## A click on the Scroll: ready to happen with the next Cast, or put away again.
+func _on_scroll_pressed() -> void:
+	if _busy or not _round.has_scroll():
+		return
+	if _round.scroll_armed():
+		_round.disarm_scroll()
+	else:
+		_round.use_scroll()
+	_refresh_state()
 
 
 ## The round score counts up; big casts shake the screen.
@@ -532,17 +607,24 @@ func _announce(result: Dictionary) -> void:
 		await _show_toast(Loc.t("word_discovered", {"name": Loc.text(word["name"])}))
 	if word_id == "chant" and _spells_out(result["cast_stones"]) == FUTHARK:
 		await _show_toast(Loc.t("futhark_message"))
-	for plan: Dictionary in result["plans"]:
+	var plans: Array = result["plans"]
+	for n: int in plans.size():
+		var plan: Dictionary = plans[n]
 		var id: String = plan["spell"]
 		var spell: Dictionary = GameData.spells[id]
-		if not result["spells"].has(id):
+		# The Scroll's spell rides along as the last plan.
+		if not str(result["scroll_used"]).is_empty() and n == plans.size() - 1:
+			await _show_toast(Loc.t("scroll_happened", {"name": Loc.text(spell["name"]),
+				"effect": SpellText.effect(spell, float(plan["scale"]))}))
 			continue
 		if SaveManager.add_discovery("spells", id):
 			var memories: int = int(GameData.rule("memories_per_spell", 5))
 			SaveManager.data["memories"] = int(SaveManager.data.get("memories", 0)) + memories
 			SaveManager.save_game()
+			EventBus.overlay_opened.emit("spell_reveal")
 			_spell_reveal.reveal(spell, memories)
 			await _spell_reveal.closed
+			EventBus.overlay_closed.emit("spell_reveal")
 			EventBus.spell_discovered.emit(id)
 		elif bool(plan["fizzled"]):
 			await _show_toast(Loc.t("spell_fizzled", {"name": Loc.text(spell["name"])}))
@@ -552,7 +634,11 @@ func _announce(result: Dictionary) -> void:
 			await _show_toast("%s: %s" % [Loc.text(spell["name"]), SpellText.effect(spell, float(plan["scale"]))])
 		for action_id: String in plan["actions"]:
 			if SaveManager.add_discovery("actions", action_id):
-				await _show_toast(Loc.t("action_learned", {"phrase": Loc.text(GameData.runes[action_id]["phrase"])}))
+				_action_learned.center = _circle.get_global_rect().get_center() - get_global_rect().position
+				await _action_learned.play(action_id, float(_speed))
+		if bool(plan["gift"]):
+			EventBus.scroll_gained.emit(id)
+		EventBus.spell_sentence_cast.emit(id, plan["actions"])
 		EventBus.spell_cast.emit(id)
 	_refresh_state()
 

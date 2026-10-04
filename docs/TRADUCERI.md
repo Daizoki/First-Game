@@ -279,6 +279,9 @@
 |---|---|---|
 | `first_laguz` | Laguz e apă: curge. Contează ca piatră din orice Neam. | Laguz is water: it flows. It counts as a stone of any Kin. |
 | `idle_help` | Nu știi ce să faci? Ține mouse-ul pe pietre sau deschide Cartea Cuvintelor. | Not sure what to do? Hover over the stones or open the Book of Words. |
+| `first_wrong_order` | Elementul vine primul, Ținta la urmă. Așa vorbesc runele. | The Element comes first, the Target last. That's how runes speak. |
+| `first_scroll` | Ai păstrat vraja pe pergament. Folosește-o când ai nevoie. | You kept the spell on a scroll. Use it when you need it. |
+| `first_two_actions` | Două Acțiuni. Te dai mare. Îmi place. | Two Actions. Showing off. I like it. |
 | `first_shop_1 (oprit)` | Bună seara, puiule. Aici cumperi ce te ține în viață la examen. | Good evening, dear. Here you buy what keeps you alive in the exam. |
 | `first_shop_2 (oprit)` | Talismanele lucrează singure, de la stânga la dreapta. Ai cinci locuri. | Talismans work on their own, from left to right. You have five slots. |
 | `first_shop_3 (oprit)` | Lecțiile cresc un Cuvânt. Gravurile schimbă pietrele. Săculețele… surpriză. | Lessons raise a Word. Engravings change stones. Bags… a surprise. |
@@ -402,7 +405,7 @@
 | `word_card_values` | Putere {power} × Rezonanță {res} | Power {power} × Resonance {res} |
 | `pause_rune_book` | Cartea de rune | Book of Runes |
 | `rune_book_title` | Cartea de rune | Book of Runes |
-| `rune_book_hint` | Cele 24 de rune, cu sensul și Glasul lor · Vrăjile pe care le-ai descoperit | The 24 runes with their meaning and Voice · the Spells you have discovered |
+| `rune_book_hint` | Cele 24 de rune, cu sensul, rolul și Glasul lor · Tabla Vrăjilor | The 24 runes with their meaning, role and Voice · the Table of Spells |
 | `rune_book_position` | Poziția {n} · Putere {power} | Position {n} · Power {power} |
 | `rune_book_spells` | Vrăjile · {n} din {total} descoperite | Spells · {n} of {total} discovered |
 | `rune_book_close` | Închide | Close |
@@ -412,7 +415,45 @@
 | `spell_wrong_order` | Ordinea e greșită: Elementul vine primul. | Wrong order: the Element comes first. |
 | `spell_interrupted` | Propoziția e întreruptă: între Element și Țintă încap cel mult două Acțiuni. | The sentence is broken: at most two Actions fit between the Element and the Target. |
 | `float_set_res` | Rez. = {n} | Res. = {n} |
-| `action_learned` | Ai învățat: {phrase} | You learned: {phrase} |
 | `spell_scroll_kept` | {name} așteaptă pe Pergament. | {name} waits on a Scroll. |
 | `spell_fizzled` | {name}: n-a mers de data asta. | {name}: no luck this time. |
-| `rune_book_spells_left` | Încă {n} vrăji așteaptă să fie descoperite. | {n} more spells wait to be discovered. |
+| `action_learned_title` | Ai învățat | You learned |
+| `sentence_unknown` | ??? | ??? |
+| `sentence_spell` | {name}: {effect} | {name}: {effect} |
+| `sentence_repeats` | (de {n} ori) | ({n} times) |
+| `sentence_ignored` | „{phrase}” nu schimbă nimic aici | “{phrase}” changes nothing here |
+| `sentence_dormant` | se trezește mai târziu | wakes up later |
+| `sentence_incomplete` | propoziție neterminată | unfinished sentence |
+| `role_element` | Element | Element |
+| `role_action` | Acțiune | Action |
+| `role_target` | Țintă | Target |
+| `card_role` | {role} — {phrase} | {role} — {phrase} |
+| `scroll_empty` | Pergament | Scroll |
+| `scroll_title` | Pergamentul | The Scroll |
+| `scroll_use` | apasă ca s-o pregătești | click to make it ready |
+| `scroll_armed` | pleacă la următoarea Rostire | goes with the next Cast |
+| `scroll_card_empty` | Gol. Pune Gebo („se dăruiește”) într-o propoziție și vraja ei așteaptă aici până o folosești. | Empty. Put Gebo (“gives itself”) in a sentence and its spell waits here until you use it. |
+| `scroll_card_use` | Apasă pe Pergament: vraja se întâmplă odată cu următoarea Rostire. | Click the Scroll: the spell happens together with the next Cast. |
+| `scroll_card_armed` | Pregătit: se întâmplă odată cu următoarea Rostire. Apasă din nou ca să-l păstrezi. | Ready: it happens together with the next Cast. Click again to keep it. |
+| `scroll_happened` | Din Pergament · {name}: {effect} | From the Scroll · {name}: {effect} |
+| `choice_title` | Alege | Choose |
+| `choice_price` | Naudiz cere un preț. Ce dai? | Naudiz asks a price. What do you give? |
+| `choice_pay_cast` | {n} Rostire | {n} Cast |
+| `choice_pay_money` | {n} Monede | {n} Coins |
+| `choice_break_chosen_money` | Alege din mână piatra care se sparge. Iese definitiv din săculeț și dă +{amount} Monede. | Pick the stone in your hand that breaks. It leaves the bag for good and gives +{amount} Coins. |
+| `choice_remove_chosen` | Alege din mână până la {n} pietre. Ies definitiv din săculeț. | Pick up to {n} stones in your hand. They leave the bag for good. |
+| `choice_change_kin_chosen` | Alege din mână până la {n} pietre, apoi Neamul în care trec. | Pick up to {n} stones in your hand, then the Kin they move to. |
+| `choice_reorder_bag_top` | Primele pietre din săculeț. Apasă-le în ordinea în care vrei să le tragi. | The top stones of the bag. Click them in the order you want to draw them. |
+| `choice_copy_chosen_to_bag` | Alege o piatră din mână: {n} copii ale ei intră în săculeț. | Pick a stone in your hand: {n} copies of it go into the bag. |
+| `choice_free_swap_chosen` | Alege din mână până la {n} pietre de schimbat, gratis. | Pick up to {n} stones in your hand to swap, for free. |
+| `choice_draw_keep` | Păstrează una dintre pietre. Celelalte se întorc în săculeț. | Keep one of the stones. The others go back into the bag. |
+| `choice_discard_chosen` | Alege din mână {n} pietre de aruncat. | Pick {n} stones in your hand to throw away. |
+| `choice_put_back` | Ai tras pietre în plus. Alege {n} de pus înapoi în săculeț. | You drew extra stones. Pick {n} to put back into the bag. |
+| `choice_confirm` | Gata | Done |
+| `choice_keep_order` | Lasă așa | Leave them |
+| `choice_picked` | Alese: {n} din {max} | Picked: {n} of {max} |
+| `rune_book_tab_runes` | Runele | The runes |
+| `rune_book_tab_spells` | Tabla Vrăjilor | Table of Spells |
+| `rune_book_table_corner` | Elementul sus, Ținta în stânga | Element on top, Target on the left |
+| `rune_book_actions` | Acțiunile | The Actions |
+| `rune_book_action_unknown` | Încă n-ai folosit-o. Pune-o între Element și Țintă. | Not used yet. Put it between an Element and a Target. |

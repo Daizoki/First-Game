@@ -1,6 +1,6 @@
 extends PanelContainer
 ## The card shown while the mouse is over a stone: the rune, its historical meaning, its
-## Position and Kin, its Power and its Voice. Later also the material and bind-runes.
+## Position and Kin, its role in the rune grammar, its Power and its Voice. Later also the material and bind-runes.
 
 const Stone = preload("res://scripts/core/stone.gd")
 const RuneGlyphScript = preload("res://scripts/ui/rune_glyph.gd")
@@ -12,9 +12,13 @@ const MARGIN: float = 16.0
 var _glyph: RuneGlyphScript
 var _name: Label
 var _kin: Label
+var _role: Label
 var _meaning: Label
 var _power: Label
 var _voice: Label
+## The role line (off while the rune grammar is not taught yet).
+var show_role: bool = true
+
 var _stone: Stone = null
 var _anchor: Control = null
 
@@ -37,6 +41,7 @@ func _ready() -> void:
 	head.add_child(titles)
 	_name = _label(titles, 38, &"TitleLabel")
 	_kin = _label(titles, 24, &"")
+	_role = _label(box, 25, &"")
 	_meaning = _label(box, 25, &"")
 	_power = _label(box, 25, &"SecondaryLabel")
 	_voice = _label(box, 25, &"")
@@ -58,6 +63,9 @@ func show_stone(stone: Stone, anchor: Control) -> void:
 	_name.text = Loc.text(rune.get("name", {}))
 	_kin.text = Loc.t("card_position_kin", {"n": stone.position, "kin": Loc.text(kin.get("name", {}))})
 	_kin.add_theme_color_override("font_color", GameData.kin_color(stone.kin))
+	_role.text = Loc.t("card_role", {"role": Loc.t("role_" + str(rune.get("role", ""))),
+		"phrase": Loc.text(rune.get("phrase", {}))})
+	_role.visible = show_role and rune.has("role")
 	_meaning.text = Loc.t("card_meaning", {"meaning": Loc.text(rune.get("meaning", {}))})
 	_power.text = Loc.t("card_power", {"n": stone.base_power + stone.bonus_power})
 	_voice.text = Loc.t("card_voice", {"voice": Loc.text(rune.get("voice", {}))})

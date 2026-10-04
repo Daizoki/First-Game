@@ -23,6 +23,16 @@ signal swap(count: int)
 signal scoring_phase(phase: String, rune_id: String, detail: String)
 ## A Spell was cast (every time, after its reveal or toast).
 signal spell_cast(spell_id: String)
+## The same, with the Actions of its sentence (rune ids, in order).
+signal spell_sentence_cast(spell_id: String, actions: Array)
+## The selection reads a sentence of the rune grammar: its SentenceParser status ("spell",
+## "incomplete", "wrong_order" …), the spell ("" if none) and how many Actions it has.
+signal sentence_read(status: String, spell_id: String, action_count: int)
+## Gebo kept a spell on the Scroll.
+signal scroll_gained(spell_id: String)
+## Something covers the whole game for a moment (the spell reveal).
+signal overlay_opened(overlay_id: String)
+signal overlay_closed(overlay_id: String)
 ## A Spell was cast for the first time ever.
 signal spell_discovered(spell_id: String)
 signal round_won

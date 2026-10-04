@@ -54,6 +54,15 @@ func _ready() -> void:
 		_idle = 0.0)
 	EventBus.book_opened.connect(func(_book: String) -> void: _cover(1))
 	EventBus.book_closed.connect(func(_book: String) -> void: _cover(-1))
+	EventBus.sentence_read.connect(func(status: String, _spell: String, _actions: int) -> void:
+		if status == "wrong_order":
+			fire("wrong_order"))
+	EventBus.scroll_gained.connect(func(spell_id: String) -> void: fire("scroll_gained", {"spell": spell_id}))
+	EventBus.spell_sentence_cast.connect(func(spell_id: String, actions: Array) -> void:
+		if actions.size() >= 2:
+			fire("two_actions", {"spell": spell_id}))
+	EventBus.overlay_opened.connect(func(_overlay: String) -> void: _cover(1))
+	EventBus.overlay_closed.connect(func(_overlay: String) -> void: _cover(-1))
 	EventBus.pause_opened.connect(func() -> void: _cover(1))
 	EventBus.pause_closed.connect(func() -> void: _cover(-1))
 

@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=19 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/round_screen.gd" id="1_round"]
 [ext_resource type="Script" path="res://scripts/ui/night_backdrop.gd" id="2_backdrop"]
@@ -12,6 +12,10 @@
 [ext_resource type="Script" path="res://scripts/ui/classroom_backdrop.gd" id="10_classroom"]
 [ext_resource type="Script" path="res://scripts/ui/word_book.gd" id="11_word_book"]
 [ext_resource type="Script" path="res://scripts/ui/rune_book.gd" id="12_rune_book"]
+[ext_resource type="Script" path="res://scripts/ui/sentence_bar.gd" id="13_sentence"]
+[ext_resource type="Script" path="res://scripts/ui/scroll_slot.gd" id="14_scroll"]
+[ext_resource type="Script" path="res://scripts/ui/choice_panel.gd" id="15_choice"]
+[ext_resource type="Script" path="res://scripts/ui/action_learned.gd" id="16_action"]
 
 [sub_resource type="StyleBoxFlat" id="bar_bg"]
 bg_color = Color(0.0588235, 0.0509804, 0.109804, 1)
@@ -353,10 +357,10 @@ metadata/tutorial_id = "target"
 [node name="RuneCircle" type="Control" parent="."]
 unique_name_in_owner = true
 layout_mode = 1
-offset_left = 725.0
-offset_top = 248.0
-offset_right = 1195.0
-offset_bottom = 718.0
+offset_left = 740.0
+offset_top = 246.0
+offset_right = 1180.0
+offset_bottom = 686.0
 metadata/tutorial_id = "circle"
 script = ExtResource("5_circle")
 
@@ -407,14 +411,6 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 40
 text = ""
 horizontal_alignment = 1
-
-[node name="SpellLine" type="Label" parent="RuneCircle/CircleText"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = ""
-horizontal_alignment = 1
-autowrap_mode = 3
 
 [node name="WordBookButton" type="Button" parent="."]
 unique_name_in_owner = true
@@ -483,6 +479,25 @@ offset_bottom = 1080.0
 metadata/tutorial_id = "hand"
 script = ExtResource("7_hand")
 
+[node name="SentenceBar" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+offset_left = 360.0
+offset_top = 690.0
+offset_right = 1560.0
+offset_bottom = 794.0
+mouse_filter = 2
+script = ExtResource("13_sentence")
+
+[node name="ScrollSlot" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+offset_left = 1650.0
+offset_top = 690.0
+offset_right = 1890.0
+offset_bottom = 802.0
+script = ExtResource("14_scroll")
+
 [node name="Actions" type="VBoxContainer" parent="."]
 layout_mode = 1
 offset_left = 1640.0
@@ -531,6 +546,27 @@ theme_override_colors/font_outline_color = Color(0.0196078, 0.0235294, 0.0392157
 theme_override_constants/outline_size = 10
 text = "toast"
 horizontal_alignment = 1
+
+[node name="ActionLearned" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("16_action")
+
+[node name="ChoicePanel" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+offset_left = 580.0
+offset_top = 400.0
+offset_right = 1340.0
+offset_bottom = 680.0
+visible = false
+script = ExtResource("15_choice")
 
 [node name="SpellReveal" parent="." instance=ExtResource("9_reveal")]
 unique_name_in_owner = true

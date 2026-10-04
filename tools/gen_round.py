@@ -39,7 +39,9 @@ ext=[("Script","res://scripts/ui/round_screen.gd","1_round"),("Script","res://sc
      ("Script","res://scripts/ui/hand_view.gd","7_hand"),("Script","res://scripts/ui/float_layer.gd","8_float"),
      ("PackedScene","res://scenes/spell_reveal.tscn","9_reveal"),("Script","res://scripts/ui/classroom_backdrop.gd","10_classroom"),
      ("Script","res://scripts/ui/word_book.gd","11_word_book"),
-     ("Script","res://scripts/ui/rune_book.gd","12_rune_book")]
+     ("Script","res://scripts/ui/rune_book.gd","12_rune_book"),
+     ("Script","res://scripts/ui/sentence_bar.gd","13_sentence"),("Script","res://scripts/ui/scroll_slot.gd","14_scroll"),
+     ("Script","res://scripts/ui/choice_panel.gd","15_choice"),("Script","res://scripts/ui/action_learned.gd","16_action")]
 subs='''[sub_resource type="StyleBoxFlat" id="bar_bg"]
 bg_color = Color(0.0588235, 0.0509804, 0.109804, 1)
 border_width_left = 3
@@ -114,13 +116,12 @@ out.append(label("RuleText","ExaminerCard/CardRow/CardText/RuleBox","regula",20,
 out.append(label("TargetLabel","ExaminerCard/CardRow/CardText","Ținta",30,color="Color(1, 0.701961, 0.278431, 1)",extra={"metadata/tutorial_id":'"target"'}))
 
 # --- center: rune circle
-out.append(node("RuneCircle","Control",".",tid(rect(725,248,470,470),"circle"),unique=True,script="5_circle"))
+out.append(node("RuneCircle","Control",".",tid(rect(740,246,440,440),"circle"),unique=True,script="5_circle"))
 out.append(node("CircleText","VBoxContainer","RuneCircle",{"layout_mode":"1","anchors_preset":"8","anchor_left":"0.5","anchor_top":"0.5","anchor_right":"0.5","anchor_bottom":"0.5","offset_left":"-150.0","offset_top":"-120.0","offset_right":"150.0","offset_bottom":"120.0","grow_horizontal":"2","grow_vertical":"2","mouse_filter":"2","alignment":"1","theme_override_constants/separation":"2"}))
 out.append(label("WordName","RuneCircle/CircleText","Alege",44,"TitleLabel",align=1))
 out.append(label("WordLevel","RuneCircle/CircleText","",20,"SecondaryLabel",align=1))
 out.append(label("ScoringCount","RuneCircle/CircleText","",22,"SecondaryLabel",align=1))
 out.append(label("PreviewValue","RuneCircle/CircleText","",40,align=1))
-out.append(label("SpellLine","RuneCircle/CircleText","",22,align=1,extra={"autowrap_mode":"3"}))
 
 out.append(node("WordBookButton","Button",".",dict(tid(rect(1222,486,200,60),"btn_word_book"),**{"theme_override_font_sizes/font_size":"26","text":'"Cuvinte"'}),unique=True))
 
@@ -133,6 +134,8 @@ out.append(node("KenazStones","HBoxContainer","KenazPanel",{"layout_mode":"2","a
 
 # --- bottom: hand and actions
 out.append(node("Hand","Control",".",tid(rect(310,690,1310,390),"hand"),unique=True,script="7_hand"))
+out.append(node("SentenceBar","Control",".",dict(rect(360,690,1200,104),mouse_filter="2"),unique=True,script="13_sentence"))
+out.append(node("ScrollSlot","Control",".",rect(1650,690,240,112),unique=True,script="14_scroll"))
 out.append(node("Actions","VBoxContainer",".",dict(rect(1640,818,250,222),**{"theme_override_constants/separation":"14","alignment":"2"})))
 out.append(node("CastButton","Button","Actions",{"custom_minimum_size":"Vector2(250, 110)","layout_mode":"2","theme_type_variation":'&"CastButton"',"text":'"Rostește"',"metadata/tutorial_id":'"btn_cast"'},unique=True))
 out.append(node("SwapButton","Button","Actions",{"custom_minimum_size":"Vector2(250, 64)","layout_mode":"2","text":'"Schimbă"',"metadata/tutorial_id":'"btn_swap"'},unique=True))
@@ -140,6 +143,8 @@ out.append(node("SwapButton","Button","Actions",{"custom_minimum_size":"Vector2(
 # --- overlays
 out.append(node("FloatLayer","Control",".",dict(FULL,mouse_filter="2"),unique=True,script="8_float"))
 out.append(node("Toast","Label",".",dict(rect(460,722,1000,56),**{"theme_override_font_sizes/font_size":"34","theme_override_colors/font_color":"Color(1, 0.701961, 0.278431, 1)","theme_override_colors/font_outline_color":"Color(0.0196078, 0.0235294, 0.0392157, 1)","theme_override_constants/outline_size":"10","text":'"toast"',"horizontal_alignment":"1"}),unique=True))
+out.append(node("ActionLearned","Control",".",dict(FULL,mouse_filter="2"),unique=True,script="16_action"))
+out.append(node("ChoicePanel","PanelContainer",".",dict(rect(580,400,760,280),visible="false"),unique=True,script="15_choice"))
 out.append(node("SpellReveal",None,".",FULL,unique=True,instance="9_reveal"))
 out.append(node("ResultPanel","PanelContainer",".",{"visible":"false","layout_mode":"1","anchors_preset":"8","anchor_left":"0.5","anchor_top":"0.5","anchor_right":"0.5","anchor_bottom":"0.5","offset_left":"-400.0","offset_top":"-210.0","offset_right":"400.0","offset_bottom":"210.0","grow_horizontal":"2","grow_vertical":"2"},unique=True))
 out.append(node("ResultBox","VBoxContainer","ResultPanel",{"layout_mode":"2","alignment":"1","theme_override_constants/separation":"16"}))

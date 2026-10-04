@@ -203,3 +203,66 @@ func _has_mul_res(result: Dictionary) -> bool:
 		if event["type"] == "bonus" and event["kind"] == "mul_res":
 			return true
 	return false
+
+
+func test_every_pick_says_what_it_takes() -> void:
+	var expected: Dictionary = {
+		"hagalaz_fehu": {"source": "hand", "min": 1, "max": 1},
+		"hagalaz_othala": {"source": "hand", "min": 0, "max": 2},
+		"laguz_othala": {"source": "hand", "min": 0, "max": 2, "kin": true},
+		"thurisaz_mannaz": {"source": "hand", "min": 2, "max": 2},
+		"sowilo_othala": {"source": "bag_top", "count": 5},
+		"sowilo_mannaz": {"source": "offer"},
+	}
+	for spell_id: String in expected:
+		var state: RoundState = _round()
+		var parts: PackedStringArray = spell_id.split("_")
+		_cast(state, [parts[0], parts[1]])
+		var limits: Dictionary = state.pick_limits(state.current_choice())
+		for key: String in expected[spell_id]:
+			check_eq(limits.get(key), expected[spell_id][key], "%s %s:" % [spell_id, key])
+	var price: RoundState = _round()
+	_cast(price, ["uruz", "naudiz", "fehu"])
+	check_eq(price.pick_limits(price.current_choice())["source"], "option", "a price is two buttons:")
+
+
+func test_a_skipped_pick_gives_the_drawn_stones_back() -> void:
+	var state: RoundState = _round()
+	_cast(state, ["sowilo", "mannaz"])
+	var in_pile: int = state.bag.remaining()
+	check_eq(state.offer.size(), 3, "three stones drawn:")
+	state.skip_choice()
+	check(state.pending.is_empty(), "no pick left")
+	check(state.offer.is_empty(), "no offer left")
+	check_eq(state.bag.remaining(), in_pile + 3, "they went back into the bag:")
+
+
+func test_the_scroll_can_be_put_away_again() -> void:
+	var state: RoundState = _round()
+	_cast(state, ["uruz", "gebo", "fehu"])
+	check(state.use_scroll() and state.scroll_armed(), "ready")
+	state.disarm_scroll()
+	check(not state.scroll_armed(), "put away")
+	_cast(state, ["isaz"])
+	check_eq(state.money, 0, "nothing happened with this Cast:")
+	check(state.has_scroll(), "still on the Scroll")
+
+
+func test_the_preview_reads_the_actions_without_rolling() -> void:
+	var state: RoundState = _round()
+	var before: int = state.rng.randi()
+	var again: RoundState = _round()
+	_put(again, ["uruz", "perthro", "fehu"])
+	var preview: Dictionary = again.preview([0, 1, 2])
+	check_eq(preview["plan"]["fizzled"], false, "no roll in a preview:")
+	check_eq(again.rng.randi(), before, "the exam's dice were not touched:")
+	_put(again, ["isaz", "raidho", "othala"])
+	check_eq(again.preview([0, 1, 2])["plan"]["ignored"], ["raidho"] as Array[String], "the preview tells what does nothing:")
+	_put(again, ["uruz", "naudiz", "fehu"])
+	check_eq(again.preview([0, 1, 2])["plan"]["scale"], 2.5, "the price's strength:")
+
+
+func _put(state: RoundState, ids: Array) -> void:
+	var stones: Array[Stone] = Fixtures.stones(ids)
+	stones.append_array(state.hand.slice(0, maxi(0, state.hand.size() - stones.size())))
+	state.hand = stones

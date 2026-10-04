@@ -20,6 +20,10 @@ var enabled: bool = true
 var max_selection: int = 5
 ## Optional filter: func(stone) -> bool. Stones it rejects cannot be selected.
 var can_select: Callable = Callable()
+## Numbers on the selected stones (the casting order of the rune grammar).
+var show_order: bool = true: set = set_show_order
+## Role signs on the stones.
+var show_roles: bool = true: set = set_show_roles
 
 var _views: Array[StoneView] = []
 ## Selected stones in the order they were picked (the casting order of the spell grammar).
@@ -34,6 +38,17 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 
+func set_show_order(value: bool) -> void:
+	show_order = value
+	_renumber()
+
+
+func set_show_roles(value: bool) -> void:
+	show_roles = value
+	for view: StoneView in _views:
+		view.show_role = value
+
+
 ## Shows these stones in this order. Views of stones still in hand are kept (and slide).
 func set_stones(stones: Array[Stone]) -> void:
 	var by_uid: Dictionary = {}
@@ -45,6 +60,7 @@ func set_stones(stones: Array[Stone]) -> void:
 		if view == null:
 			view = StoneView.new()
 			view.setup(stone)
+			view.show_role = show_roles
 			add_child(view)
 			# New stones rise from below the screen.
 			view.position = Vector2(size.x * 0.5 - view.size.x * 0.5, size.y + 40.0)
@@ -57,6 +73,7 @@ func set_stones(stones: Array[Stone]) -> void:
 	_views = next
 	for i: int in _views.size():
 		move_child(_views[i], i)
+	_renumber()
 
 
 ## The selected stones' hand indices in the order they were selected (the casting order).
@@ -76,6 +93,7 @@ func clear_selection() -> void:
 	_selection_order.clear()
 	for view: StoneView in _views:
 		view.selected = false
+	_renumber()
 	selection_changed.emit()
 
 
@@ -173,7 +191,21 @@ func _toggle(view: StoneView) -> void:
 	_selection_order.erase(view)
 	if view.selected:
 		_selection_order.append(view)
+	_renumber()
 	selection_changed.emit()
+
+
+## Numbers the selected stones 1, 2, 3… in the order they were picked.
+func _renumber() -> void:
+	for view: StoneView in _views:
+		view.order = 0
+	if not show_order:
+		return
+	var n: int = 0
+	for view: StoneView in _selection_order:
+		if is_instance_valid(view) and view.selected:
+			n += 1
+			view.order = n
 
 
 func _finish_drag(at: Vector2) -> void:

@@ -158,8 +158,11 @@ func preview(selection: Array[int]) -> Dictionary:
 		scoring_hand.append(indices[i])
 	var sentence: Dictionary = _parse(selected)
 	var spells: Array[String] = []
+	var plan: Dictionary = {}
 	if str(sentence.get("status", "")) == SentenceParser.SPELL:
 		spells.append(sentence["spell"])
+		plan = SpellResolver.make_plan(sentence, _data["spells"], _data["spell_actions"],
+			int((carry["spell_counts"] as Dictionary).get(sentence["spell"], 0)), null)
 	return {
 		"word": word["word"],
 		"scoring": scoring_hand,
@@ -167,6 +170,7 @@ func preview(selection: Array[int]) -> Dictionary:
 		"res": float(word_data["base_res"]) + float(word_data["level_res"]) * (level - 1),
 		"sentence": sentence,
 		"spells": spells,
+		"plan": plan,
 	}
 
 
@@ -392,6 +396,47 @@ func current_choice() -> Dictionary:
 	return pending[0] if not pending.is_empty() else {}
 
 
+## What the current kind of pick takes, for the screen that asks it:
+##   {"source": "option"} (price), {"source": "hand", "min", "max", "kin": bool},
+##   {"source": "bag_top", "count"} (reorder), {"source": "offer"} (draw_keep).
+func pick_limits(choice: Dictionary) -> Dictionary:
+	var count: int = int(choice.get("count", choice.get("cost", 1)))
+	match str(choice.get("kind", "")):
+		"price":
+			return {"source": "option"}
+		"break_chosen_money", "discard_chosen", "put_back":
+			var exact: int = mini(count, hand.size())
+			return {"source": "hand", "min": exact, "max": exact, "kin": false}
+		"copy_chosen_to_bag":
+			var one: int = mini(1, hand.size())
+			return {"source": "hand", "min": one, "max": one, "kin": false}
+		"remove_chosen", "free_swap_chosen":
+			return {"source": "hand", "min": 0, "max": count, "kin": false}
+		"change_kin_chosen":
+			return {"source": "hand", "min": 0, "max": count, "kin": true}
+		"reorder_bag_top":
+			return {"source": "bag_top", "count": bag.peek(count).size()}
+		"draw_keep":
+			return {"source": "offer"}
+	return {}
+
+
+## The kins a stone can be moved to (Water into the Bag).
+func kin_choices() -> Array[String]:
+	return _kins()
+
+
+## Drops the current pick without its effect (nothing fits any more); drawn stones go back.
+func skip_choice() -> void:
+	if pending.is_empty():
+		return
+	for stone: Stone in offer:
+		bag.put_back(stone)
+	offer.clear()
+	pending.pop_front()
+	refill()
+
+
 ## Answers the current pick. Returns false (and changes nothing) if the answer does not fit.
 func answer(reply: Dictionary) -> bool:
 	var choice: Dictionary = current_choice()
@@ -516,8 +561,7 @@ func answer_all_automatically() -> void:
 	var guard: int = 0
 	while not pending.is_empty() and guard < 100:
 		if not answer(auto_answer()):
-			pending.pop_front()
-			offer.clear()
+			skip_choice()
 		guard += 1
 
 
@@ -538,6 +582,15 @@ func use_scroll() -> bool:
 		return false
 	carry["scroll_armed"] = true
 	return true
+
+
+## Puts the Scroll back to waiting (it will not happen with the next Cast).
+func disarm_scroll() -> void:
+	carry["scroll_armed"] = false
+
+
+func scroll_armed() -> bool:
+	return bool(carry["scroll_armed"]) and has_scroll()
 
 
 func _cast_order(selection: Array[int]) -> Array[int]:

@@ -14,6 +14,27 @@
 		"text": {"ro": "Nu știi ce să faci? Ține mouse-ul pe pietre sau deschide Cartea Cuvintelor.", "en": "Not sure what to do? Hover over the stones or open the Book of Words."}
 	},
 	{
+		"id": "first_wrong_order",
+		"enabled": true,
+		"speaker": "ilinca",
+		"trigger": {"event": "wrong_order"},
+		"text": {"ro": "Elementul vine primul, Ținta la urmă. Așa vorbesc runele.", "en": "The Element comes first, the Target last. That's how runes speak."}
+	},
+	{
+		"id": "first_scroll",
+		"enabled": true,
+		"speaker": "ilinca",
+		"trigger": {"event": "scroll_gained"},
+		"text": {"ro": "Ai păstrat vraja pe pergament. Folosește-o când ai nevoie.", "en": "You kept the spell on a scroll. Use it when you need it."}
+	},
+	{
+		"id": "first_two_actions",
+		"enabled": true,
+		"speaker": "ilinca",
+		"trigger": {"event": "two_actions"},
+		"text": {"ro": "Două Acțiuni. Te dai mare. Îmi place.", "en": "Two Actions. Showing off. I like it."}
+	},
+	{
 		"id": "first_shop_1",
 		"enabled": false,
 		"speaker": "vera",

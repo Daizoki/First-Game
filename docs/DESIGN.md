@@ -518,4 +518,46 @@ Un efect = **declanșator** + **condiții** + **acțiuni**.
     Până la Pasul B, ecranul de rundă le răspunde singur, cu o regulă simplă: sparge sau aruncă pietrele cele mai slabe,
     copiază-o pe cea mai puternică, plătește în Monede dacă ai.
   - Vrăjile spre Talismane și Examinator se citesc deja ca propoziții, dar „dorm” (`enabled: false`) până în Etapa 3.
+- **Etapa 2b, pasul B — Gramatica runelor: interfața (propuneri de verificat de Relax):**
+  - **Semnul rolului** e desenat din cod (`scripts/ui/role_sign.gd`) în colțul din dreapta sus al pietrei, în culoarea
+    os: triunghi plin (Element), săgeată (Acțiune), cerc cu punct (Țintă). Apare și pe pietrele mici din Cartea de rune
+    și din panoul de alegeri. În Lecțiile 1–3 (vrăjile oprite) pietrele n-au semn și nici numere de ordine.
+  - **Numărul de ordine** e un disc os, sus pe mijlocul pietrei selectate. Deselectezi o piatră → celelalte se
+    renumerotează. Sortarea golește selecția (ca înainte).
+  - **Propoziția** (`scripts/ui/sentence_bar.gd`) stă sub cerc. Fiecare cuvânt e un locaș cu runa, semnul rolului și
+    fraza, cu săgeți între ele. Cât timp lipsește Ținta, ultimul locaș e gol („…”). Dedesubt apare unul din mesaje:
+    - „???”, pentru o vrajă nedescoperită;
+    - numele și efectul, pentru una descoperită, cu valorile schimbate de Acțiuni (Perthro nu se aruncă în
+      previzualizare, iar „de 2 ori” pentru Ehwaz e scris separat);
+    - „propoziție neterminată”, „Ordinea e greșită…” sau „Propoziția e întreruptă…”;
+    - „„se întinde” nu schimbă nimic aici”, pentru o Acțiune fără efect.
+  - Ca să încapă propoziția între cerc și mână, **cercul e puțin mai mic** (470 → 440 px). Textul vrăjii nu mai stă în
+    cerc. Mesajele scurte (Toast) apar în locul propoziției, care se golește la Rostire.
+  - **Alegerile au panoul lor** (`scripts/ui/choice_panel.gd`), deasupra mâinii, cu numele vrăjii în culoarea ei:
+    - pietrele din mână le alegi chiar în mână (fără numere de ordine), iar „Gata” se aprinde când numărul e corect;
+    - la Înfierea alegi și Neamul;
+    - prețul lui Naudiz are două butoane („1 Rostire” / „4 Monede”; al doilea e stins dacă n-ai bani);
+    - Prevestirea arată primele 5 pietre din săculeț, pe care le apeși în ordinea dorită; „Lasă așa” le păstrează
+      ordinea;
+    - Alegerea arată cele 3 pietre trase: apeși una.
+    Într-un pas de instruire care nu te lasă să selectezi, runda răspunde singură, ca înainte.
+  - **Pergamentul** (`scripts/ui/scroll_slot.gd`) stă deasupra butoanelor Rostește/Schimbă:
+    - gol, e un contur punctat;
+    - plin, e un pergament cu numele vrăjii;
+    - un clic îl pregătește (strălucește: „pleacă la următoarea Rostire”), al doilea clic îl pune la loc.
+    Are fișă la mouse cu efectul. Când se folosește, un mesaj spune „Din Pergament · Târgul: +4 Monede”.
+  - **Animația mică pentru o Acțiune nouă** (`scripts/ui/action_learned.gd`): runa apare peste cerc într-un inel care
+    se deschide, cu „Ai învățat · aleargă de două ori” și ce face Acțiunea. Pleacă singură după ~3 secunde și nu
+    blochează jocul.
+  - **Cartea de rune** are două file: „Runele” (cu rolul fiecărei rune) și **„Tabla Vrăjilor”**. Tabla e o grilă
+    8 × 8: Elementele pe coloane, Țintele pe rânduri, în ordinea din `GRAMATICA.md`.
+    - O căsuță descoperită arată numele în culoarea vrăjii; cea nedescoperită arată „?”.
+    - Vrăjile spre Talismane și Examinator sunt estompate („·”) până în Etapa 3.
+    - Fișa la mouse a fiecărei căsuțe arată propoziția și, dacă vraja e descoperită, efectul.
+    - Dedesubt sunt cele 8 Acțiuni: fraza, plus ce face Acțiunea dacă ai folosit-o, altfel un îndemn.
+    - Numărul de sus („3 din 48”) numără doar vrăjile active.
+  - Fișa pietrei are rândul „Element — Gheața” (sau Acțiune / Țintă).
+  - Indiciile nu mai apar peste animația mare de descoperire. EventBus are acum `overlay_opened`/`overlay_closed`, iar
+    indiciile se ascund cât e ceva peste joc.
+  - Lecția 4: pașii 4 și 7 luminează propoziția de sub cerc (`sentence`), nu cercul.
 

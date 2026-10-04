@@ -59,14 +59,15 @@ const ENUMS: Dictionary = {
 	## plus "stone:<rune_id>" for a stone in hand.
 	"ui_id": [
 		"hand", "circle", "btn_cast", "btn_swap", "target", "score", "candles", "chalk", "power_res",
-		"examiner", "btn_word_book", "btn_menu", "sort", "kenaz", "btn_rune_book",
+		"examiner", "btn_word_book", "btn_menu", "sort", "kenaz", "btn_rune_book", "sentence", "scroll", "choice",
 	],
 	## What can show a contextual hint (data/hints.json). Events of later stages are listed
 	## already so their hints can wait with "enabled": false.
 	"hint_event": [
 		"rune_in_hand", "idle", "shop_opened", "reroll_available", "talisman_bought", "examiner_met",
 		"lesson_gained", "engraving_gained", "bindrune_gained", "exam_failed", "evening_class",
-		"torn_page_found", "curse_discovered", "old_word_discovered",
+		"torn_page_found", "curse_discovered", "old_word_discovered", "wrong_order", "scroll_gained",
+		"two_actions",
 	],
 }
 

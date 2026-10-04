@@ -489,7 +489,7 @@
 						"en": "Read under the circle: “Ice on the Target”. What does it do? You won't know until you cast it."
 					},
 					"spotlight": [
-						"circle"
+						"sentence"
 					]
 				},
 				{
@@ -543,7 +543,7 @@
 						"en": "Same runes, different order: nothing. Order matters."
 					},
 					"spotlight": [
-						"circle"
+						"sentence"
 					]
 				},
 				{

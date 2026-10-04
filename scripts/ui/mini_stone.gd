@@ -3,6 +3,7 @@ extends Control
 ## its kin color and the Position in the corner. "blank" shows an empty stone with "?".
 
 const RuneGlyphScript = preload("res://scripts/ui/rune_glyph.gd")
+const RoleSign = preload("res://scripts/ui/role_sign.gd")
 
 const SIZE: Vector2 = Vector2(46, 58)
 const INK: Color = Color("#05060a")
@@ -11,6 +12,8 @@ const BONE: Color = Color("#e9e3d2")
 
 var rune_id: String = ""
 var blank: bool = false
+## The role sign of the rune grammar in the top-right corner.
+var show_role: bool = false
 
 
 func _ready() -> void:
@@ -36,3 +39,5 @@ func _draw() -> void:
 	RuneGlyphScript.draw_segments(self, rune.get("segments", []), glyph_box, 5.0, Color(color, 0.35))
 	RuneGlyphScript.draw_segments(self, rune.get("segments", []), glyph_box, 2.5, color)
 	draw_string(font, Vector2(8, 19), str(rune.get("position", "")), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, BONE)
+	if show_role:
+		RoleSign.draw(self, str(rune.get("role", "")), Vector2(SIZE.x - 12.0, 13.0), 5.0)

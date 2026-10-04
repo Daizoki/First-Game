@@ -24,7 +24,8 @@ const CHOICE_OPS: Array[String] = [
 ]
 
 
-## What the sentence's Actions make of its spell. rng: the exam RNG (Perthro).
+## What the sentence's Actions make of its spell. rng: the exam RNG (Perthro); null for a
+## preview, where the gamble is not rolled (its scale stays as it is).
 static func make_plan(sentence: Dictionary, spells: Dictionary, actions_data: Dictionary,
 		times_cast_before: int, rng: RandomNumberGenerator) -> Dictionary:
 	var spell: Dictionary = spells[sentence["spell"]]
@@ -64,7 +65,9 @@ static func make_plan(sentence: Dictionary, spells: Dictionary, actions_data: Di
 				else:
 					useful = false
 			"gambles":
-				if numeric:
+				if numeric and rng == null:
+					pass
+				elif numeric:
 					if rng.randf() < float(action.get("chance", 0.5)):
 						plan["scale"] = float(plan["scale"]) * float(action.get("factor", 3))
 					else:
