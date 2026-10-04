@@ -266,3 +266,25 @@ func _put(state: RoundState, ids: Array) -> void:
 	var stones: Array[Stone] = Fixtures.stones(ids)
 	stones.append_array(state.hand.slice(0, maxi(0, state.hand.size() - stones.size())))
 	state.hand = stones
+
+
+func test_the_tide_draws_a_limited_number_of_extra_stones() -> void:
+	var carry: Dictionary = RoundState.new_carry()
+	carry["next_round"] = {"draw_extra": 40}
+	var state: RoundState = _round(1.0e9, carry)
+	var limit: int = int(Fixtures.data()["economy"]["spell_max_extra_draw"])
+	check_eq(state.hand.size(), state.hand_limit() + limit, "at most %d extra stones:" % limit)
+	check_eq(state.current_choice().get("kind"), "put_back", "then put the extra ones back:")
+	state.answer_all_automatically()
+	check_eq(state.hand.size(), state.hand_limit(), "back to a normal hand:")
+
+
+func test_the_storm_repeated_at_the_start_of_a_round_draws_a_new_hand() -> void:
+	# Eihwaz makes the Storm (Hagalaz → Mannaz) happen again when the next round starts.
+	var carry: Dictionary = RoundState.new_carry()
+	(carry["lasting"] as Array).append({"spell": "hagalaz_mannaz", "scale": 0.5, "repeats": 1, "spread": false,
+		"rounds_left": 2})
+	var state: RoundState = RoundState.new()
+	state.setup(Fixtures.data(), Fixtures.rng(4), 1.0e9, {"carry": carry})
+	state.start()
+	check_eq(state.hand.size(), state.hand_limit(), "a full hand after the Storm:")

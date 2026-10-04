@@ -8,5 +8,9 @@
 	"test_round_target": 1500,
 	"test_round_examiner": "ilinca",
 	"memories_per_spell": 5,
+	"memories_per_word": 3,
+	"memories_per_round": 1,
+	"memories_per_examiner": 3,
+	"memories_exam_passed": 15,
 	"scoring_speed": 1
 }

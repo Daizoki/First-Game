@@ -15,6 +15,11 @@ const STONE_FILL: Color = Color("#2c2840")
 const STONE_LIGHT: Color = Color("#3d3756")
 const BONE: Color = Color("#e9e3d2")
 const SELECT_LIFT: float = 46.0
+## How each material tints the stone (DESIGN 3.7).
+const MATERIAL_TINTS: Dictionary = {
+	"bone": Color("#d9d2bd"), "amber": Color("#e08a2e"), "gold": Color("#e8c547"), "iron": Color("#7d8494"),
+	"glass": Color("#9fe3ff"),
+}
 const HOVER_LIFT: float = 14.0
 
 var stone: Stone
@@ -34,6 +39,8 @@ var order: int = 0: set = set_order
 var show_role: bool = true
 
 var _glyph: RuneGlyphScript
+## The second rune of a bind-rune, smaller, under the first.
+var _bound_glyph: RuneGlyphScript = null
 var _outline: PackedVector2Array = []
 var _kin_color: Color = Color.WHITE
 var _time: float = 0.0
@@ -59,6 +66,30 @@ func setup(value: Stone) -> void:
 	_glyph.size = Vector2(STONE_SIZE.x * 0.6, STONE_SIZE.x * 0.6)
 	_glyph.rune_id = stone.rune_id
 	add_child(_glyph)
+	refresh_runes()
+
+
+## The stone's runes changed (an Engraving reshaped or bound it).
+func refresh_runes() -> void:
+	_glyph.rune_id = stone.rune_id
+	_kin_color = GameData.kin_color(stone.kin)
+	if stone.bound_rune.is_empty():
+		if _bound_glyph != null:
+			_bound_glyph.queue_free()
+			_bound_glyph = null
+		_glyph.position = Vector2(STONE_SIZE.x * 0.2, STONE_SIZE.y * 0.24)
+		_glyph.size = Vector2(STONE_SIZE.x * 0.6, STONE_SIZE.x * 0.6)
+		return
+	# A bind-rune: both runes, one above the other.
+	_glyph.position = Vector2(STONE_SIZE.x * 0.27, STONE_SIZE.y * 0.17)
+	_glyph.size = Vector2(STONE_SIZE.x * 0.46, STONE_SIZE.x * 0.46)
+	if _bound_glyph == null:
+		_bound_glyph = RuneGlyphScript.new()
+		_bound_glyph.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(_bound_glyph)
+	_bound_glyph.rune_id = stone.bound_rune
+	_bound_glyph.position = Vector2(STONE_SIZE.x * 0.33, STONE_SIZE.y * 0.52)
+	_bound_glyph.size = Vector2(STONE_SIZE.x * 0.34, STONE_SIZE.x * 0.34)
 
 
 func set_selected(value: bool) -> void:
@@ -91,6 +122,12 @@ func _process(delta: float) -> void:
 	rotation = base_rotation + sway + (0.06 if hovered and not selected else 0.0)
 	flash = maxf(0.0, flash - delta * 1.6)
 	_glyph.glow = 1.0 + (1.2 if selected else 0.0) + (1.4 if marked else 0.0) + flash * 3.0
+	_glyph.visible = not stone.face_down
+	if _bound_glyph != null:
+		_bound_glyph.visible = not stone.face_down
+		_bound_glyph.glow = _glyph.glow
+	if _glyph.rune_id != stone.rune_id or (_bound_glyph == null) != stone.bound_rune.is_empty():
+		refresh_runes()
 	queue_redraw()
 
 
@@ -108,10 +145,22 @@ func _draw() -> void:
 		draw_colored_polygon(_outline, STONE_FILL)
 		draw_colored_polygon(_scaled(_outline, center + Vector2(-6, -10), 0.82), STONE_LIGHT)
 		draw_colored_polygon(_scaled(_outline, center + Vector2(4, 6), 0.78), STONE_FILL)
+		if not stone.material.is_empty():
+			var tint: Color = MATERIAL_TINTS.get(stone.material, Color.WHITE)
+			draw_colored_polygon(_scaled(_outline, center, 0.94), Color(tint, 0.28 if stone.material != "glass" else 0.18))
 		var closed: PackedVector2Array = _outline.duplicate()
 		closed.append(_outline[0])
 		draw_polyline(closed, INK, 5.0, true)
+		if not stone.material.is_empty():
+			draw_polyline(_scaled(closed, center, 0.9), Color(MATERIAL_TINTS.get(stone.material, Color.WHITE), 0.85), 3.0, true)
 	var font: Font = get_theme_default_font()
+	if stone.face_down:
+		# Lunet's Dream: only the back of the stone shows.
+		draw_string(font, Vector2(0, STONE_SIZE.y * 0.62), "?", HORIZONTAL_ALIGNMENT_CENTER, STONE_SIZE.x, 72,
+			Color(BONE, 0.55))
+		if selected and order > 0:
+			_draw_order(font)
+		return
 	draw_string(font, Vector2(18, 38), str(stone.position), HORIZONTAL_ALIGNMENT_LEFT, -1, 30, BONE)
 	_draw_kin_sign(STONE_SIZE - Vector2(30, 30), 13.0)
 	if show_role:

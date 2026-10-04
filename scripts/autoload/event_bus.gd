@@ -28,6 +28,14 @@ signal spell_sentence_cast(spell_id: String, actions: Array)
 ## The selection reads a sentence of the rune grammar: its SentenceParser status ("spell",
 ## "incomplete", "wrong_order" …), the spell ("" if none) and how many Actions it has.
 signal sentence_read(status: String, spell_id: String, action_count: int)
+## The Night Market opened.
+signal shop_opened
+## A Talisman was bought (or taken from a Bag).
+signal talisman_bought(talisman_id: String)
+## A Lesson or an Engraving was bought (or taken from a Bag).
+signal consumable_gained(type: String, id: String)
+## A Lesson or an Engraving was used ("lesson" | "engraving", its id).
+signal consumable_used(type: String, id: String)
 ## Gebo kept a spell on the Scroll.
 signal scroll_gained(spell_id: String)
 ## Something covers the whole game for a moment (the spell reveal).
@@ -37,6 +45,13 @@ signal overlay_closed(overlay_id: String)
 signal spell_discovered(spell_id: String)
 signal round_won
 signal round_lost
+## The exam screen introduced an examiner round (the examiner's character id).
+signal examiner_met(examiner_id: String)
+## The exam ended: passed all trials, or failed a round.
+signal exam_finished(passed: bool)
+## The Morning (Stage 4): back from a repeated evening class; a Torn Page bought in the Market.
+signal evening_class_finished
+signal torn_page_found(spell_id: String)
 signal book_opened(book_id: String)
 signal book_closed(book_id: String)
 signal pause_opened

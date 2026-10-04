@@ -154,6 +154,11 @@ interpretări moderne (secolul XX).
 ## 3.6 Talismanele (5 locuri)
 - Efecte pasive, ordonate de la stânga la dreapta (rearanjabile). Se cumpără din Piață și se vând pe jumătate din preț.
 - Raritate: Comun, Rar, Legendar. **Prima versiune: ~30.** Talismanele sunt **ilustrațiile principale ale jocului**.
+- **Etapa 3 a făcut primele 15** (tabelul de mai jos, fără Pecete, păstrată pentru final). Datele sunt în
+  `data/talismans.json`: `kind` spune ce face, numerele cât. Logica e în `scripts/core/talisman_rules.gd`, iar scorul
+  le aplică la pasul 4.
+  - Prețuri: Comun 5, Rar 8, Legendar 13 Monede. Se vând cu 50%.
+  - Pe ecran atârnă pe sfoară, cu fișă la mouse. Le tragi ca să le schimbi ordinea și strălucesc când lucrează.
 
 | Talisman | Raritate | Efect |
 |---|---|---|
@@ -193,12 +198,42 @@ interpretări moderne (secolul XX).
   - **Strămutarea:** mută până la 3 pietre în alt Neam (runa rămâne; se schimbă culoarea și Neamul).
 - **Săculețe în Piață** (pachete): alegi 1 din 3 (sau 2 din 5 la cele mari). Tipuri: Lecții, Gravuri, Talismane,
   Pietre (uneori cu materiale).
+- **Cum s-a construit (Etapa 3):**
+  - `data/lessons.json` are 10 Lecții, câte una pe Cuvânt, cu glume. Lecția Cuvântului Vechi apare în Piață abia după
+    ce l-ai descoperit.
+  - `data/engravings.json` are 10 Gravuri: cele 5 materiale, Legătura, Prefacerea, Dublura, Sfărâmarea și Strămutarea.
+  - Ai **2 locuri** pentru ele.
+    - O Lecție se învață cu un clic, în rundă sau în Piață.
+    - O Gravură se folosește în rundă: clic pe ea, apoi alegi pietrele din mână în panoul de alegeri.
+  - Valorile materialelor stau în Gravuri:
+    - Os: +20 Putere când punctează;
+    - Chihlimbar: +4 Rezonanță când punctează;
+    - Aur: +3 Monede dacă rămâne în mână la finalul rundei;
+    - Fier: ×1,5 cât stă în mână, după Glasurile pietrelor din mână;
+    - Sticlă: ×2, cu 1 șansă din 4 să se spargă.
+  - **Legătura** unește 2 pietre cu rune diferite: a doua iese din săculeț, iar prima poartă ambele rune.
+    - La Cuvânt, jocul încearcă ambele citiri și o păstrează pe cea mai bună.
+    - Când punctează, se aud ambele Glasuri.
+    - **Pentru vrăji contează doar runa principală.**
 
 ## 3.8 Probele și Examinatorii
 - **8 Probe** × 3 runde: **Întrebarea mică** (ținta de bază), **Întrebarea mare** (×1,5), **Examinatorul** (×2 + regulă).
 - Curba țintelor: de propus și verificat cu simulatorul (fără valori din Balatro).
+  Valorile sunt în `data/trials.json`; verificarea se face cu `tests/simulate.gd -- part=4`, rezultatele în jurnal.
 - **Monede:** recompensă după fiecare rundă câștigată + mic bonus pentru Rostirile rămase + mică dobândă la economii
   (cu plafon). Valori în `economy.json`. Economie simplă.
+  - Pornești cu 3 Monede.
+  - Întrebarea mică dă 4, cea mare 5, Examinatorul 6.
+  - +2 pentru fiecare Rostire rămasă.
+  - Dobândă: 1 la fiecare 6 Monede, cel mult 4.
+- **Cum s-a construit (Etapa 3):**
+  - `data/examiners.json` are, pentru fiecare Examinator, regula, numele ei, replica de început, cea de înfrângere,
+    cea când pici și numerele regulii. Logica e în `scripts/core/exam_state.gd` (examenul) și `round_state.gd`
+    (regulile).
+  - Examinatorul Probei stă la catedră în toate cele 3 runde; regula lui se aplică doar în a treia.
+  - Algiz (Glasul) și vraja Fumul țin regula departe de o Rostire. Celelalte vrăji „asupra Examinatorului” anulează,
+    amână sau schimbă regula. Într-o rundă fără Examinator, vrăjile asupra Examinatorului dau doar +3 Monede.
+  - Aeva are o singură Rostire, deci ținta ei e mai mică: `target_mult` în date.
 - Examinatorii Probelor 1–7: ordine aleatorie, fără repetări. **Aeva e mereu ultima (Proba 8).**
 - Replică înainte de rundă și replică la înfrângerea lui (`dialogs.json`).
 
@@ -221,6 +256,16 @@ interpretări moderne (secolul XX).
 - Vânzătoarea: **Tanti Vera**, vinde rune de 40 de ani, are o replică pentru orice.
 - La fiecare vizită: 2 Talismane, 2 consumabile (Lecții sau Gravuri), 2 Săculețe și **„Rearanjează taraba”**
   (reîmprospătează; prețul crește la fiecare apăsare). Prețuri în `economy.json`.
+- **Cum s-a construit (Etapa 3):** logica e în `scripts/core/shop_logic.gd`, ecranul în `scripts/ui/shop_screen.gd`.
+  - Piața se deschide după fiecare rundă câștigată.
+  - Talismanele apar după raritate: 70% Comun, 25% Rar, 5% Legendar. Nu apare niciunul pe care îl ai deja.
+  - Prețuri:
+    - Lecție 3, Gravură 4 Monede;
+    - Săculeț 4, Săculeț mare 7;
+    - rearanjarea pornește de la 2 și crește cu 1.
+  - Bunica din piață scade toate prețurile cu 1 Monedă.
+  - Soarele și Ziua spre Talismane schimbă taraba următoare (un Talisman Rar sigur, un Talisman în plus).
+  - Tanti Vera are o replică la fiecare vizită (`data/dialogs.json`).
 
 ## 3.10 Părinții divini (= săculețul de start)
 | Părinte | Bonus | Deblocare |
@@ -230,6 +275,14 @@ interpretări moderne (secolul XX).
 | Ignar | începi examenul cu 2 Gravuri aleatorii | Amintiri |
 | Gronn | +1 loc de Talisman, dar −1 piatră în mână | Amintiri |
 | Morrah | săculeț de doar 24 de pietre (câte una din fiecare rună); mai greu, dar fiecare piatră contează (Patru și Cuvântul Vechi devin imposibile fără Dubluri) | Amintiri, pentru jucători avansați |
+
+- **Cum s-a construit (Etapa 4):** datele sunt în `data/parents.json`, cu felul deblocării (`start`, `attempts`,
+  `memories`) și prețul.
+  - Varr e de la început, iar Selvia vine după primul examen terminat.
+  - Ignar costă 40 de Amintiri, Gronn 80, Morrah 120.
+  - Bonusul se adaugă la regulile rundei. Regula unui Examinator care își are propriile Rostiri sau Schimbări
+    (Aeva) e mai tare decât el, deci copilul lui Varr are tot o singură Rostire la Aeva.
+  - Fiecare părinte are o replică pe fișa lui (`line`).
 
 ## 3.11 Bucla Aevei, Amintirile și colecția
 - La finalul fiecărui examen (câștigat sau pierdut): **Amintiri** după proba atinsă, Examinatorii învinși și descoperiri.
@@ -243,6 +296,31 @@ interpretări moderne (secolul XX).
 - **Salvare** în `user://save.json` (`SaveManager`): nume, Amintiri, deblocări, colecție, descoperiri, statistici (cel
   mai mare scor dintr-o Rostire, cea mai bună probă), setări. **Examenul în curs se salvează după fiecare rundă.**
 - **RNG cu seed:** fiecare examen are un seed afișat în meniul de pauză, ca o partidă să poată fi repetată exact.
+- **Cum s-a construit (Etapa 4):** regulile sunt în `scripts/core/progress.gd`, iar ecranele sunt `scenes/morning.tscn`,
+  `parent_select.tscn` și `collection.tscn`.
+  - **Amintirile:**
+    - 1 pentru fiecare rundă câștigată, 3 pentru fiecare Examinator învins, 15 pentru examenul trecut;
+    - 5 pentru fiecare Vrajă descoperită și 3 pentru fiecare Cuvânt ascuns descoperit;
+    - valorile sunt în `data/rules.json`.
+  - **Dimineața:**
+    - Aeva are o replică după câte dimineți au fost (prima, după un examen picat, după unul trecut, oricare altă);
+    - butoanele: Continuă examenul (cu Proba, runda și Monedele), Începe examenul, Amintirile, Cartea de rune,
+      Colecția, Cursul de seară, Setări, Meniul principal;
+    - dedesubt: numele, cea mai bună Probă, examenele trecute, cea mai mare Rostire.
+  - **Amintirile (ecranul):** părinții de cumpărat și 5 Talismane care la început lipsesc din Piață: Semnul de carte
+    al Morrei și Toma (20), Nix și Dara (30), Clepsidra Aevei (50).
+  - **Examenul în curs** se salvează după fiecare rundă și după fiecare Piață. Dacă ieși în mijlocul unei runde, o
+    reiei de la panoul de dinaintea ei, cu aceleași pietre (același seed). Un examen nou peste unul salvat îl închide
+    pe cel vechi și îi plătește Amintirile.
+  - **La final:** panoul arată Amintirile câștigate, apoi „Aeva întoarce timpul” (un ceas care se rotește înapoi) și
+    Dimineața. Primul examen picat aduce cele 3 indicii ale Aevei.
+  - **Cartea de rune** are trei pagini: Runele, Tabla Vrăjilor, Cuvintele (cu cel mai mare nivel atins vreodată).
+  - **Colecția:** Talismanele și Gravurile văzute în Piață sau primite, Examinatorii întâlniți; restul sunt „???”.
+  - **Paginile rupte:** uneori (50%) Tanti Vera vinde una cu 3 Monede. Arată runele unei Vrăji nedescoperite și un
+    vers ca indiciu (fiecare dintre cele 64 de Vrăji are versul ei, `verse` în `spells_base.json`). Pagina rămâne pe
+    Tabla Vrăjilor („? · pagină”, iar versul apare la mouse).
+  - **Numele** se scrie la prima pornire (cel mult 12 litere) și se poate schimba din Setări.
+  - Cursul de seară (instruirea) se poate relua din Dimineață și se termină tot acolo.
 
 ## 3.12 Povestea (scurtă)
 - **Intro de 4–5 cadre:** 1) Coborârea zeilor; 2) oamenii găsesc 24 de semne vechi pe pietre, mai vechi decât orice
@@ -644,3 +722,86 @@ Un efect = **declanșator** + **condiții** + **acțiuni**.
   - Traducerile în engleză (frazele runelor, cele 64 de nume și efecte, cele 8 Acțiuni, textele noi ale interfeței)
     sunt în `docs/TRADUCERI.md`, generat cu `python3 tools/export_translations.py`.
 
+- **Balansul cerut de Relax după Etapa 2b:** Rana ×3 → **×2,5**; Asaltul scade ținta cu **300%** din Puterea Rostirii
+  (în loc de 100%).
+- **Etapa 3 — examenul complet (propuneri de verificat de Relax):**
+  - **Fluxul:** „Joacă” → panoul Probei (Proba n din 8, runda, Examinatorul cu portret, ținta; în runda a treia
+    regula și replica lui) → runda → panoul cu Monedele câștigate → Piața de noapte → runda următoare. La final:
+    „Ai picat” (replica Examinatorului și a Aevei, Proba atinsă, Examinatori învinși) sau „Ai trecut Examenul de
+    Moștenire!”. Alegerea părintelui, Dimineața și salvarea examenului în curs vin în Etapa 4; până atunci examenul
+    pornește cu săculețul standard de 48.
+  - **Examinatorii:** cei 10 (fără Aeva) se amestecă după seed; 7 dintre ei apar în Probele 1–7, Aeva mereu în a 8-a.
+    Examinatorul stă la catedră toată Proba (portretul), dar regula lui se aplică doar în runda a treia.
+  - **Regulile, așa cum le-am înțeles:**
+    - Kaldor: Rostește nu merge decât cu exact 5 pietre (sau toate, dacă ai mai puține în mână).
+    - Selvia: după fiecare Rostire, toată mâna se întoarce în săculeț și tragi 8 noi.
+    - Varr: o piatră aleatorie din Cuvânt nu punctează („nu punctează” deasupra ei).
+    - Ignar: fiecare Schimbare costă 1 Monedă; fără bani, nu poți schimba.
+    - Lunet: primele 3 pietre din fiecare tragere vin cu fața în jos. Cât timp o piatră e cu fața în jos, cercul
+      ascunde și Cuvântul, ca să nu-l ghicești din previzualizare.
+    - Gronn: pietrele cu Poziția 1–3 nu punctează (dar Glasurile celorlalte merg).
+    - Morrah: un Cuvânt deja rostit în rundă dă scor 0.
+    - Ilinca: Rună singură și Pereche dau 0.
+    - Dara: ținta crește cu 10% după fiecare Rostire.
+    - Nix: primul Talisman din stânga e oprit (se vede estompat).
+    - Aeva: o singură Rostire și Schimbări fără sfârșit; primele 3 gratis, apoi 1 Monedă fiecare. Pentru că e o
+      singură Rostire, ținta ei e mai mică (`target_mult`, vezi balansul).
+  - **Indiciul lui Kaldor** („Eu sunt Kaldor…”) apare prima dată când îl întâlnești pe Kaldor; la primul Examinator,
+    oricare ar fi el, Ilinca spune un indiciu nou (`first_rule`) despre regula de pe fișă.
+  - **Talismanele:** am ales 15 din tabelul din 3.6. **Pecetea Curții Moștenirii** rămâne pentru final (e și în
+    poveste). Nix copiază Talismanul din dreapta lui; dacă în dreapta e alt Nix sau nimic, nu face nimic. Umbrela lui
+    Varr dă Rezonanța la fiecare punctare (Hagalaz, care punctează de două ori, o dă de două ori). Bricheta face
+    prima piatră care punctează să mai puncteze o dată. Clepsidra Aevei se sparge la prima rundă picată și runda se
+    reia de la capăt (aceeași țintă, săculețul cum era).
+  - **Gravurile:** le folosești în rundă, cu clic pe ele, apoi alegi pietrele în mână (panoul de alegeri). Lecțiile
+    se învață oriunde. Lecțiile luate dintr-un Săculeț se învață pe loc; Gravurile din Săculeț merg în cele 2 locuri.
+  - **Săculețul cu pietre:** 3 pietre noi cu rune aleatorii, 30% cu un material.
+  - **Valorile economiei sunt ale noastre**, nu cele din Balatro (recompensele, Rostirile rămase, dobânda, prețurile).
+  - **Balansul examenului** (`tests/simulate.gd -- part=4 exams=120`): un jucător simplu joacă examene întregi.
+    Alege cel mai bun Cuvânt, vrăjile îi ies din întâmplare, schimbă pietrele la Cuvintele slabe, folosește Gravurile
+    la început de rundă și învață Lecțiile pe loc. În Piață cumpără întâi cel mai scump Talisman pe care și-l permite,
+    apoi Lecții, apoi Săculețe.
+    - Țintele de bază ale Probelor (`data/trials.json`): **800, 2 600, 6 200, 10 500, 16 000, 25 000, 40 000,
+      62 000**. Întrebarea mare e ×1,5, Examinatorul ×2. Aeva are ×0,4 din ×2, pentru că are o singură Rostire.
+
+      | Proba | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 (Aeva) |
+      |---|---|---|---|---|---|---|---|---|
+      | trecută | 98% | 95% | 79% | 63% | 43% | 31% | 18% | 7% |
+
+    - Examenul întreg e trecut în ~7% din încercări. La final rămân în medie ~15 Monede și ~4,7 Talismane.
+    - Un jucător nou e mai slab decât acest jucător simulat, deci ar trebui să fie aproape de ținta din 3.14 (Proba 1
+      aproape mereu, Proba 3 ~50%). Testul lui Relax spune dacă e așa.
+    - Examenele se termină cel mai des la Aeva, la Întrebările mari din Probele 3–7 și la Morrah, Ilinca și Varr.
+  - **O reparație găsită de simulator:** Mareea („tragi 12, păstrezi 8”), repetată de Acțiuni, putea aduna zeci de
+    pietre în plus la începutul rundei. Acum sunt cel mult 8 (`spell_max_extra_draw` în `economy.json`). Alegerea „pune
+    înapoi” de la începutul rundei apare pe ecran ca orice altă alegere.
+- **Etapa 4 — bucla Aevei (propuneri de verificat de Relax):**
+  - **Fluxul:**
+    - „Joacă” duce în Dimineață, unde poți continua examenul salvat sau începe unul nou;
+    - pentru un examen nou alegi părintele, apoi urmează Probele;
+    - la final vezi Amintirile câștigate, apoi „Aeva întoarce timpul” și te întorci în Dimineață;
+    - Cursul de seară se termină tot în Dimineață.
+  - **Prețurile în Amintiri** sunt ale mele:
+    - părinții: Ignar 40, Gronn 80, Morrah 120;
+    - Talismanele: Semnul de carte și Toma 20, Nix și Dara 30, Clepsidra 50.
+
+    Vrăjile descoperite dau multe Amintiri (5 fiecare, până la 320 în total). Cu prețuri mai mici, botul care
+    joacă la întâmplare debloca tot în 2–3 examene; acum îi trebuie în jur de 10.
+  - **Balansul părinților** (`simulate.gd -- part=4 exams=100 parent=…`, același jucător simplu):
+
+    | Părintele | P3 | P5 | P7 | examen trecut |
+    |---|---|---|---|---|
+    | fără | 84% | 46% | 21% | 9% |
+    | Varr | 96% | 69% | 31% | 11% |
+    | Selvia | 80% | 45% | 19% | 9% |
+    | Ignar | 85% | 48% | 19% | 5% |
+    | Gronn | 85% | 41% | 18% | 9% |
+    | Morrah | 81% | 50% | 26% | 8% |
+
+    Varr (+1 Rostire) e cel mai puternic, deși e părintele de la început. Rostirea în plus aduce și 2 Monede la
+    fiecare rundă, prin Rostirile rămase. De decis de Relax: rămâne așa (un început mai blând) sau îl slăbim.
+  - **Două erori găsite de botul care joacă prin ecrane (reparate, cu teste):**
+    - o rundă care începe deja câștigată (Merindea adusese mai mult scor decât noua țintă) nu se mai termina; acum
+      se termină pe loc, cu un mesaj;
+    - Furtuna repetată de Eihwaz la începutul rundei arunca mâna fără să tragă alta, iar runda rămânea fără pietre.
+      Acum trage o mână nouă. Și o rundă fără nicio piatră de tras se termină singură.

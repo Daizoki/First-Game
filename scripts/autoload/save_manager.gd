@@ -1,6 +1,7 @@
 extends Node
-## Permanent progress and settings, stored in user://save.json.
-## The run in progress is NOT saved (first version).
+## Permanent progress and settings, stored in user://save.json, plus the exam in progress
+## (saved between rounds by the exam screen). The rules of Memories, unlocks, records and the
+## Collection are in scripts/core/progress.gd.
 
 const SAVE_VERSION: int = 1
 const DEFAULT_PATH: String = "user://save.json"
@@ -31,8 +32,12 @@ static func default_data() -> Dictionary:
 		## What the player has seen at least once.
 		"collection": {"talismans": [], "engravings": [], "examiners": []},
 		## Permanent discoveries: spells, the Actions learned, hidden Words, old words (ALU, LAÞU, AUJA).
-		"discoveries": {"spells": [], "actions": [], "words": [], "old_words": []},
-		"stats": {"best_cast_score": 0.0, "best_trial": 0, "exams_passed": 0},
+		## torn_pages: spells whose cell of the Spell Table a Torn Page shows (bought in the Market).
+		"discoveries": {"spells": [], "actions": [], "words": [], "old_words": [], "torn_pages": []},
+		## Records; word_levels = the highest level each Word reached (free keys).
+		"stats": {
+			"best_cast_score": 0.0, "best_trial": 0, "exams_passed": 0, "exams_finished": 0, "word_levels": {},
+		},
 		## Story memory across attempts.
 		"flags": {},
 		## The exam in progress, saved after every round (empty = none).

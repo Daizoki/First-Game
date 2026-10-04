@@ -6,7 +6,8 @@ extends Control
 const TutorialFlow = preload("res://scripts/core/tutorial_flow.gd")
 const TutorialOverlay = preload("res://scripts/ui/tutorial_overlay.gd")
 const ROUND_SCENE: PackedScene = preload("res://scenes/round.tscn")
-const MAIN_MENU_SCENE: String = "res://scenes/main_menu.tscn"
+## The evening class ends in the Morning of the exam (DESIGN 3.11).
+const MORNING_SCENE: String = "res://scenes/morning.tscn"
 ## A phase caption stays this long after it is fully typed (unless clicked).
 const CAPTION_READ_TIME: float = 1.2
 const LESSON_HOME_Y: float = 0.36
@@ -339,7 +340,7 @@ func _finish() -> void:
 	SaveManager.data["tutorial_done"] = true
 	SaveManager.save_game()
 	EventBus.reset()
-	get_tree().change_scene_to_file(MAIN_MENU_SCENE)
+	get_tree().change_scene_to_file(MORNING_SCENE)
 
 
 func _format(text: Variant) -> String:

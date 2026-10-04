@@ -68,9 +68,42 @@ def spells_section():
         where = spell["id"] + ("" if spell["enabled"] else " (doarme)")
         rows.append((where, spell["name"]["ro"], spell["name"]["en"]))
         rows.append((where + " · efect", spell["effect"]["ro"], spell["effect"]["en"]))
-    out += ["### Cele 64 de vrăji (nume și efect)", ""] + table(rows, "Vraja") + [""]
+        rows.append((where + " · vers", spell["verse"]["ro"], spell["verse"]["en"]))
+    out += ["### Cele 64 de vrăji (nume, efect și versul de pe Pagina ruptă)", ""] + table(rows, "Vraja") + [""]
     rows = [(action["id"], action["effect"]["ro"], action["effect"]["en"]) for action in load("spell_actions.json")]
     out += ["### Cele 8 Acțiuni", ""] + table(rows, "Acțiune") + [""]
+    return out
+
+
+def exam_section():
+    out = ["## Examenul (`data/examiners.json`, `talismans.json`, `lessons.json`, `engravings.json`, `dialogs.json`,",
+           "`parents.json`)", ""]
+    rows = []
+    for ex in load("examiners.json"):
+        for field in ["title", "text", "intro", "defeated", "won"]:
+            rows.append((ex["id"] + " · " + field, ex[field]["ro"], ex[field]["en"]))
+    out += ["### Examinatorii", ""] + table(rows, "Examinator") + [""]
+    rows = []
+    for t in load("talismans.json"):
+        rows.append((t["id"], t["name"]["ro"], t["name"]["en"]))
+        rows.append((t["id"] + " · efect", t["description"]["ro"], t["description"]["en"]))
+    out += ["### Talismanele", ""] + table(rows, "Talisman") + [""]
+    rows = []
+    for name in ["lessons.json", "engravings.json"]:
+        for item in load(name):
+            rows.append((item["id"], item["name"]["ro"], item["name"]["en"]))
+            rows.append((item["id"] + " · text", item["text"]["ro"], item["text"]["en"]))
+    out += ["### Lecțiile și Gravurile", ""] + table(rows, "Consumabil") + [""]
+    rows = []
+    for dialog in load("dialogs.json"):
+        for i, line in enumerate(dialog["lines"]):
+            rows.append((f"{dialog['id']} {i + 1}", line["text"]["ro"], line["text"]["en"]))
+    out += ["### Replicile (Tanti Vera, Aeva în Dimineață)", ""] + table(rows, "Replică") + [""]
+    rows = []
+    for parent in load("parents.json"):
+        rows.append((parent["id"] + " · bonus", parent["bonus"]["ro"], parent["bonus"]["en"]))
+        rows.append((parent["id"] + " · replică", parent["line"]["ro"], parent["line"]["en"]))
+    out += ["### Părinții (`data/parents.json`)", ""] + table(rows, "Părinte") + [""]
     return out
 
 
@@ -93,7 +126,7 @@ def main():
         "> textul în JSON și rulează din nou scriptul. `{name}`, `{n}` … sunt locuri pe care jocul le completează.",
         "",
     ]
-    lines += tutorial_section() + spells_section() + hints_section() + ui_section()
+    lines += tutorial_section() + spells_section() + exam_section() + hints_section() + ui_section()
     with open(OUT, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
     print(f"wrote {OUT}")

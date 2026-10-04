@@ -28,6 +28,8 @@ var _choice: Dictionary = {}
 var _limits: Dictionary = {}
 var _picked_in_hand: int = 0
 var _kin: String = ""
+var _rune: String = ""
+var _runes: HBoxContainer
 ## Positions (in the shown stones) clicked so far, for The Omen.
 var _order: Array[int] = []
 var _stone_buttons: Array[Button] = []
@@ -48,6 +50,10 @@ func _ready() -> void:
 	_stones.alignment = BoxContainer.ALIGNMENT_CENTER
 	_stones.add_theme_constant_override("separation", 10)
 	box.add_child(_stones)
+	_runes = HBoxContainer.new()
+	_runes.alignment = BoxContainer.ALIGNMENT_CENTER
+	_runes.add_theme_constant_override("separation", 8)
+	box.add_child(_runes)
 	_kins = HBoxContainer.new()
 	_kins.alignment = BoxContainer.ALIGNMENT_CENTER
 	_kins.add_theme_constant_override("separation", 10)
@@ -68,19 +74,23 @@ func ask(choice: Dictionary, limits: Dictionary, ctx: Dictionary) -> void:
 	_limits = limits
 	_picked_in_hand = 0
 	_kin = ""
+	_rune = ""
 	_order.clear()
 	_stone_buttons.clear()
-	for row: Container in [_stones, _kins, _buttons]:
+	for row: Container in [_stones, _kins, _buttons, _runes]:
 		for child: Node in row.get_children():
 			row.remove_child(child)
 			child.queue_free()
 	var spell: Dictionary = GameData.spells.get(str(choice.get("spell", "")), {})
+	if choice.has("engraving"):
+		spell = {"name": (GameData.engravings.get(str(choice["engraving"]), {}) as Dictionary).get("name", {}),
+			"color": "#ffb347"}
 	_title.text = Loc.text(spell.get("name", {})) if not spell.is_empty() else Loc.t("choice_title")
 	_title.add_theme_color_override("font_color", Color.html(str(spell.get("color", "#e9e3d2"))))
 	var kind: String = str(choice.get("kind", ""))
 	var count: int = int(choice.get("count", choice.get("cost", 1)))
 	_text.text = Loc.t("choice_" + kind, {"n": count, "amount": choice.get("amount", 0),
-		"money": choice.get("money", 0)})
+		"money": choice.get("money", 0), "factor": Loc.number(float(choice.get("factor", 1.0)))})
 	_count.text = ""
 	_confirm = null
 	match str(limits.get("source", "")):
@@ -99,7 +109,7 @@ func ask(choice: Dictionary, limits: Dictionary, ctx: Dictionary) -> void:
 					kin_button.pressed.connect(_on_kin.bind(kin_id, kin_button))
 			_confirm = _button(Loc.t("choice_confirm"))
 			_confirm.theme_type_variation = &"CastButton"
-			_confirm.pressed.connect(func() -> void: answered.emit({"kin": _kin}))
+			_confirm.pressed.connect(func() -> void: answered.emit({"kin": _kin, "rune": _rune}))
 			set_hand_picks(0)
 		"bag_top":
 			_show_stones(ctx.get("stones", []))
@@ -115,6 +125,24 @@ func ask(choice: Dictionary, limits: Dictionary, ctx: Dictionary) -> void:
 			_confirm.pressed.connect(func() -> void: answered.emit({"order": _order.duplicate()}))
 		"offer":
 			_show_stones(ctx.get("stones", []))
+		"talisman":
+			# A spell into the Talismans: which one (the stones list holds the owned Talismans).
+			var owned: Array = ctx.get("stones", [])
+			for slot: int in owned.size():
+				var entry: Dictionary = GameData.talismans.get(str(owned[slot]["id"]), {})
+				var talisman_button: Button = _button(Loc.text(entry.get("name", {})))
+				talisman_button.custom_minimum_size = Vector2(240, 64)
+				talisman_button.add_theme_font_size_override("font_size", 20)
+				talisman_button.tooltip_text = Loc.text(entry.get("description", {}))
+				talisman_button.pressed.connect(func() -> void: answered.emit({"talisman": slot}))
+		"rule":
+			# Water against the Examiner: one of two other examiners' rules.
+			for examiner_id: Variant in choice.get("rules", []):
+				var entry: Dictionary = GameData.examiners.get(examiner_id, {})
+				var rule_button: Button = _button(Loc.text(entry.get("title", {})))
+				rule_button.custom_minimum_size = Vector2(320, 64)
+				rule_button.tooltip_text = Loc.text(entry.get("text", {}))
+				rule_button.pressed.connect(func() -> void: answered.emit({"rule": str(examiner_id)}))
 	visible = true
 	_place()
 
@@ -161,7 +189,37 @@ func _refresh_confirm() -> void:
 		return
 	var count_ok: bool = _picked_in_hand >= int(_limits.get("min", 0)) and _picked_in_hand <= int(_limits.get("max", 0))
 	var kin_ok: bool = not bool(_limits.get("kin", false)) or _picked_in_hand == 0 or not _kin.is_empty()
-	_confirm.disabled = not (count_ok and kin_ok)
+	var rune_ok: bool = not bool(_limits.get("rune", false)) or not _rune.is_empty()
+	_confirm.disabled = not (count_ok and kin_ok and rune_ok)
+
+
+## The Reshaping: buttons for the runes the picked stone can become (empty: none picked).
+func set_rune_options(rune_ids: Array[String]) -> void:
+	if not bool(_limits.get("rune", false)):
+		return
+	for child: Node in _runes.get_children():
+		_runes.remove_child(child)
+		child.queue_free()
+	_rune = ""
+	for id: String in rune_ids:
+		var rune: Dictionary = GameData.runes.get(id, {})
+		var rune_button: Button = Button.new()
+		rune_button.toggle_mode = true
+		rune_button.text = "%s %s" % [str(rune.get("glyph", "")), Loc.text(rune.get("name", {}))]
+		rune_button.add_theme_font_size_override("font_size", 20)
+		rune_button.custom_minimum_size = Vector2(0, 52)
+		rune_button.tooltip_text = Loc.text(rune.get("voice", {}))
+		rune_button.pressed.connect(_on_rune.bind(id, rune_button))
+		_runes.add_child(rune_button)
+	_refresh_confirm()
+	reset_size()
+
+
+func _on_rune(rune_id: String, pressed_button: Button) -> void:
+	_rune = rune_id
+	for child: Node in _runes.get_children():
+		(child as Button).button_pressed = child == pressed_button
+	_refresh_confirm()
 
 
 func _on_kin(kin_id: String, pressed_button: Button) -> void:

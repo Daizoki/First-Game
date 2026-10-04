@@ -19,6 +19,8 @@ var res_label: Label
 var word_label: Label
 var level_label: Label
 var total_label: Label
+## The Talisman string (its cards glow when they act).
+var talisman_string: Control
 var speed: float = 1.0
 
 var _stone_phase_sent: bool = false
@@ -65,6 +67,31 @@ func play(result: Dictionary, cast_views: Array[StoneView], held_views: Array[St
 					POWER_COLOR if key == "float_power" else RES_COLOR, 44)
 				_pop(label)
 				await _wait(STEP)
+			"talisman":
+				_set_counters(event)
+				var kind: String = str(event.get("kind", ""))
+				talisman_string.call("flash", int(event["slot"]))
+				if kind == "retrigger":
+					await _wait(STEP * 0.5)
+					continue
+				var key: String = {"add_power": "float_power", "add_res": "float_add_res", "mul_res": "float_mul_res",
+					"add_money": "float_money"}.get(kind, "float_add_res")
+				var color: Color = {"add_power": POWER_COLOR, "add_money": MONEY_COLOR}.get(kind, RES_COLOR)
+				var at: Vector2 = (talisman_string.call("slot_center", int(event["slot"])) as Vector2) \
+					- float_layer.global_position + Vector2(0, 110)
+				float_layer.spawn(Loc.t(key, {"n": Loc.number(event["value"])}), at, color, 36, 1.0 / speed + 0.3)
+				_pop(res_label if color == RES_COLOR else power_label)
+				await _wait(STEP * 0.8)
+			"rule":
+				# The examiner's rule: a struck stone, or a Cast graded 0.
+				if str(event.get("kind", "")) == "blocked":
+					var struck: StoneView = cast_views[event["index"]]
+					struck.dimmed = true
+					_float_at(struck, Loc.t("float_rule_blocked"), BONE)
+				else:
+					float_layer.spawn(Loc.t("float_rule_zero"),
+						total_label.get_global_rect().get_center() - float_layer.global_position, RES_COLOR, 44)
+				await _wait(STEP)
 			"total":
 				total_label.text = "= " + Loc.number(event["score"])
 				total_label.modulate.a = 1.0
@@ -99,6 +126,9 @@ func _show_voice(view: StoneView, event: Dictionary) -> bool:
 			color = BONE
 		"algiz_ignore_rule":
 			text = Loc.t("float_rule")
+			color = BONE
+		"glass_break":
+			text = Loc.t("float_glass_break")
 			color = BONE
 		_:
 			return false

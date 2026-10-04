@@ -31,6 +31,7 @@ func reset_round() -> void:
 	_shuffle(draw_pile)
 	for stone: Stone in stones:
 		stone.round_power = 0
+		stone.face_down = false
 
 
 ## Keeps only one stone per listed rune id (a tutorial bag). Returns the ids it could not find.
@@ -91,6 +92,11 @@ func add_copy_of(stone: Stone) -> Stone:
 	return copy
 
 
+## A new stone with this rune and a fresh uid, not in the bag yet (a Stones pack).
+func make_stone(rune: Dictionary) -> Stone:
+	return Stone.from_rune(rune, _take_uid())
+
+
 ## Puts an owned stone back into the draw pile at a random place (The Return, The Choice).
 func put_back(stone: Stone) -> void:
 	if not draw_pile.has(stone):
@@ -101,6 +107,26 @@ func put_back(stone: Stone) -> void:
 func remove(stone: Stone) -> void:
 	stones.erase(stone)
 	draw_pile.erase(stone)
+
+
+## The bag as plain data (the exam in progress is saved between rounds).
+func to_dict() -> Dictionary:
+	var saved: Array[Dictionary] = []
+	for stone: Stone in stones:
+		saved.append(stone.to_dict())
+	return {"stones": saved, "next_uid": _next_uid}
+
+
+## Restores the stones saved with to_dict(); the draw pile fills when the next round starts.
+func load_dict(saved: Dictionary) -> void:
+	stones.clear()
+	for entry: Variant in saved.get("stones", []):
+		if entry is Dictionary:
+			stones.append(Stone.from_dict(entry))
+	draw_pile.clear()
+	_next_uid = maxi(int(saved.get("next_uid", 1)), 1)
+	for stone: Stone in stones:
+		_next_uid = maxi(_next_uid, stone.uid + 1)
 
 
 func size() -> int:

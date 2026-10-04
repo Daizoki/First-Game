@@ -2,5 +2,41 @@
 	"spell_target_floor_pct": 40,
 	"spell_max_extra_casts_per_round": 2,
 	"scroll_slots": 1,
-	"examiner_spell_fallback_money": 3
+	"examiner_spell_fallback_money": 3,
+	"start_money": 3,
+	"round_target_mults": [
+		1.0,
+		1.5,
+		2.0
+	],
+	"reward_small": 4,
+	"reward_big": 5,
+	"reward_examiner": 6,
+	"reward_per_cast_left": 2,
+	"interest_per": 6,
+	"interest_max": 4,
+	"talisman_slots": 5,
+	"price_common": 5,
+	"price_rare": 8,
+	"price_legendary": 13,
+	"sell_share_pct": 50,
+	"consumable_slots": 2,
+	"price_lesson": 3,
+	"price_engraving": 4,
+	"shop_talismans": 2,
+	"shop_consumables": 2,
+	"shop_packs": 2,
+	"rarity_weights_pct": [
+		70,
+		25,
+		5
+	],
+	"price_pack": 4,
+	"price_pack_big": 7,
+	"reroll_base": 2,
+	"reroll_step": 1,
+	"pack_stone_material_pct": 30,
+	"spell_max_extra_draw": 8,
+	"price_page": 3,
+	"page_chance_pct": 50
 }

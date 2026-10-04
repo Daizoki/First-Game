@@ -57,6 +57,12 @@ func show_stone(stone: Stone, anchor: Control) -> void:
 	visible = stone != null
 	if stone == null:
 		return
+	if stone.face_down:
+		_show_hidden()
+		return
+	_glyph.visible = true
+	for label: Label in [_kin, _meaning, _power]:
+		label.visible = true
 	var rune: Dictionary = GameData.runes.get(stone.rune_id, {})
 	var kin: Dictionary = GameData.kins.get(stone.kin, {})
 	_glyph.rune_id = stone.rune_id
@@ -69,6 +75,27 @@ func show_stone(stone: Stone, anchor: Control) -> void:
 	_meaning.text = Loc.t("card_meaning", {"meaning": Loc.text(rune.get("meaning", {}))})
 	_power.text = Loc.t("card_power", {"n": stone.base_power + stone.bonus_power})
 	_voice.text = Loc.t("card_voice", {"voice": Loc.text(rune.get("voice", {}))})
+	if not stone.bound_rune.is_empty():
+		var other: Dictionary = GameData.runes.get(stone.bound_rune, {})
+		_name.text = "%s + %s" % [_name.text, Loc.text(other.get("name", {}))]
+		_voice.text += "\n" + Loc.t("card_bound", {"rune": Loc.text(other.get("name", {})),
+			"voice": Loc.text(other.get("voice", {}))})
+	if not stone.material.is_empty():
+		var engraving: Dictionary = {}
+		for id: String in GameData.engravings:
+			if str(GameData.engravings[id].get("material", "")) == stone.material:
+				engraving = GameData.engravings[id]
+		_power.text += "  ·  " + Loc.t("material_" + stone.material, {"value": Loc.number(float(engraving.get("value", 0)))})
+	reset_size()
+
+
+## A face-down stone (Lunet's Dream): nothing to read until it is cast.
+func _show_hidden() -> void:
+	_glyph.visible = false
+	_name.text = Loc.t("card_face_down")
+	for label: Label in [_kin, _role, _meaning, _power]:
+		label.visible = false
+	_voice.text = Loc.t("card_face_down_text")
 	reset_size()
 
 

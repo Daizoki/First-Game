@@ -4,8 +4,8 @@ extends Control
 const SETTINGS_SCENE: String = "res://scenes/settings.tscn"
 const RUNE_CHECK_SCENE: String = "res://scenes/rune_check.tscn"
 const TUTORIAL_SCENE: String = "res://scenes/tutorial.tscn"
-## Stage 2: Play opens a practice round. Stage 3-4 put the morning hub and the exam in between.
-const ROUND_SCENE: String = "res://scenes/round.tscn"
+## Play goes to the Morning of the exam (the hub of Aeva's loop).
+const MORNING_SCENE: String = "res://scenes/morning.tscn"
 
 @onready var _title: Label = %Title
 @onready var _subtitle: Label = %Subtitle
@@ -61,11 +61,7 @@ func _refresh_texts() -> void:
 
 
 func _on_play_pressed() -> void:
-	# Until the full exam exists (Stage 3), every practice round counts as an exam attempt
-	# (the "first exams" hints look at this count).
-	SaveManager.data["attempts"] = int(SaveManager.data.get("attempts", 0)) + 1
-	SaveManager.save_game()
-	get_tree().change_scene_to_file(ROUND_SCENE)
+	get_tree().change_scene_to_file(MORNING_SCENE)
 
 
 func _on_runes_pressed() -> void:

@@ -48,6 +48,23 @@ const ENUMS: Dictionary = {
 	"effect_per": ["word_stone", "lesson_used", "talisman"],
 	"effect_target": ["self", "next"],
 	"effect_special": ["kenaz_peek", "gebo_copy_previous", "algiz_ignore_rule", "berkanan_copy", "laguz_wild"],
+	## What a Talisman does (scripts/core/talisman_rules.gd).
+	"talisman_kind": [
+		"add_res", "add_power", "kin_res", "round_swaps", "hand_size", "wearing_res", "word_money", "shop_discount",
+		"mul_res_five", "first_stone_twice", "new_word_res", "power_per_bag_stone", "copy_right", "growing_mul",
+		"second_chance",
+	],
+	"rarity": ["common", "rare", "legendary"],
+	## How a divine parent becomes available (data/parents.json, DESIGN 3.10).
+	"parent_unlock": ["start", "attempts", "memories"],
+	## What an Engraving does to the stones in hand (scripts/core/round_state.gd, use_consumable).
+	"engraving_kind": ["material", "bind", "change_rune", "copy_stone", "remove_stones", "change_kin"],
+	"material": ["bone", "amber", "gold", "iron", "glass"],
+	## The examiners' rules (DESIGN 3.8, scripts/core/round_state.gd).
+	"examiner_rule": [
+		"exact_count", "flux", "lightning", "tax", "dream", "weight", "remember", "correction", "competition",
+		"trick", "hourglass",
+	],
 	"tutorial_event": [
 		"hover", "selection", "cast", "swap", "round_won", "spell_cast", "spell_discovered", "book_opened",
 		"book_closed",
@@ -110,7 +127,7 @@ const SCHEMAS: Dictionary = {
 	## A base spell: Element -> Target (data/spells_base.json).
 	"spell": {
 		"required": {
-			"id": "id", "element": "ref:runes", "target": "ref:runes", "name": "loc", "effect": "loc",
+			"id": "id", "element": "ref:runes", "target": "ref:runes", "name": "loc", "effect": "loc", "verse": "loc",
 			"timing": "enum:spell_timing", "enabled": "bool", "color": "color", "ops": "array:spell_op",
 			"scalable": "scalable_list",
 		},
@@ -134,9 +151,61 @@ const SCHEMAS: Dictionary = {
 	"economy": {
 		"required": {
 			"spell_target_floor_pct": "int", "spell_max_extra_casts_per_round": "int", "scroll_slots": "int",
-			"examiner_spell_fallback_money": "int",
+			"examiner_spell_fallback_money": "int", "start_money": "int", "round_target_mults": "number_list",
+			"reward_small": "int", "reward_big": "int", "reward_examiner": "int", "reward_per_cast_left": "int",
+			"interest_per": "int", "interest_max": "int", "talisman_slots": "int", "price_common": "int",
+			"price_rare": "int", "price_legendary": "int", "sell_share_pct": "int", "consumable_slots": "int",
+			"price_lesson": "int", "price_engraving": "int", "shop_talismans": "int", "shop_consumables": "int",
+			"shop_packs": "int", "rarity_weights_pct": "number_list", "price_pack": "int", "price_pack_big": "int",
+			"reroll_base": "int", "reroll_step": "int", "pack_stone_material_pct": "int", "spell_max_extra_draw": "int",
+			"price_page": "int", "page_chance_pct": "int",
 		},
 		"optional": {},
+	},
+	## A Talisman (data/talismans.json): its kind says what it does, the numbers how much.
+	"talisman": {
+		"required": {
+			"id": "id", "rarity": "enum:rarity", "kind": "enum:talisman_kind", "name": "loc", "description": "loc",
+		},
+		"optional": {
+			"owner": "ref:characters", "value": "number", "kin": "ref:kins", "word": "ref:words", "step": "number",
+			"unlock": "int",
+		},
+	},
+	## A Lesson raises one Word by a level (data/lessons.json).
+	"lesson": {
+		"required": {"id": "id", "word": "ref:words", "name": "loc", "text": "loc"},
+		"optional": {},
+	},
+	## An Engraving changes stones in hand (data/engravings.json).
+	"engraving": {
+		"required": {"id": "id", "kind": "enum:engraving_kind", "name": "loc", "text": "loc"},
+		"optional": {"material": "enum:material", "value": "number", "chance": "number", "count": "int"},
+	},
+	## A divine parent: the starting bonus of an exam (data/parents.json); the id is a character id.
+	## "cost" is the number of finished exams ("attempts") or of Memories ("memories").
+	"parent": {
+		"required": {"id": "ref:characters", "unlock": "enum:parent_unlock", "cost": "int", "bonus": "loc", "line": "loc"},
+		"optional": {
+			"casts": "int", "swaps": "int", "hand": "int", "talisman_slots": "int", "start_engravings": "int",
+			"copies_per_rune": "int",
+		},
+	},
+	## One of the 8 trials of the exam (data/trials.json).
+	"trial": {
+		"required": {"id": "id", "number": "int", "base_target": "int"},
+		"optional": {},
+	},
+	## An examiner and their rule (data/examiners.json); the id is a character id.
+	"examiner": {
+		"required": {
+			"id": "ref:characters", "rule": "enum:examiner_rule", "title": "loc", "text": "loc", "intro": "loc",
+			"defeated": "loc", "won": "loc",
+		},
+		"optional": {
+			"final": "bool", "count": "int", "percent": "number", "max_position": "int", "words": "word_list",
+			"swap_cost": "int", "free_swaps": "int", "casts": "int", "swaps": "int", "target_mult": "number",
+		},
 	},
 	"character": {
 		"required": {"id": "id", "name": "loc", "kind": "enum:character_kind", "description": "loc", "color": "color"},
@@ -201,14 +270,15 @@ const SCHEMAS: Dictionary = {
 	},
 	"hint_trigger": {
 		"required": {"event": "enum:hint_event"},
-		"optional": {"rune": "ref:runes", "seconds": "number", "max_exams": "int"},
+		"optional": {"rune": "ref:runes", "seconds": "number", "max_exams": "int", "examiner": "ref:characters"},
 	},
 	"rules": {
 		"required": {
 			"hand_size": "int", "casts_per_round": "int", "swaps_per_round": "int",
 			"max_stones_per_action": "int", "copies_per_rune": "int", "rune_voices_start_awake": "bool",
 			"test_round_target": "int", "test_round_examiner": "ref:characters", "memories_per_spell": "int",
-			"scoring_speed": "int",
+			"scoring_speed": "int", "memories_per_round": "int", "memories_per_examiner": "int",
+			"memories_exam_passed": "int", "memories_per_word": "int",
 		},
 		"optional": {},
 	},
@@ -388,6 +458,16 @@ func check_value(file_name: String, label: String, path: String, value: Variant,
 					check_value(file_name, label, "%s[%d]" % [path, i], (value as Array)[i], "enum:spell_scalable")
 		"rune_list":
 			_check_id_list(file_name, label, path, value, "runes")
+		"word_list":
+			_check_id_list(file_name, label, path, value, "words")
+		"number_list":
+			if not (value is Array) or (value as Array).is_empty():
+				add_error(file_name, label, "\"%s\" must be a list of numbers" % path)
+			else:
+				for item: Variant in value:
+					if not (item is int or item is float):
+						add_error(file_name, label, "\"%s\" must hold only numbers" % path)
+						break
 		"action_list":
 			if not (value is Array):
 				add_error(file_name, label, "\"%s\" must be a list of actions" % path)
@@ -432,6 +512,28 @@ func check_spells(file_name: String, spells: Dictionary, runes: Dictionary) -> v
 						found = true
 			if not found:
 				add_error(file_name, id, "\"scalable\" names \"%s\", which no op has" % str(field))
+
+
+## Call after trials.json and examiners.json are loaded: trials numbered 1..n in order,
+## exactly one final examiner, and enough others for every trial before it.
+func check_exam(trials_file: String, trials: Dictionary, examiners_file: String, examiners: Dictionary,
+		round_mults: Variant) -> void:
+	var n: int = 0
+	for id: String in trials:
+		n += 1
+		if int((trials[id] as Dictionary).get("number", 0)) != n:
+			add_error(trials_file, id, "trials must be numbered 1, 2, 3 … in file order")
+	var finals: int = 0
+	for id: String in examiners:
+		if bool((examiners[id] as Dictionary).get("final", false)):
+			finals += 1
+	if finals != 1:
+		add_error(examiners_file, "", "exactly one examiner must have \"final\": true (found %d)" % finals)
+	if examiners.size() - finals < trials.size() - 1:
+		add_error(examiners_file, "", "%d trials need at least %d examiners besides the final one" % [
+			trials.size(), trials.size() - 1])
+	if round_mults is Array and (round_mults as Array).size() != 3:
+		add_error("economy.json", "", "\"round_target_mults\" needs 3 numbers (small, big, examiner)")
 
 
 ## Call after spell_actions.json and runes.json are loaded: one entry per Action rune.

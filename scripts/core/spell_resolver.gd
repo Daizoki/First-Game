@@ -15,12 +15,13 @@ const WHOLE: Array[String] = ["amount", "count", "max"]
 ## Ops that change the score of the Cast itself (the rest run after the score).
 const SCORE_OPS: Array[String] = [
 	"res_to_one", "res_per_held", "mul_res", "add_power", "retrigger_scoring", "word_upgrade",
-	"mul_res_if_five", "mul_res_if_first_cast",
+	"mul_res_if_five", "mul_res_if_first_cast", "ignore_rule_cast", "talisman_retrigger_left", "power_per_talisman",
 ]
 ## Ops that wait for the player's choice (RoundState.pending).
 const CHOICE_OPS: Array[String] = [
 	"break_chosen_money", "remove_chosen", "change_kin_chosen", "reorder_bag_top", "copy_chosen_to_bag",
-	"free_swap_chosen", "draw_keep", "discard_chosen",
+	"free_swap_chosen", "draw_keep", "discard_chosen", "swap_rule", "sell_talisman_full", "transform_talisman",
+	"destroy_talisman_res",
 ]
 
 
@@ -124,7 +125,7 @@ static func effect_values(spell: Dictionary, scale: float = 1.0) -> Dictionary:
 static func score_mods(round_state: RoundState, plans: Array[Dictionary], ctx: Dictionary) -> Dictionary:
 	var mods: Dictionary = empty_mods()
 	for plan: Dictionary in plans:
-		if str(plan["timing"]) != "before" or not _active(plan):
+		if str(plan["timing"]) != "before" or not _active(plan) or _no_examiner(round_state, plan):
 			continue
 		var spell: Dictionary = round_state.spell_data(plan["spell"])
 		for r: int in int(plan["repeats"]):
@@ -136,7 +137,7 @@ static func score_mods(round_state: RoundState, plans: Array[Dictionary], ctx: D
 static func empty_mods() -> Dictionary:
 	return {
 		"add_power": 0.0, "add_res": 0.0, "res_mults": [] as Array[float], "res_to_one": false,
-		"retrigger_scoring": 0, "word_upgrade": 0,
+		"retrigger_scoring": 0, "word_upgrade": 0, "ignore_rule": false, "talisman_retrigger_left": 0,
 	}
 
 
@@ -150,6 +151,10 @@ static func after_score(round_state: RoundState, plans: Array[Dictionary], ctx: 
 			round_state.ask({"kind": "price", "spell": plan["spell"], "casts": plan["price"]["casts"],
 				"money": plan["price"]["money"]})
 		if not _active(plan):
+			continue
+		# Against the Examiner, in a round without one: only a few Coins.
+		if _no_examiner(round_state, plan):
+			round_state.money += int(round_state.economy_value("examiner_spell_fallback_money", 3))
 			continue
 		if int(plan["lasts"]) > 0:
 			(round_state.carry["lasting"] as Array).append({
@@ -183,6 +188,11 @@ static func run_ops(round_state: RoundState, plan: Dictionary, ctx: Dictionary, 
 	return extra_score
 
 
+## A spell against the Examiner cast in a round that has none.
+static func _no_examiner(round_state: RoundState, plan: Dictionary) -> bool:
+	return round_state.rule.is_empty() and str(round_state.spell_data(plan["spell"]).get("target", "")) == "algiz"
+
+
 static func _active(plan: Dictionary) -> bool:
 	return not bool(plan["fizzled"]) and not bool(plan["gift"]) and float(plan["scale"]) > 0.0
 
@@ -207,6 +217,12 @@ static func _score_op(round_state: RoundState, op: Dictionary, ctx: Dictionary, 
 			mods["retrigger_scoring"] = int(mods["retrigger_scoring"]) + int(op.get("count", 0))
 		"word_upgrade":
 			mods["word_upgrade"] = int(mods["word_upgrade"]) + int(op.get("count", 0))
+		"ignore_rule_cast":
+			mods["ignore_rule"] = true
+		"talisman_retrigger_left":
+			mods["talisman_retrigger_left"] = int(mods.get("talisman_retrigger_left", 0)) + int(op.get("count", 0))
+		"power_per_talisman":
+			mods["add_power"] = float(mods["add_power"]) + float(op.get("amount", 0)) * round_state.talismans.size()
 
 
 ## A score op that has no Cast of its own any more applies to the next Cast instead.
@@ -278,7 +294,10 @@ static func _state_op(round_state: RoundState, op: Dictionary, ctx: Dictionary) 
 			for stone: Stone in round_state.hand:
 				stone.round_power += int(op["amount"])
 		"redraw_hand":
+			# The whole hand goes; a new one comes at once (also when Eihwaz repeats the Storm
+			# at the start of a round, where no Cast refills the hand afterwards).
 			round_state.hand.clear()
+			round_state.refill()
 		"add_swap":
 			round_state.swaps_left += int(op["count"])
 		"word_level_up":
@@ -307,7 +326,22 @@ static func _state_op(round_state: RoundState, op: Dictionary, ctx: Dictionary) 
 			next_round["peek"] = maxi(int(next_round.get("peek", 0)), int(op["count"]))
 		"next_round_add_cast":
 			next_round["casts"] = int(next_round.get("casts", 0)) + int(op["count"])
-	# Talisman and Examiner ops arrive with their stage (their spells are switched off).
+		"cancel_rule_round":
+			round_state.cancel_rule()
+		"target_pct_up":
+			round_state.target *= 1.0 + float(op["cost"]) / 100.0
+		"cancel_rule_casts":
+			round_state.rule_skip_casts += int(op["count"])
+		"examiner_target_down":
+			round_state.reduce_target(round_state.target * float(op["percent"]) / 100.0)
+		"peek_examiners":
+			round_state.carry["peek_examiners"] = maxi(int(round_state.carry.get("peek_examiners", 0)), int(op["count"]))
+		"talismans_no_wear":
+			round_state.talismans_no_wear = true
+		"shop_rare_talisman":
+			round_state.carry["shop_rare"] = int(round_state.carry.get("shop_rare", 0)) + int(op["count"])
+		"shop_extra_talisman":
+			round_state.carry["shop_extra"] = int(round_state.carry.get("shop_extra", 0)) + int(op["count"])
 	return 0.0
 
 
@@ -327,8 +361,13 @@ static func _choice_op(round_state: RoundState, plan: Dictionary, op: Dictionary
 					for i: int in maxi(1, int(op["count"])):
 						round_state.bag.add_copy_of(stone)
 				return
+			"sell_talisman_full", "transform_talisman", "destroy_talisman_res":
+				# Spread: every Talisman, at half strength (sold for half, or each one changed / destroyed).
+				for slot: int in range(round_state.talismans.size() - 1, -1, -1):
+					round_state.talisman_spell(kind, slot, op, 0.5)
+				return
 	var choice: Dictionary = {"kind": kind, "spell": plan["spell"]}
-	for key: String in ["count", "amount", "cost"]:
+	for key: String in ["count", "amount", "cost", "factor"]:
 		if op.has(key):
 			choice[key] = op[key]
 	round_state.ask(choice)

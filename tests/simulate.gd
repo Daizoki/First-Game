@@ -8,23 +8,171 @@ extends SceneTree
 ## often a Cast holds a spell, the win rate, how often the 40% target floor is reached and,
 ## per spell, how much it moved the round compared with a Cast without a spell.
 ##   part=3 runs only Part 3 (exams=150 by default).
+## Part 4 (Stage 3): whole exams of 8 trials with the Night Market in between, played by a
+## simple player (greedy Words, spells by chance, buys what it can afford). Reports how far
+## the exams get, which examiners stop them, and Coins / Talismans along the way.
+##   part=4 runs only Part 4 (exams=100 by default); parent=<id> plays every exam as that
+##   parent's child (data/parents.json).
 
 const Fixtures = preload("res://tests/fixtures.gd")
 const Stone = preload("res://scripts/core/stone.gd")
 const Bag = preload("res://scripts/core/bag.gd")
 const WordDetector = preload("res://scripts/core/word_detector.gd")
 const RoundState = preload("res://scripts/core/round_state.gd")
+const ExamState = preload("res://scripts/core/exam_state.gd")
+const ShopLogic = preload("res://scripts/core/shop_logic.gd")
 
 
 func _initialize() -> void:
 	var options: Dictionary = _options()
 	var data: Dictionary = Fixtures.data()
 	var rng: RandomNumberGenerator = Fixtures.rng(int(options.get("seed", 1)))
-	if str(options.get("part", "")) != "3":
+	var part: String = str(options.get("part", ""))
+	if part.is_empty():
 		_word_frequencies(data, rng, int(options.get("hands", 100000)))
 		_play_rounds(data, rng, int(options.get("rounds", 300)))
-	_spell_balance(data, int(options.get("seed", 1)), int(options.get("exams", 150)))
+	if part.is_empty() or part == "3":
+		_spell_balance(data, int(options.get("seed", 1)), int(options.get("exams", 150)))
+	if part.is_empty() or part == "4":
+		_full_exams(data, int(options.get("seed", 1)), int(options.get("exams", 100)), str(options.get("parent", "")))
 	quit()
+
+
+# --- Part 4: whole exams --------------------------------------------------------------------
+
+func _full_exams(data: Dictionary, seed_value: int, exams: int, parent: String) -> void:
+	var trials: int = (data["trials"] as Dictionary).size()
+	var reached: Array[int] = []
+	reached.resize(trials + 1)
+	reached.fill(0)
+	var stopped_by: Dictionary = {}
+	var progress: Array = []
+	for t: int in trials:
+		progress.append([] as Array[float])
+	var money_total: int = 0
+	var talismans_total: int = 0
+	var passed: int = 0
+	for e: int in exams:
+		var exam: ExamState = ExamState.new()
+		exam.setup(data, seed_value * 100003 + e, parent)
+		while not exam.is_over():
+			var trial: int = exam.trial_index
+			var kind: String = exam.round_kind()
+			var examiner_id: String = exam.examiner_id()
+			var state: RoundState = exam.new_round()
+			_play_exam_round(state)
+			state.finish()
+			if kind == "examiner":
+				(progress[trial] as Array).append(state.score / maxf(1.0, state.target))
+			var summary: Dictionary = exam.finish_round(state)
+			if not bool(summary["won"]) and not bool(summary.get("second_chance", false)):
+				var key: String = "%s (%s)" % [examiner_id if kind == "examiner" else kind, "P%d" % (trial + 1)]
+				stopped_by[key] = int(stopped_by.get(key, 0)) + 1
+			if not exam.is_over() and bool(summary["won"]):
+				_shop_greedily(exam, data)
+		var cleared: int = exam.trial_index + (1 if exam.passed else 0)
+		reached[cleared] += 1
+		money_total += exam.money
+		talismans_total += exam.talismans.size()
+		if exam.passed:
+			passed += 1
+	print("")
+	print("== Whole exams (%d exams, a simple player with the Night Market, parent: %s) ==" % [
+		exams, parent if not parent.is_empty() else "none"])
+	var targets: PackedStringArray = []
+	for id: String in data["trials"]:
+		targets.append(str(data["trials"][id]["base_target"]))
+	print("trial base targets: %s  (small ×1, big ×1.5, examiner ×2)" % ", ".join(targets))
+	var still: int = exams
+	for t: int in trials:
+		still -= reached[t]
+		var scores: Array = progress[t]
+		scores.sort()
+		var median: String = "-" if scores.is_empty() else "%.2fx" % float(scores[scores.size() / 2])
+		print("  trial %d passed: %5.1f%%   examiner round score / target (median): %s" % [t + 1, 100.0 * still / exams, median])
+	print("whole exam passed: %.1f%%   Coins at the end: %.1f   Talismans at the end: %.1f" % [
+		100.0 * passed / exams, float(money_total) / exams, float(talismans_total) / exams])
+	var keys: Array = stopped_by.keys()
+	keys.sort_custom(func(a: Variant, b: Variant) -> bool: return int(stopped_by[a]) > int(stopped_by[b]))
+	var lines: PackedStringArray = []
+	for key: Variant in keys.slice(0, 12):
+		lines.append("%s: %d" % [str(key), int(stopped_by[key])])
+	print("where exams end: %s" % ", ".join(lines))
+
+
+## Plays a round of the exam greedily: the best Word (spells by chance), Swaps for weak ones,
+## Engravings used at once, every pick answered automatically.
+func _play_exam_round(state: RoundState) -> void:
+	state.answer_all_automatically()
+	while not state.consumables.is_empty() and state.use_consumable(0):
+		state.answer_all_automatically()
+	var guard: int = 0
+	while state.casts_left > 0 and not state.hand.is_empty() and not state.is_won() and guard < 200:
+		guard += 1
+		var choice: Array[int] = _best_choice(state)
+		var needed: int = state.required_count()
+		if needed > 0 and choice.size() != needed:
+			choice = _fill_to(state, choice, needed)
+		if state.swaps_left > 0 and state.swap_cost() <= state.money and _weak(state, choice) and state.swaps_used < 3:
+			var swap: Array[int] = _non_scoring(state, choice)
+			if not swap.is_empty() and state.can_swap(swap):
+				state.swap(swap)
+				continue
+		if not state.can_cast(choice):
+			break
+		state.cast(choice)
+		state.answer_all_automatically()
+
+
+## Adds the weakest other stones until the selection has `count` stones (Kaldor).
+func _fill_to(state: RoundState, choice: Array[int], count: int) -> Array[int]:
+	var result: Array[int] = choice.slice(0, count)
+	for i: int in state.hand.size():
+		if result.size() >= count:
+			break
+		if not result.has(i):
+			result.append(i)
+	return result
+
+
+## The simple player's shopping: Lessons for Words it uses, then the dearest Talisman it can
+## afford, then a Bag if Coins are left; Lessons are learned at once.
+func _shop_greedily(exam: ExamState, data: Dictionary) -> void:
+	var shop: ShopLogic = ShopLogic.new()
+	shop.setup(exam, data)
+	var order: Array[int] = []
+	for i: int in shop.offer.size():
+		order.append(i)
+	order.sort_custom(func(a: int, b: int) -> bool:
+		return _shop_value(shop.offer[a]) > _shop_value(shop.offer[b]))
+	for i: int in order:
+		if not shop.can_buy(i):
+			continue
+		# Keep a few Coins for interest once the stall gets expensive.
+		if exam.money - int(shop.offer[i]["price"]) < 0:
+			continue
+		var bought: Dictionary = shop.buy(i)
+		if bought.has("pack"):
+			var pack: Dictionary = bought["pack"]
+			var taken: int = 0
+			for item: Dictionary in pack["items"]:
+				if taken < int(pack["pick"]) and shop.take_from_pack(item):
+					taken += 1
+	var slot: int = 0
+	while slot < exam.consumables.size():
+		if not exam.use_lesson(slot):
+			slot += 1
+
+
+func _shop_value(item: Dictionary) -> int:
+	match str(item["type"]):
+		"talisman":
+			return 100 + int(item["price"])
+		"lesson":
+			return 50
+		"pack":
+			return 20
+	return 10
 
 
 func _word_frequencies(data: Dictionary, rng: RandomNumberGenerator, hands: int) -> void:

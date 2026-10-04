@@ -32,6 +32,8 @@ const MAIN_MENU_SCENE: String = "res://scenes/main_menu.tscn"
 const SPEEDS: Array[int] = [1, 2, 4]
 const FUTHARK: Array[String] = ["fehu", "uruz", "thurisaz", "ansuz", "raidho"]
 const SHAKE_SHARE: float = 0.35
+## More Swaps than this are shown as "endless" (Aeva's Hourglass).
+const ENDLESS_SWAPS: int = 12
 
 @onready var _trial_label: Label = %TrialLabel
 @onready var _coins_label: Label = %CoinsLabel
@@ -102,6 +104,7 @@ const SHAKE_SHARE: float = 0.35
 ##   casts, swaps, hand, bag_top, bag_only, spells: see RoundState.setup
 ##   examiner: character id    backdrop: "night" | "classroom"
 ##   hide_swap: bool    show_result: bool (default true)
+##   round_state: a RoundState already set up and started (the exam builds its rounds)
 var config: Dictionary = {}
 ## Half-speed score animation (the tutorial explains it phase by phase).
 var slow_scoring: bool = false
@@ -131,12 +134,16 @@ func _ready() -> void:
 		_seed = randi()
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	rng.seed = _seed
-	_round = RoundState.new()
-	var target: float = float(config.get("target", GameData.rule("test_round_target", 1500)))
-	_round.setup({"runes": GameData.runes, "words": GameData.words, "spells": GameData.spells,
-		"spell_actions": GameData.spell_actions, "rules": GameData.rules, "economy": GameData.economy},
-		rng, target, config)
-	_round.start()
+	if config.has("round_state"):
+		_round = config["round_state"]
+	else:
+		_round = RoundState.new()
+		var target: float = float(config.get("target", GameData.rule("test_round_target", 1500)))
+		_round.setup({"runes": GameData.runes, "words": GameData.words, "spells": GameData.spells,
+			"spell_actions": GameData.spell_actions, "rules": GameData.rules, "economy": GameData.economy,
+			"examiners": GameData.examiners, "talismans": GameData.talismans,
+			"lessons": GameData.lessons, "engravings": GameData.engravings}, rng, target, config)
+		_round.start()
 	_casts_total = _round.casts_left
 	_swaps_total = _round.swaps_left
 	_speed = int(SaveManager.get_setting("scoring_speed", GameData.rule("scoring_speed", 1)))
@@ -149,6 +156,10 @@ func _ready() -> void:
 	_player.word_label = _word_name
 	_player.level_label = _word_level
 	_player.total_label = _preview_value
+	_player.talisman_string = _talismans
+	_talismans.moved.connect(_on_talisman_moved)
+	_consumables.consumable_mode = true
+	_consumables.used.connect(_on_consumable_used)
 
 	_hand.max_selection = _round.max_selection()
 	_hand.can_select = func(stone: Stone) -> bool:
@@ -201,6 +212,7 @@ func _ready() -> void:
 	_rune_book.visible = false
 	EventBus.round_started.emit()
 	call_deferred("_show_hand")
+	call_deferred("_resolve_start_picks")
 	_refresh_texts()
 
 
@@ -265,6 +277,12 @@ func _refresh_state() -> void:
 	_candles.left = _round.casts_left
 	_chalk.total = maxi(_swaps_total, _round.swaps_left)
 	_chalk.left = _round.swaps_left
+	# Aeva's Hourglass: Swaps without end, no chalk to draw.
+	var endless: bool = _round.swaps_left > ENDLESS_SWAPS
+	_chalk.visible = not endless and not bool(config.get("hide_swap", false))
+	_swaps_label.text = Loc.t("round_swaps_endless") if endless else Loc.t("round_swaps")
+	var cost: int = _round.swap_cost()
+	_swap_button.text = Loc.t("round_swap_button_cost", {"n": cost}) if cost > 0 else Loc.t("round_swap_button")
 	var selection: Array[int] = _hand.selected_indices()
 	_cast_button.disabled = _busy or not _round.can_cast(selection) or not EventBus.is_allowed("cast")
 	_swap_button.disabled = _busy or not _round.can_swap(selection) or not EventBus.is_allowed("swap")
@@ -274,6 +292,10 @@ func _refresh_state() -> void:
 	_menu_button.disabled = not EventBus.is_allowed("menu")
 	_word_book_button.disabled = not EventBus.is_allowed("word_book")
 	_hand.enabled = not _busy or (_picking and _choice_panel.uses_hand())
+	_talismans.set_owned(_round.talismans, 0 if _round.active_rule() == "trick" else -1)
+	_talismans.enabled = not _busy
+	_consumables.set_owned(_round.consumables)
+	_consumables.enabled = not _busy and EventBus.is_allowed("cast")
 	_scroll_slot.spell_id = _round.scroll_spell()
 	_scroll_slot.armed = _round.scroll_armed()
 	_scroll_slot.enabled = not _busy and EventBus.is_allowed("cast")
@@ -383,7 +405,13 @@ func _unhandled_input(event: InputEvent) -> void:
 ## The middle of the Rune Circle: Word, scoring stones, Power × Resonance, Spells.
 func _on_selection_changed() -> void:
 	if _picking:
-		_choice_panel.set_hand_picks(_hand.selected_indices().size())
+		var picked: Array[int] = _hand.selected_indices()
+		_choice_panel.set_hand_picks(picked.size())
+		# The Reshaping: the runes of the picked stone's Kin.
+		var runes: Array[String] = []
+		if not picked.is_empty():
+			runes = _round.rune_choices(_round.hand[picked[0]])
+		_choice_panel.set_rune_options(runes)
 		return
 	if _busy:
 		return
@@ -402,6 +430,15 @@ func _on_selection_changed() -> void:
 		_preview_value.text = ""
 		_power_value.text = "0"
 		_res_value.text = "0"
+	elif _selection_has_face_down():
+		# Lunet's Dream: a face-down stone keeps its secret until it is cast.
+		_word_name.text = Loc.t("word_hidden")
+		_word_level.text = ""
+		_scoring_count.text = Loc.t("circle_face_down")
+		_preview_value.text = ""
+		_power_value.text = "?"
+		_res_value.text = "?"
+		_preview = {}
 	else:
 		_word_name.text = _word_display_name(preview["word"])
 		_word_level.text = Loc.t("circle_level", {"n": _round.word_level(preview["word"])})
@@ -419,6 +456,13 @@ func _on_selection_changed() -> void:
 func _process(_delta: float) -> void:
 	var covered: bool = _pause_panel.visible or _word_book.visible or _rune_book.visible or _result_panel.visible
 	_set_word_card(not _busy and not covered and not _preview.is_empty() and _mouse_over_circle())
+
+
+func _selection_has_face_down() -> bool:
+	for i: int in _hand.selected_indices():
+		if _round.hand[i].face_down:
+			return true
+	return false
 
 
 func _mouse_over_circle() -> bool:
@@ -467,6 +511,15 @@ func _word_display_name(word_id: String) -> String:
 	if bool(word.get("hidden", false)) and not SaveManager.has_discovery("words", word_id):
 		return Loc.t("word_hidden")
 	return Loc.text(word["name"])
+
+
+## Talismans act left to right: dragging one changes the exam's order.
+func _on_talisman_moved(from: int, to: int) -> void:
+	if _busy:
+		return
+	var item: Dictionary = _round.talismans.pop_at(from)
+	_round.talismans.insert(clampi(to, 0, _round.talismans.size()), item)
+	_refresh_state()
 
 
 func _on_stone_moved(from: int, to: int) -> void:
@@ -532,6 +585,28 @@ func _on_cast_pressed() -> void:
 		_finish_round()
 
 
+## Picks waiting when the round starts (The Tide: put the extra stones back). A round can
+## also start already won (Provisions carried more score than the new target), or with no stone
+## to draw: then it ends at once.
+func _resolve_start_picks() -> void:
+	if not _round.pending.is_empty():
+		_busy = true
+		_refresh_state()
+		await _resolve_picks()
+		_busy = false
+		_show_hand()
+		_on_selection_changed()
+	if _round.is_won():
+		_busy = true
+		_refresh_state()
+		await _show_toast(Loc.t("round_won_at_start"))
+		_busy = false
+		_finish_round()
+	elif _round.is_lost():
+		# No stone left to draw: nothing can be cast.
+		_finish_round()
+
+
 ## The spells' picks, one after another. Stones are picked in the hand; where the player may
 ## not select (a tutorial step) the round answers by itself.
 func _resolve_picks() -> void:
@@ -549,6 +624,8 @@ func _resolve_picks() -> void:
 		_hand.max_selection = maxi(1, _choice_panel_max(limits))
 		var stones: Array = []
 		match str(limits["source"]):
+			"talisman":
+				stones = _round.talismans
 			"bag_top":
 				stones = _round.bag.peek(int(limits["count"]))
 			"offer":
@@ -571,6 +648,32 @@ func _resolve_picks() -> void:
 
 func _choice_panel_max(limits: Dictionary) -> int:
 	return int(limits.get("max", 0)) if str(limits.get("source", "")) == "hand" else 0
+
+
+## A click on a Lesson or an Engraving: a Lesson raises its Word now; an Engraving asks
+## which stones in hand it changes.
+func _on_consumable_used(slot: int) -> void:
+	if _busy or slot >= _round.consumables.size():
+		return
+	var item: Dictionary = _round.consumables[slot]
+	var lesson: bool = str(item["type"]) == "lesson"
+	if not _round.use_consumable(slot):
+		await _show_toast(Loc.t("consumable_cannot"))
+		return
+	if lesson:
+		var word_id: String = str((GameData.lessons.get(str(item["id"]), {}) as Dictionary).get("word", ""))
+		EventBus.consumable_used.emit("lesson", str(item["id"]))
+		_refresh_state()
+		_on_selection_changed()
+		await _show_toast(Loc.t("lesson_learned", {"word": _word_display_name(word_id), "n": _round.word_level(word_id)}))
+		return
+	EventBus.consumable_used.emit("engraving", str(item["id"]))
+	_busy = true
+	_refresh_state()
+	await _resolve_picks()
+	_busy = false
+	_show_hand()
+	_on_selection_changed()
 
 
 ## A click on the Scroll: ready to happen with the next Cast, or put away again.
@@ -604,9 +707,13 @@ func _announce(result: Dictionary) -> void:
 	var word_id: String = result["word"]
 	var word: Dictionary = GameData.words[word_id]
 	if bool(word.get("hidden", false)) and SaveManager.add_discovery("words", word_id):
-		await _show_toast(Loc.t("word_discovered", {"name": Loc.text(word["name"])}))
+		SaveManager.data["memories"] = int(SaveManager.data.get("memories", 0)) + int(GameData.rule("memories_per_word", 3))
+		SaveManager.save_game()
+		await _show_toast(Loc.t("word_discovered", {"name": Loc.text(word["name"]), "n": GameData.rule("memories_per_word", 3)}))
 	if word_id == "chant" and _spells_out(result["cast_stones"]) == FUTHARK:
 		await _show_toast(Loc.t("futhark_message"))
+	for gone: String in result.get("talismans_gone", []):
+		await _show_toast(Loc.t("talisman_gone", {"name": Loc.text((GameData.talismans.get(gone, {}) as Dictionary).get("name", {}))}))
 	var plans: Array = result["plans"]
 	for n: int in plans.size():
 		var plan: Dictionary = plans[n]

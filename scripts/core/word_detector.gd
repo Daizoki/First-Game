@@ -14,6 +14,31 @@ const KINS: Array = ["fehu", "hagalaz", "tiwaz"]
 ## Best Word formed by the cast stones (1..5 stones, in hand order).
 ## Returns {"word": id, "scoring": Array[int] (indices into `stones`, left to right), "kin": kin id or ""}.
 static func detect(stones: Array[Stone], words: Dictionary) -> Dictionary:
+	# A bind-rune counts as either of its runes: try every reading, keep the best Word.
+	var bound: Array[int] = []
+	for i: int in stones.size():
+		if not stones[i].bound_rune.is_empty():
+			bound.append(i)
+	if bound.is_empty():
+		return _detect_plain(stones, words)
+	var best: Dictionary = {}
+	for mask: int in range(1 << bound.size()):
+		var reading: Array[Stone] = stones.duplicate()
+		for b: int in bound.size():
+			if mask & (1 << b):
+				reading[bound[b]] = stones[bound[b]].as_bound()
+		var found: Dictionary = _detect_plain(reading, words)
+		if best.is_empty() or _rank(words, found) > _rank(words, best) \
+				or (_rank(words, found) == _rank(words, best) and (found["scoring"] as Array).size() > (best["scoring"] as Array).size()):
+			best = found
+	return best
+
+
+static func _rank(words: Dictionary, found: Dictionary) -> int:
+	return int((words[found["word"]] as Dictionary).get("rank", 0)) if not found.is_empty() else -1
+
+
+static func _detect_plain(stones: Array[Stone], words: Dictionary) -> Dictionary:
 	var best: Dictionary = {}
 	if stones.is_empty():
 		return best
