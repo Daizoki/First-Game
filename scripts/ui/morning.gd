@@ -15,7 +15,8 @@ const Progress = preload("res://scripts/core/progress.gd")
 const PARENT_SCENE: String = "res://scenes/parent_select.tscn"
 const EXAM_SCENE: String = "res://scenes/exam.tscn"
 const COLLECTION_SCENE: String = "res://scenes/collection.tscn"
-const TUTORIAL_SCENE: String = "res://scenes/tutorial.tscn"
+## Until the new evening class (Stage 5 step H) it is a practice fight.
+const PRACTICE_SCENE: String = "res://scenes/round.tscn"
 const SETTINGS_SCENE: String = "res://scenes/settings.tscn"
 const MAIN_MENU_SCENE: String = "res://scenes/main_menu.tscn"
 const MEMORY_COLOR: Color = Color("#b59be0")
@@ -130,7 +131,7 @@ func _build_aeva() -> Control:
 	you.add_theme_color_override("font_color", Color("#e9e3d2"))
 	var stats: Dictionary = SaveManager.data.get("stats", {})
 	var line: Label = _label(box, Loc.t("morning_stats", {
-		"trial": int(stats.get("best_trial", 0)), "total": GameData.trials.size(),
+		"trial": int(stats.get("best_trial", 0)), "total": GameData.realms.size(),
 		"passed": int(stats.get("exams_passed", 0)), "cast": Loc.number(float(stats.get("best_cast_score", 0.0))),
 	}), 22, &"SecondaryLabel")
 	line.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -231,8 +232,7 @@ func _abandon_and_begin() -> void:
 
 
 func _on_evening_class() -> void:
-	RunState.came_from_class = true
-	get_tree().change_scene_to_file(TUTORIAL_SCENE)
+	get_tree().change_scene_to_file(PRACTICE_SCENE)
 
 
 # --- Building blocks -------------------------------------------------------------------------

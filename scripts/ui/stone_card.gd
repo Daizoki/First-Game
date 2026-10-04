@@ -1,9 +1,11 @@
 extends PanelContainer
-## The card shown while the mouse is over a stone: the rune, its historical meaning, its
-## Position and Kin, its role in the rune grammar, its Power and its Voice. Later also the material and bind-runes.
+## The card shown while the mouse is over a stone: the rune, its Kin, its historical meaning,
+## its role in the rune grammar and what it does in a sentence, its material and the rune
+## bound to it.
 
 const Stone = preload("res://scripts/core/stone.gd")
 const RuneGlyphScript = preload("res://scripts/ui/rune_glyph.gd")
+const SpellText = preload("res://scripts/ui/spell_text.gd")
 
 const WIDTH: float = 470.0
 const GAP: float = 16.0
@@ -15,9 +17,11 @@ var _kin: Label
 var _role: Label
 var _meaning: Label
 var _power: Label
-var _voice: Label
+var _does: Label
 ## The role line (off while the rune grammar is not taught yet).
 var show_role: bool = true
+## The Elements' levels this Journey (element id -> level), for an Element's numbers.
+var levels: Dictionary = {}
 
 var _stone: Stone = null
 var _anchor: Control = null
@@ -44,8 +48,8 @@ func _ready() -> void:
 	_role = _label(box, 25, &"")
 	_meaning = _label(box, 25, &"")
 	_power = _label(box, 25, &"SecondaryLabel")
-	_voice = _label(box, 25, &"")
-	for label: Label in [_meaning, _voice]:
+	_does = _label(box, 25, &"")
+	for label: Label in [_meaning, _does]:
 		label.custom_minimum_size = Vector2(WIDTH - 40.0, 0)
 		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
@@ -67,25 +71,29 @@ func show_stone(stone: Stone, anchor: Control) -> void:
 	var kin: Dictionary = GameData.kins.get(stone.kin, {})
 	_glyph.rune_id = stone.rune_id
 	_name.text = Loc.text(rune.get("name", {}))
-	_kin.text = Loc.t("card_position_kin", {"n": stone.position, "kin": Loc.text(kin.get("name", {}))})
+	_kin.text = Loc.text(kin.get("name", {}))
 	_kin.add_theme_color_override("font_color", GameData.kin_color(stone.kin))
 	_role.text = Loc.t("card_role", {"role": Loc.t("role_" + str(rune.get("role", ""))),
 		"phrase": Loc.text(rune.get("phrase", {}))})
 	_role.visible = show_role and rune.has("role")
 	_meaning.text = Loc.t("card_meaning", {"meaning": Loc.text(rune.get("meaning", {}))})
-	_power.text = Loc.t("card_power", {"n": stone.base_power + stone.bonus_power})
-	_voice.text = Loc.t("card_voice", {"voice": Loc.text(rune.get("voice", {}))})
+	_power.text = Loc.t("card_power", {"n": stone.power()}) if stone.power() != 0 else ""
+	_does.text = SpellText.rune_role(stone.rune_id, int(levels.get(stone.rune_id, 1)))
+	_does.visible = show_role and not _does.text.is_empty()
 	if not stone.bound_rune.is_empty():
 		var other: Dictionary = GameData.runes.get(stone.bound_rune, {})
 		_name.text = "%s + %s" % [_name.text, Loc.text(other.get("name", {}))]
-		_voice.text += "\n" + Loc.t("card_bound", {"rune": Loc.text(other.get("name", {})),
-			"voice": Loc.text(other.get("voice", {}))})
+		_does.text += "\n" + Loc.t("card_bound", {"rune": Loc.text(other.get("name", {})),
+			"does": SpellText.rune_role(stone.bound_rune, int(levels.get(stone.bound_rune, 1)))})
 	if not stone.material.is_empty():
 		var engraving: Dictionary = {}
 		for id: String in GameData.engravings:
 			if str(GameData.engravings[id].get("material", "")) == stone.material:
 				engraving = GameData.engravings[id]
-		_power.text += "  ·  " + Loc.t("material_" + stone.material, {"value": Loc.number(float(engraving.get("value", 0)))})
+		if not _power.text.is_empty():
+			_power.text += "  ·  "
+		_power.text += Loc.t("material_" + stone.material, {"value": Loc.number(float(engraving.get("value", 0)))})
+	_power.visible = not _power.text.is_empty()
 	reset_size()
 
 
@@ -95,7 +103,8 @@ func _show_hidden() -> void:
 	_name.text = Loc.t("card_face_down")
 	for label: Label in [_kin, _role, _meaning, _power]:
 		label.visible = false
-	_voice.text = Loc.t("card_face_down_text")
+	_does.visible = true
+	_does.text = Loc.t("card_face_down_text")
 	reset_size()
 
 

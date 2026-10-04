@@ -35,7 +35,7 @@ static func default_data() -> Dictionary:
 		"collection": {"talismans": [], "engravings": [], "monsters": []},
 		## Permanent discoveries: spells, the Actions learned, hidden Words, old words (ALU, LAÞU, AUJA).
 		## torn_pages: spells whose cell of the Spell Table a Torn Page shows (bought in the Market).
-		"discoveries": {"spells": [], "actions": [], "words": [], "old_words": [], "torn_pages": []},
+		"discoveries": {"spells": [], "actions": [], "torn_pages": []},
 		## Records; element_levels = the highest level each Element reached (free keys).
 		"stats": {
 			"best_cast_score": 0.0, "best_trial": 0, "exams_passed": 0, "exams_finished": 0, "element_levels": {},

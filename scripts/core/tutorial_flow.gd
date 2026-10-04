@@ -9,7 +9,7 @@ extends RefCounted
 ##           "say": a loc text to show first (alt_text / wrong_text), or null}
 
 ## Actions the player always keeps (they never break a lesson).
-const ALWAYS_ALLOWED: Array[String] = ["sort", "speed", "menu", "word_book"]
+const ALWAYS_ALLOWED: Array[String] = ["sort", "speed", "menu"]
 const GAME_ACTIONS: Array[String] = ["select", "cast", "swap"]
 ## Waits that can no longer happen once the lesson's round is won.
 const PLAY_EVENTS: Array[String] = ["hover", "selection", "cast", "swap", "round_won"]

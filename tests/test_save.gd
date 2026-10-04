@@ -79,15 +79,15 @@ func test_merge_fixes_types_and_keeps_new_defaults() -> void:
 func test_discoveries_are_saved() -> void:
 	var manager: SaveManagerScript = _make()
 	manager.load_game()
-	check(not manager.has_discovery("old_words", "alu"), "alu should not be known at start")
-	check(manager.add_discovery("old_words", "alu"), "first discovery should return true")
-	check(not manager.add_discovery("old_words", "alu"), "second discovery should return false")
+	check(not manager.has_discovery("torn_pages", "kenaz_fehu"), "the page should not be known at start")
+	check(manager.add_discovery("torn_pages", "kenaz_fehu"), "first discovery should return true")
+	check(not manager.add_discovery("torn_pages", "kenaz_fehu"), "second discovery should return false")
 
 	var other: SaveManagerScript = SaveManagerScript.new()
 	other.save_path = TEST_PATH
 	other.load_game()
-	check(other.has_discovery("old_words", "alu"), "discovery should survive a reload")
-	check(not other.has_discovery("words", "alu"), "categories are separate")
+	check(other.has_discovery("torn_pages", "kenaz_fehu"), "discovery should survive a reload")
+	check(not other.has_discovery("actions", "kenaz_fehu"), "categories are separate")
 	check(manager.add_discovery("spells", "winter"), "spells are a discovery category")
 	manager.free()
 	other.free()

@@ -5,6 +5,7 @@ extends Control
 
 const Portrait = preload("res://scripts/ui/portrait.gd")
 const Progress = preload("res://scripts/core/progress.gd")
+const SpellText = preload("res://scripts/ui/spell_text.gd")
 
 const MORNING_SCENE: String = "res://scenes/morning.tscn"
 const CARD_SIZE: Vector2 = Vector2(330, 260)
@@ -97,7 +98,7 @@ func _table(page: String) -> Dictionary:
 			return GameData.talismans
 		"engravings":
 			return GameData.engravings
-	return GameData.examiners
+	return GameData.monsters
 
 
 func _card(page: String, id: String, entry: Dictionary, known: bool) -> Control:
@@ -131,7 +132,7 @@ func _card(page: String, id: String, entry: Dictionary, known: bool) -> Control:
 				if entry.has(key):
 					values[key] = Loc.number(float(entry[key]))
 			_wrapped(box, Loc.text(entry.get("text", {}), values), 19, &"")
-		"examiners":
+		"monsters":
 			var row: HBoxContainer = HBoxContainer.new()
 			row.add_theme_constant_override("separation", 10)
 			box.add_child(row)
@@ -139,13 +140,14 @@ func _card(page: String, id: String, entry: Dictionary, known: bool) -> Control:
 			portrait.custom_minimum_size = Vector2(80, 80)
 			portrait.character_id = id
 			row.add_child(portrait)
-			var character: Dictionary = GameData.characters.get(id, {})
 			var who: VBoxContainer = VBoxContainer.new()
 			row.add_child(who)
-			_label(who, Loc.text(character.get("name", {})), 30, &"TitleLabel")
-			_label(who, Loc.text(entry.get("title", {})), 20, &"").add_theme_color_override("font_color", RULE_COLOR)
-			_wrapped(box, Loc.text(entry.get("text", {})), 19, &"")
-			_wrapped(box, "„%s”" % Loc.text(entry.get("intro", {})), 18, &"SecondaryLabel")
+			_wrapped(who, Loc.text(entry.get("name", {})), 26, &"TitleLabel").custom_minimum_size.x = CARD_SIZE.x - 130.0
+			_label(who, Loc.t("monster_kind_" + str(entry.get("kind", "small"))), 18, &"").add_theme_color_override(
+				"font_color", RULE_COLOR)
+			if entry.has("rule_text"):
+				_wrapped(box, SpellText.rule_text(entry), 19, &"")
+			_wrapped(box, Loc.text(entry.get("description", {})), 18, &"SecondaryLabel")
 	return card
 
 

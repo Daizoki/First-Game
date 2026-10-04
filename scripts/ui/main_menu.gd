@@ -3,7 +3,8 @@ extends Control
 
 const SETTINGS_SCENE: String = "res://scenes/settings.tscn"
 const RUNE_CHECK_SCENE: String = "res://scenes/rune_check.tscn"
-const TUTORIAL_SCENE: String = "res://scenes/tutorial.tscn"
+## Until the new evening class (Stage 5 step H) the button opens a practice fight.
+const PRACTICE_SCENE: String = "res://scenes/round.tscn"
 ## Play goes to the Morning of the exam (the hub of Aeva's loop).
 const MORNING_SCENE: String = "res://scenes/morning.tscn"
 
@@ -25,7 +26,7 @@ const MORNING_SCENE: String = "res://scenes/morning.tscn"
 
 func _ready() -> void:
 	_play_button.pressed.connect(_on_play_pressed)
-	_tutorial_button.pressed.connect(func() -> void: get_tree().change_scene_to_file(TUTORIAL_SCENE))
+	_tutorial_button.pressed.connect(func() -> void: get_tree().change_scene_to_file(PRACTICE_SCENE))
 	_runes_button.pressed.connect(_on_runes_pressed)
 	_settings_button.pressed.connect(_on_settings_pressed)
 	_quit_button.pressed.connect(_on_quit_pressed)

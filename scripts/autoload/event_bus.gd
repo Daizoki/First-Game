@@ -61,7 +61,7 @@ signal gate_changed
 ## A scoring hold was released (see hold_scoring).
 signal scoring_released
 
-## Actions the player may take: "select", "cast", "swap", "sort", "speed", "menu", "word_book".
+## Actions the player may take: "select", "cast", "swap", "sort", "speed", "menu".
 ## Empty = everything is allowed. Hovering is always allowed.
 var allowed_actions: Array[String] = []
 ## When not empty, only stones with these runes can be selected.

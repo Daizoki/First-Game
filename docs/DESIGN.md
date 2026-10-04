@@ -1,7 +1,26 @@
-# Designul Jocului 1 — „Examenul de Moștenire” (EN: „The Inheritance Exam”) — v4
+# Designul Jocului 1 — „Examenul de Moștenire” (EN: „The Inheritance Exam”) — v5 (în lucru)
 
 > Document viu: se actualizează când se schimbă designul. Valorile exacte stau în `data/*.json`.
 > v1 (deckbuilder cu lupte) și v2 (cercul runic) sunt **înlocuite**. v4 = v3 + **Vrăjile** (3.15) + stilul vizual (3.16).
+
+> **v5 (Etapa 5, în lucru).** Sursa de adevăr e `docs/PROMPT_ETAPA5.md` + `docs/PLAN_ETAPA5.md`. Secțiunile de mai jos
+> se rescriu pe rând, la fiecare pas. Ce e deja în joc după **pasul B** (înlocuiește 3.3, 3.4, 3.5 „Poziția și Glasul”,
+> 3.8 și 3.14):
+> - **Lupta:** fiecare luptă e cu un monstru care are viață. Ai 4 Rostiri și 3 Schimbări; monstrul trebuie ucis
+>   înainte să se termine Rostirile. Nu mai există țintă de scor, Cuvinte, Poziții sau Glasuri.
+> - **Dauna** vine doar din vrăji: Putere × Rezonanță ale Elementului (nivelul crește cu Lecțiile: +50% Putere de bază,
+>   +1 Rezonanță) × slăbiciunea monstrului (slab ×2, rezistă ×0,5, imun ×0) × partea Țintei (Tiwaz 100% cu natura
+>   dublă, celelalte 50% plus efectul lor; Ingwaz 0 acum și 200% la Rostirea următoare; Ansuz urcă Elementul).
+>   Până la 2 vrăji pe Rostire; a doua primește ×1,25 („lanț”). Toate pietrele (cel puțin 3) din același Neam: ×1,5
+>   Rezonanță. Naturile Elementelor: Arsură, Zdrobire, Spini, Îngheț, Ploaie (lovituri), Lumină, Val, Timp
+>   (`data/elements.json`). Acțiunile: Raidho trece surplusul la monstrul următor, Ehwaz de două ori, Eihwaz încă două
+>   Rostiri la jumătate, Berkanan crește cu fiecare folosire, Jera ×2 după Rostirea următoare, Perthro e noroc,
+>   Naudiz cere un preț (o Schimbare sau 3 Monede) pentru ×2,5, Gebo pune vraja pe Pergament.
+> - **Lumea (provizoriu până la pasul D):** 8 Tărâmuri (`data/realms.json`), în fiecare un monstru mic, unul mare și
+>   Stăpânul cu regula lui (`data/monsters.json`: 16 monștri, 8 Stăpâni, Balaurul cu 3 capete la final). Viața =
+>   baza Tărâmului × 1 / 1,5 / 2,5 × a monstrului. Între lupte, Piața de noapte rămâne cea din Etapa 3.
+> - **Ecranul de luptă (provizoriu până la pasul G):** cartea monstrului (portret, bara de viață cu urma albă a loviturii,
+>   slăbiciuni, Arsură / Îngheț / Scut, regula), estimarea daunei cu „Ucide!”, propoziția sub cerc.
 
 ## 1. Viziunea
 - Gen: **roguelike de construit scoruri, cu rune în loc de cărți**, în spiritul Balatro.
@@ -517,6 +536,17 @@ Un efect = **declanșator** + **condiții** + **acțiuni**.
 - Efecte prea speciale pentru JSON: handler numit în cod (`"special": "gebo_copy_left"`), ținuți într-o listă scurtă.
 
 ## Jurnal de decizii
+- **Etapa 5, pasul B (lupta; propuneri ale lui Claude, acceptate de Relax: „da pina ce facem tot ce spui tu”):**
+  - Valorile din `PLAN_ETAPA5.md` 6 (Elementele, Țintele, Acțiunile) și 13 (viața pe Tărâmuri) sunt cele din date.
+  - Natura Elementului se aplică doar dacă vraja chiar lovește (nu pe un monstru imun, nu pe o vrajă amânată).
+  - Arsura mușcă la începutul Rostirii următoare; Viitorul (Ingwaz), Jera și Eihwaz lovesc tot atunci.
+  - Estimarea arată dauna sigură; Perthro adaugă „cu noroc, până la…”, vrăjile amânate „lovește mai târziu”.
+  - Previzualizarea pune vraja ne-descoperită ca „???”; Cartea de rune nu mai are pagina Cuvintelor.
+  - Până la pasul H, „Instruire” (meniu) și „Cursul de seară” (Dimineața) deschid o luptă cu Manechinul
+    (`rules.json` → `test_fight_monster`); lecțiile vechi sunt scoase din `tutorial.json`.
+  - Salvarea veche (v1) se resetează, păstrând numele și setările; o copie rămâne în `save.json.v1`.
+  - Simulatorul (jucătorul lacom, 30 de Călătorii): 43% trec de Balaur, o luptă se termină în ~1,2 Rostiri. E prea
+    ușor; balansul e la pasul I.
 - **v3:** jocul devine roguelike de scoruri cu pietre de rune (stil Balatro, termeni proprii). Folosim runele reale
   ale Futharkului vechi (regula din v2 „fără alfabete runice reale” e anulată). Grafică desenată, 1920×1080.
 - **Etapa 1 pe v3 (decizii propuse de Claude, acceptate implicit):**

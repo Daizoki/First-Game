@@ -1,15 +1,16 @@
 extends PanelContainer
-## The player's picks that spells ask for (RoundState.pending): a panel above the hand with
+## The player's picks that spells ask for (FightState.pending): a panel above the hand with
 ## the spell's name and what to pick. Stones from the hand are picked in the hand itself
 ## (the panel counts them and confirms); a price is two buttons; stones from the bag (The
 ## Omen) or freshly drawn (The Choice) are shown on the panel and clicked.
 
-## The answer for RoundState.answer(). For picks from the hand the round screen adds
+## The answer for FightState.answer(). For picks from the hand the fight screen adds
 ## "stones" (the hand's selection) before answering.
 signal answered(reply: Dictionary)
 
 const Stone = preload("res://scripts/core/stone.gd")
 const MiniStone = preload("res://scripts/ui/mini_stone.gd")
+const SpellText = preload("res://scripts/ui/spell_text.gd")
 
 const WIDTH: float = 760.0
 ## The panel's bottom edge sits this far above the parent's bottom (over the hand).
@@ -67,7 +68,7 @@ func _ready() -> void:
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 
 
-## Shows a pick. limits: RoundState.pick_limits(). ctx: {"money": int, "stones": Array[Stone]
+## Shows a pick. limits: FightState.pick_limits(). ctx: {"money": int, "swaps": int, "stones": Array[Stone]
 ## (the bag's top for The Omen, the offer for The Choice), "kins": Array[String]}.
 func ask(choice: Dictionary, limits: Dictionary, ctx: Dictionary) -> void:
 	_choice = choice
@@ -95,8 +96,10 @@ func ask(choice: Dictionary, limits: Dictionary, ctx: Dictionary) -> void:
 	_confirm = null
 	match str(limits.get("source", "")):
 		"option":
-			var cast_button: Button = _button(Loc.t("choice_pay_cast", {"n": choice.get("casts", 1)}))
-			cast_button.pressed.connect(func() -> void: answered.emit({"option": "cast"}))
+			# Naudiz's price: a Swap or a few Coins.
+			var swap_button: Button = _button(Loc.t("choice_pay_swap", {"n": choice.get("swaps", 1)}))
+			swap_button.disabled = int(ctx.get("swaps", 0)) < int(choice.get("swaps", 1))
+			swap_button.pressed.connect(func() -> void: answered.emit({"option": "swap"}))
 			var money_button: Button = _button(Loc.t("choice_pay_money", {"n": choice.get("money", 0)}))
 			money_button.disabled = int(ctx.get("money", 0)) < int(choice.get("money", 0))
 			money_button.pressed.connect(func() -> void: answered.emit({"option": "money"}))
@@ -136,13 +139,13 @@ func ask(choice: Dictionary, limits: Dictionary, ctx: Dictionary) -> void:
 				talisman_button.tooltip_text = Loc.text(entry.get("description", {}))
 				talisman_button.pressed.connect(func() -> void: answered.emit({"talisman": slot}))
 		"rule":
-			# Water against the Examiner: one of two other examiners' rules.
-			for examiner_id: Variant in choice.get("rules", []):
-				var entry: Dictionary = GameData.examiners.get(examiner_id, {})
-				var rule_button: Button = _button(Loc.text(entry.get("title", {})))
+			# Water upon the Lord: the rule of another Lord instead.
+			for monster_id: Variant in choice.get("rules", []):
+				var entry: Dictionary = GameData.monsters.get(monster_id, {})
+				var rule_button: Button = _button(Loc.text(entry.get("name", {})))
 				rule_button.custom_minimum_size = Vector2(320, 64)
-				rule_button.tooltip_text = Loc.text(entry.get("text", {}))
-				rule_button.pressed.connect(func() -> void: answered.emit({"rule": str(examiner_id)}))
+				rule_button.tooltip_text = SpellText.rule_text(entry)
+				rule_button.pressed.connect(func() -> void: answered.emit({"rule": str(monster_id)}))
 	visible = true
 	_place()
 
@@ -208,7 +211,7 @@ func set_rune_options(rune_ids: Array[String]) -> void:
 		rune_button.text = "%s %s" % [str(rune.get("glyph", "")), Loc.text(rune.get("name", {}))]
 		rune_button.add_theme_font_size_override("font_size", 20)
 		rune_button.custom_minimum_size = Vector2(0, 52)
-		rune_button.tooltip_text = Loc.text(rune.get("voice", {}))
+		rune_button.tooltip_text = SpellText.rune_role(id)
 		rune_button.pressed.connect(_on_rune.bind(id, rune_button))
 		_runes.add_child(rune_button)
 	_refresh_confirm()
@@ -235,7 +238,7 @@ func _show_stones(stones: Array) -> void:
 		var button: Button = Button.new()
 		button.custom_minimum_size = Vector2(76, 104)
 		button.tooltip_text = "%s · %s" % [Loc.text((GameData.runes.get(stone.rune_id, {}) as Dictionary).get("name", {})),
-			Loc.t("card_power", {"n": stone.base_power + stone.bonus_power})]
+			SpellText.rune_role(stone.rune_id)]
 		var mini: MiniStone = MiniStone.new()
 		mini.rune_id = stone.rune_id
 		mini.show_role = true

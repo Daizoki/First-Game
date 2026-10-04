@@ -65,14 +65,14 @@ const ENUMS: Dictionary = {
 		"hover", "selection", "cast", "swap", "round_won", "spell_cast", "spell_discovered", "book_opened",
 		"book_closed",
 	],
-	"tutorial_action": ["select", "cast", "swap", "sort", "speed", "menu", "word_book"],
+	"tutorial_action": ["select", "cast", "swap", "sort", "speed", "menu"],
 	"tutorial_labels": ["meaning"],
-	"book": ["words", "runes"],
+	"book": ["runes"],
 	## UI elements the tutorial can light up (metadata "tutorial_id" on the round screen),
 	## plus "stone:<rune_id>" for a stone in hand.
 	"ui_id": [
-		"hand", "circle", "btn_cast", "btn_swap", "target", "score", "candles", "chalk", "power_res",
-		"examiner", "btn_word_book", "btn_menu", "sort", "kenaz", "btn_rune_book", "sentence", "scroll", "choice",
+		"hand", "circle", "btn_cast", "btn_swap", "estimate", "candles", "chalk", "power_res",
+		"monster", "hp", "btn_menu", "sort", "peek", "btn_rune_book", "sentence", "scroll", "choice",
 	],
 	## What can show a contextual hint (data/hints.json). Events of later stages are listed
 	## already so their hints can wait with "enabled": false.

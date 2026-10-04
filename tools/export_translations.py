@@ -76,13 +76,17 @@ def spells_section():
 
 
 def exam_section():
-    out = ["## Examenul (`data/examiners.json`, `talismans.json`, `lessons.json`, `engravings.json`, `dialogs.json`,",
-           "`parents.json`)", ""]
-    rows = []
-    for ex in load("examiners.json"):
-        for field in ["title", "text", "intro", "defeated", "won"]:
-            rows.append((ex["id"] + " · " + field, ex[field]["ro"], ex[field]["en"]))
-    out += ["### Examinatorii", ""] + table(rows, "Examinator") + [""]
+    out = ["## Lumea și Călătoria (`data/elements.json`, `targets.json`, `realms.json`, `monsters.json`,",
+           "`talismans.json`, `lessons.json`, `engravings.json`, `dialogs.json`, `parents.json`)", ""]
+    rows = [(e["id"] + " · natura", e["nature_text"]["ro"], e["nature_text"]["en"]) for e in load("elements.json")]
+    rows += [(t["id"] + " · Ținta", t["text"]["ro"], t["text"]["en"]) for t in load("targets.json")]
+    out += ["### Elementele și Țintele", ""] + table(rows, "Rună") + [""]
+    rows = [(r["id"], r["name"]["ro"], r["name"]["en"]) for r in load("realms.json")]
+    for m in load("monsters.json"):
+        for field in ["name", "description", "rule_text"]:
+            if field in m:
+                rows.append((m["id"] + " · " + field, m[field]["ro"], m[field]["en"]))
+    out += ["### Tărâmurile și monștrii", ""] + table(rows, "Cine") + [""]
     rows = []
     for t in load("talismans.json"):
         rows.append((t["id"], t["name"]["ro"], t["name"]["en"]))

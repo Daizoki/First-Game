@@ -1,9 +1,10 @@
 # CLAUDE.md — reguli pentru „Examenul de Moștenire” (Universul „Coborârea”, Jocul 1)
 
-> Versiunea de design: **v4 — rune în stil Balatro + Vrăji + stil desenat.** Roguelike de construit scoruri: un Săculeț
-> cu pietre de rune (cele 24 de rune reale ale Futharkului vechi), Cuvinte rostite, scor = Putere × Rezonanță, plus
-> **Vrăji** după Gramatica runelor: fiecare rună e Element, Acțiune sau Țintă, iar pietrele rostite în ordine formează
-> o propoziție (Element → Acțiuni → Țintă) care devine vrajă.
+> Versiunea de design: **v5 — lupte cu monștri din folclorul românesc, daună din Vrăji** (`docs/PROMPT_ETAPA5.md`,
+> planul în `docs/PLAN_ETAPA5.md`; are prioritate față de GRAMATICA/INSTRUIRE). Un Săculeț cu pietre de rune (cele 24
+> de rune reale ale Futharkului vechi); fiecare rună e Element, Acțiune sau Țintă, iar pietrele rostite în ordine
+> formează propoziții (Element → 0–2 Acțiuni → Țintă), până la 2 vrăji pe Rostire. Dauna = Putere × Rezonanță ×
+> slăbiciunea monstrului × partea Țintei. Cuvintele, Pozițiile și Glasurile nu mai există.
 > Motto: „Puterea o moștenești. Runele le înveți.”
 
 Citește asta la începutul fiecărei sesiuni. Design: `docs/DESIGN.md`. Lume și personaje: `docs/UNIVERS.md`.
@@ -31,7 +32,11 @@ Artă: `docs/ARTA.md`.
 > - Dimineața examenului (`scenes/morning.tscn`), alegerea părintelui, ecranul Amintirilor, „Aeva întoarce timpul”;
 > - Cartea de rune cu pagina Cuvintelor, Colecția (`scenes/collection.tscn`), Paginile rupte din Piață (versurile
 >   din `spells_base.json`), numele schimbat din Setări.
-> „Joacă” duce în Dimineață. Așteaptă testul lui Relax.
+> „Joacă” duce în Dimineață. **Etapa 5 (marea schimbare) e în lucru: pașii A (planul) și B (lupta) sunt făcuți** —
+> Elementele, Țintele, monștrii și Tărâmurile în date (`elements`, `targets`, `monsters`, `realms`), `monster.gd`,
+> `damage.gd`, `fight_state.gd` (înlocuiește `round_state.gd`), Călătoria provizorie prin 8 Tărâmuri în `exam_state.gd`,
+> ecranul de luptă provizoriu (cartea monstrului cu bara de viață, estimarea daunei). Instruirea e oprită până la pasul
+> H: „Instruire” și „Cursul de seară” deschid o luptă cu Manechinul. Așteaptă OK-ul lui Relax pentru pasul C.
 > Verificat cu Godot 4.7.2: toate testele trec (inclusiv parcurgerea fiecărei lecții).
 
 ## Etapa 5 — marea schimbare (citește întâi asta)
@@ -63,16 +68,17 @@ Artă: `docs/ARTA.md`.
 | pachetul de cărți | **Săculețul** cu pietre de rune | `bag` |
 | o carte | o **piatră** (cu o rună pe ea) | `stone` |
 | culoarea (suit) | **Neamul** (3 neamuri) | `kin` |
-| valoarea cărții | **Poziția** runei în neamul ei (1–8) | `position` |
-| mâna de poker jucată | **Cuvântul** rostit | `word` |
 | a juca / a arunca | **a Rosti** / **a Schimba** | `cast` / `swap` |
-| baza × multiplicatorul | **Putere × Rezonanță** | `power` × `res` |
+| baza × multiplicatorul | **Putere × Rezonanță** (ale Elementului, cresc cu nivelul) | `power` × `res` |
+| *(nou în v5)* | **Monstrul**, viața lui, slab ×2 / rezistă ×0,5 / imun ×0 | `monster`, `hp`, `weak` / `resist` / `immune` |
+| *(nou în v5)* | **Elementul** (8, cu natura lui) și **Ținta** (8, partea de daună) | `element`, `target` |
+| *(nou în v5)* | **lupta** (monstrul mic / mare / Stăpânul) | `fight` (`small` / `big` / `boss`) |
 | jokerii | **Talismanele** | `talisman` |
 | cărțile care cresc nivelul unei mâini | **Lecțiile** | `lesson` |
 | cărțile care modifică alte cărți | **Gravurile** | `engraving` |
 | magazinul | **Piața de noapte** | `shop` |
-| nivelurile de dificultate | **Probele** examenului | `trial` |
-| rundele | **Întrebarea mică / mare**, **Examinatorul** | `small` / `big` / `examiner` |
+| nivelurile de dificultate | **Tărâmurile** Călătoriei (8) | `realm` (în `exam_state.gd` încă `trial_index`) |
+| boșii | **Stăpânii Tărâmurilor**, cu regula lor | `boss`, `rule` |
 | banii | **Monede** | `money` |
 | *(nu există la Balatro)* | **Vrăjile** (propoziții de rune: Element → Acțiuni → Țintă) | `spell` |
 
@@ -94,12 +100,12 @@ Artă: `docs/ARTA.md`.
 - **Conținutul stă în JSON în `data/`**: rune, Cuvinte, Talismane, Lecții, Gravuri, examinatori, probe, părinți,
   prețuri, dialoguri, texte UI. `GameData` încarcă și validează totul (`scripts/core/data_validator.gd`). Erorile apar
   ca „`data/<fișier> [<id>]: <problemă>`” pe ecranul meniului, fără crash. Câmp nou în JSON → adaugă-l și în schemă.
-- **Efecte în date:** declanșator (`on_score`, `on_held`, `on_cast`, `in_word`, `on_round_end_held`, `passive`) +
-  condiții (`cast_first`, `first_cast`, `last_cast`, `chance`, `once_per_round`) + acțiuni (`add_power`, `add_res`,
-  `mul_res`, `add_money`, `add_swap`, `retrigger`, `grow_power`, `base_power_mult`, `word_level_bonus`,
-  `add_money_at_round_end`, `special`). Lista scurtă de handleri speciali: `kenaz_peek`, `gebo_copy_previous`,
-  `algiz_ignore_rule`, `berkanan_copy`, `laguz_wild`. Valorile permise sunt în `ENUMS` din `data_validator.gd`.
-- **Scorul** (`scripts/core/scorer.gd`) produce o listă de evenimente pe care `scoring_player.gd` le animă. Logica nu
+- **Efecte în date:** vrăjile au `ops` (`ENUMS["spell_op"]`), Acțiunile un `kind`, Talismanele un `kind`
+  (`ENUMS["talisman_kind"]`), Elementele o natură (`ENUMS["element_nature"]`), Stăpânii o regulă (`ENUMS["boss_rule"]`)
+  și monștrii o trăsătură (`ENUMS["monster_trait"]`). Valorile permise sunt în `ENUMS` din `data_validator.gd`.
+- **Dauna** (`scripts/core/damage.gd`, o vrajă) și **lupta** (`scripts/core/fight_state.gd`) produc o listă de
+  evenimente (`spell`, `bonus`, `talisman`, `mult`, `hit`, `nature`, `tick`, `later`, `rule`, `total`) pe care
+  `scoring_player.gd` le animă. Previzualizarea (`FightState.preview`) dă dauna sigură, maximul și „Ucide!”. Logica nu
   știe nimic de ecran.
 - **Două limbi:** fiecare text din JSON e `{"ro": "...", "en": "..."}`. Implicit româna; se schimbă din Setări și se
   salvează. **Niciun text afișat nu e scris în cod** — totul prin `Loc`: `Loc.t("cheie", {"n": 3})` pentru
@@ -117,7 +123,7 @@ Artă: `docs/ARTA.md`.
 - **Instruirea** (`docs/INSTRUIRE.md`, `data/tutorial.json`): logica pașilor în `scripts/core/tutorial_flow.gd`
   (testabilă), ecranul în `scripts/ui/tutorial.gd` + `tutorial_overlay.gd` (shader `shaders/spotlight.gdshader`).
   Elementele pe care lumina le poate găsi au metadata `tutorial_id` (lista în `ENUMS["ui_id"]`); pietrele sunt
-  `stone:<rune_id>`. Ecranul de rundă se configurează prin `config` (mână fixă, țintă, fundal…) și nu știe de
+  `stone:<rune_id>`. Ecranul de rundă se configurează prin `config` (mână fixă, monstrul, fundal…) și nu știe de
   instruire. `scenes/round.tscn` se generează cu `python3 tools/gen_round.py`.
 - **Indiciile** (`data/hints.json`): `trigger` (eveniment din `ENUMS["hint_event"]`) sau `follows`; o singură dată,
   pe rând, oprite în instruire și din Setări. Cele pentru elemente neconstruite au `"enabled": false`.
@@ -125,17 +131,18 @@ Artă: `docs/ARTA.md`.
   elementele pe care le construiești (`"enabled": true`, emiți evenimentul lor, test în `tests/test_hints.gd`) și
   adaugi **fișă la mouse** pentru orice element nou pe care îl vede jucătorul (Talismane, consumabile, regula
   Examinatorului, marfa din Piață…). Elementele noi pe care le poate arăta instruirea primesc `tutorial_id`.
-- **Examenul** (Etapa 3): `ExamState` ține tot ce trece de la o rundă la alta (săculețul, Monedele, nivelurile
-  Cuvintelor, Talismanele, consumabilele, `carry` al vrăjilor). O rundă se face cu `exam.new_round()`. După ce s-a
-  terminat (`RoundState.finish()`), urmează `exam.finish_round(state)`. Regulile Examinatorilor stau în `RoundState`
-  (`active_rule()`), iar efectele Talismanelor în `TalismanRules`; scorul le primește ca date.
+- **Călătoria** (provizoriu în `ExamState`, devine `JourneyState` la pasul D): ține tot ce trece de la o luptă la alta
+  (săculețul, Monedele, nivelurile Elementelor, Talismanele, consumabilele, `carry` al vrăjilor, monștrii aleși cu
+  seed-ul în `lineup`). O luptă se face cu `exam.new_round()` (un `FightState` cu un `Monster`). După ce s-a terminat
+  (`FightState.finish()`), urmează `exam.finish_round(fight)`. Regulile Stăpânilor stau în `FightState`
+  (`active_rule()`), iar efectele Talismanelor în `TalismanRules`; dauna le primește ca date.
 - **Vrăjile funcționează după Gramatica runelor (`docs/GRAMATICA.md`, înlocuiește vechea 3.15).** Fiecare rună are
   `role` (element / action / target) și `phrase`. Vraja = propoziția Element → (0–2 Acțiuni) → Țintă, pietrele una
   după alta în **ordinea de rostire** (ordinea selecției); contează doar prima propoziție. Datele: `spells_base.json`
   (64, id `<element>_<țintă>`, `timing` before/after/later, `ops`, `scalable`, `single`, `enabled`),
   `spell_actions.json` (8), limitele în `economy.json`. Logica: `scripts/core/sentence_parser.gd` (citirea) și
-  `spell_resolver.gd` (efectele). Alegerile jucătorului stau în `RoundState.pending`. Cu vrăjile oprite (lecțiile
-  1–3), pietrele se citesc de la stânga la dreapta. Laguz e Element (Apa), nu joker.
+  `spell_resolver.gd` (efectele). Alegerile jucătorului stau în `FightState.pending`. Până la 2 propoziții pe
+  Rostire (a doua cu ×1,25 „în lanț”). Laguz e Element (Apa), nu joker.
 
 ## Autoload-uri (ordinea contează)
 1. `GameData` — `scripts/autoload/game_data.gd` — date din `data/`, `errors`.
@@ -160,10 +167,9 @@ ecran se fac cu `xvfb-run` + `--rendering-driver opengl3`. Pe calculatorul lui R
 godot --headless --editor --quit          # prima dată pe un clone nou: importă proiectul (.godot/)
 godot --headless --path . --quit          # prinde erorile de parsare
 godot --headless --script tests/run_tests.gd   # testele logice; cod de ieșire 0 = ok
-godot --headless --script tests/simulate.gd    # simulatorul: frecvența Cuvintelor, rundele, balansul vrăjilor
-godot --headless --script tests/simulate.gd -- part=3 exams=150   # doar balansul Gramaticii runelor
-godot --headless --script tests/simulate.gd -- part=4 exams=100   # doar examenele complete (Etapa 3)
-godot --headless --script tests/simulate.gd -- part=4 exams=100 parent=varr   # examenele ca copil al unui părinte
+godot --headless --script tests/simulate.gd    # simulatorul: vrăjile dintr-o mână, Călătorii întregi
+godot --headless --script tests/simulate.gd -- part=2 journeys=100   # doar Călătoriile (unde se opresc, daună / Rostire)
+godot --headless --script tests/simulate.gd -- part=2 journeys=100 parent=varr   # Călătoriile ca copil al unui părinte
 ```
 Teste noi: fișier `tests/test_<ceva>.gd` care `extends "res://tests/test_case.gd"`, metode `test_*`,
 adăugat în lista `TEST_FILES` din `tests/run_tests.gd`.
@@ -171,27 +177,27 @@ adăugat în lista `TEST_FILES` din `tests/run_tests.gd`.
 ## Structura (țintă v3)
 ```
 docs/        UNIVERS.md, DESIGN.md, ARTA.md, INSTRUIRE.md, GRAMATICA.md, TRADUCERI.md (generat)
-data/        kins, runes, words, spells_base, spell_actions, economy, characters, rules, dialogs, tutorial, hints,
-             ui_text, trials, examiners, talismans, lessons, engravings, parents (.json) — există deja
+data/        kins, runes, elements, targets, spells_base, spell_actions, economy, characters, rules, dialogs, tutorial,
+             hints, ui_text, realms, monsters, talismans, lessons, engravings, parents (.json) — există deja
 fonts/       Grenze, Grenze Gotisch + licențe OFL
-art/         stones/ runes/ talismans/ lessons/ engravings/ examiners/ portraits/ backgrounds/ ui/
+art/         stones/ runes/ talismans/ lessons/ engravings/ monsters/ examiners/ portraits/ backgrounds/ ui/
 scenes/      boot, name_entry, main_menu, rune_check, settings, round, spell_reveal, tutorial, tutorial_overlay,
              exam (Probele, Piața și rezultatul; Piața și Săculețele sunt construite din cod),
              morning (Dimineața), parent_select, collection, theme/main_theme.tres — există deja
              intro, dialog — vin în Etapa 5
 scripts/     autoload/ (game_data, run_state, save_manager, loc, event_bus, hints)
-             core/ (stone, bag, word_detector, sentence_parser, spell_resolver, scorer, round_state, exam_state,
+             core/ (stone, bag, sentence_parser, spell_resolver, monster, damage, fight_state, exam_state,
                     talisman_rules, shop_logic, progress, tutorial_flow, hint_rules, data_validator)
              ui/ (ecrane + componente: rune_glyph, stone_view, hand_view, rune_circle, candle_row, portrait,
                   talisman_string, night_backdrop, classroom_backdrop, float_layer, scoring_player, spell_reveal,
-                  stone_card, word_card, word_book, rune_book, mini_stone, hint_bubble, spell_text, role_sign,
+                  stone_card, hp_bar, rune_book, mini_stone, hint_bubble, spell_text, role_sign,
                   sentence_bar, choice_panel, scroll_slot, action_learned, round_screen, exam_screen, shop_screen,
                   morning, morning_backdrop, parent_select, memories_shop, collection, time_rewind,
                   tutorial, tutorial_overlay, boot, name_entry)
 shaders/     spotlight.gdshader (lumina instruirii)
 tools/       gen_round.py (generează scenes/round.tscn), export_translations.py (generează docs/TRADUCERI.md)
-tests/       run_tests.gd, test_case.gd, fixtures.gd, test_data/loc/save/words/sentence/spells/scoring/tutorial/hints/
-             exam/talismans/consumables/shop/parents/progress.gd, simulate.gd
+tests/       run_tests.gd, test_case.gd, fixtures.gd, test_data/loc/save/sentence/damage/fight/journey/hints/shop/
+             parents/progress.gd, simulate.gd
 ```
 
 ## Etapele
@@ -203,5 +209,5 @@ tests/       run_tests.gd, test_case.gd, fixtures.gd, test_data/loc/save/words/s
 | 2b | Gramatica runelor (`docs/GRAMATICA.md`): A datele și logica, B interfața, C balansul, D instruirea și documentele | făcută (așteaptă testul lui Relax) |
 | 3 | Examenul complet: 8 Probe × 3 runde, Examinatorii, Monede, Piața de noapte, primele 15 Talismane, Lecții, Gravuri, materiale, legături runice, Săculețe, Picat / Examen trecut | făcută (așteaptă testul lui Relax) |
 | 4 | Bucla Aevei: Dimineața, alegerea părintelui, Amintiri, deblocări, salvare (inclusiv examenul în curs), Cartea de rune (cu Vrăjile descoperite), Colecția, numele jucătorului, Paginile rupte în Piață | făcută (așteaptă testul lui Relax) |
-| 5 | Marea schimbare (`docs/PROMPT_ETAPA5.md`): A planul, B lupta și dauna, C runele, D lumea, E Piața și Cercurile, F UI Kit, G ecranele, H Examenul în 3 lecții, I balansul | A: planul scris (`docs/PLAN_ETAPA5.md`), așteaptă OK-ul lui Relax |
+| 5 | Marea schimbare (`docs/PROMPT_ETAPA5.md`): A planul, B lupta și dauna, C runele, D lumea, E Piața și Cercurile, F UI Kit, G ecranele, H Examenul în 3 lecții, I balansul | în lucru: A (planul) și B (lupta, ecran provizoriu) făcute; așteaptă OK pentru C |
 | 6 | Șlefuire și export: povestea (intro, final), restul Talismanelor, arta lui Relax, sunetul, ultimul balans, export Linux/Windows/Web | — |

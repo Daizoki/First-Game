@@ -59,6 +59,7 @@ licență OFL, cu ă â î ș ț. **Se descarcă doar după OK-ul lui Relax**; p
 | Talismane (ilustrația principală) | ~30 | 300×420 | `art/talismans/` |
 | Lecții și Gravuri | ~20 | 240×336 | `art/lessons/`, `art/engravings/` |
 | Examinatori, Aeva, Tanti Vera | ~12 | 512×512 | `art/examiners/`, `art/portraits/` |
+| Monștrii și Stăpânii (portretul din cartea monstrului; până la pasul F e un cerc cu inițiala) | 27 | 512×512 | `art/monsters/` |
 | Fundaluri (masa de joc, Piața, Dimineața, cadrele din intro) | ~8 | 1920×1080 | `art/backgrounds/` |
 | Rame UI (9-slice) | câteva | după nevoie | `art/ui/` |
 

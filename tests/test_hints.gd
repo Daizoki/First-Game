@@ -8,7 +8,7 @@ const DataValidator = preload("res://scripts/core/data_validator.gd")
 ## Hints that are switched on now (the others wait for their stage).
 const ENABLED_NOW: Array[String] = [
 	"idle_help", "first_wrong_order", "first_scroll", "first_two_actions", "first_shop_1",
-	"first_shop_2", "first_shop_3", "first_reroll", "first_talisman", "first_examiner", "first_rule", "first_lesson",
+	"first_shop_2", "first_shop_3", "first_reroll", "first_talisman", "first_rule", "first_lesson",
 	"first_engraving", "first_bindrune", "first_loss_1", "first_loss_2", "first_loss_3", "first_evening_class",
 	"first_torn_page",
 ]
@@ -150,12 +150,12 @@ func test_the_grammar_hints() -> void:
 	check_eq(rules.on_event("wrong_order", {}, tutorial), [] as Array[String], "quiet in the evening class:")
 
 
-func test_meeting_examiners() -> void:
+func test_meeting_the_lords() -> void:
 	var rules: HintRules = _rules()
-	check_eq(rules.on_event("examiner_met", {"examiner": "varr"}, _context()), ["first_rule"] as Array[String],
-		"any examiner first: Ilinca explains the rule:")
-	check_eq(rules.on_event("examiner_met", {"examiner": "kaldor"}, _context(["first_rule"])),
-		["first_examiner"] as Array[String], "Kaldor introduces himself the first time he is met:")
+	check_eq(rules.on_event("examiner_met", {"examiner": "statu_palma"}, _context()), ["first_rule"] as Array[String],
+		"the first Lord: Ilinca explains the rule:")
+	check_eq(rules.on_event("examiner_met", {"examiner": "muma_padurii"}, _context(["first_rule"])),
+		[] as Array[String], "only once:")
 
 
 func test_the_market_hints() -> void:

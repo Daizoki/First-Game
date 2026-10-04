@@ -1,11 +1,14 @@
 extends Control
-## The exam (DESIGN 3.1, 3.8): before every round a board names the trial, the round, the
-## examiner, the target and (in the examiner round) the rule; then the round screen plays the
-## round; after it, the board shows the Coins won, or the end of the exam. Stage 3D puts the
-## Night Market between the rounds. The logic lives in scripts/core/exam_state.gd.
+## The Journey (docs/PROMPT_ETAPA5.md 3; provisional boards until step G): before every fight
+## a board names the Realm, the monster, its life, its weaknesses and (for a Lord) its rule;
+## then the fight screen plays the fight; after it, the board shows the Coins won, or the end
+## of the Journey. The Night Market comes between the fights. The logic lives in
+## scripts/core/exam_state.gd.
 
 const ExamState = preload("res://scripts/core/exam_state.gd")
-const RoundState = preload("res://scripts/core/round_state.gd")
+const FightState = preload("res://scripts/core/fight_state.gd")
+const SpellText = preload("res://scripts/ui/spell_text.gd")
+const RoundScreen = preload("res://scripts/ui/round_screen.gd")
 const Portrait = preload("res://scripts/ui/portrait.gd")
 const ShopLogic = preload("res://scripts/core/shop_logic.gd")
 const ShopScreen = preload("res://scripts/ui/shop_screen.gd")
@@ -30,7 +33,7 @@ var exam: ExamState
 @onready var _box: VBoxContainer = %BoardBox
 
 var _round_screen: Control = null
-var _state: RoundState = null
+var _state: FightState = null
 var _waiting_for_round: bool = false
 
 
@@ -88,28 +91,24 @@ func _clear_saved_exam() -> void:
 	SaveManager.save_game()
 
 
-## The GameData tables the exam logic needs.
+## The GameData tables the Journey needs.
 static func tables() -> Dictionary:
-	return {
-		"runes": GameData.runes, "words": GameData.words, "spells": GameData.spells,
-		"spell_actions": GameData.spell_actions, "rules": GameData.rules, "economy": GameData.economy,
-		"trials": GameData.trials, "examiners": GameData.examiners, "talismans": GameData.talismans,
-		"lessons": GameData.lessons, "engravings": GameData.engravings, "parents": GameData.parents,
-	}
+	return RoundScreen.tables()
 
 
 # --- The board before a round --------------------------------------------------------------
 
 func _show_intro() -> void:
 	_clear_board()
-	var examiner: Dictionary = exam.examiner()
-	var character: Dictionary = GameData.characters.get(exam.examiner_id(), {})
-	if Progress.record_seen(SaveManager.data, "examiners", exam.examiner_id()):
+	var monster_id: String = exam.monster_id()
+	var entry: Dictionary = exam.monster_entry()
+	if Progress.record_seen(SaveManager.data, "monsters", monster_id):
 		SaveManager.save_game()
-	var trial_line: String = Loc.t("exam_trial", {"n": exam.trial_index + 1, "total": exam.trial_count()})
+	var realm_line: String = Loc.t("exam_trial", {"n": exam.trial_index + 1, "total": exam.trial_count(),
+		"name": Loc.text(exam.trial().get("name", {}))})
 	if not exam.parent_id.is_empty():
-		trial_line += " · " + Loc.t("exam_parent", {"name": Loc.text((GameData.characters.get(exam.parent_id, {}) as Dictionary).get("name", {}))})
-	_label(trial_line, 30, &"SecondaryLabel")
+		realm_line += " · " + Loc.t("exam_parent", {"name": Loc.text((GameData.characters.get(exam.parent_id, {}) as Dictionary).get("name", {}))})
+	_label(realm_line, 30, &"SecondaryLabel")
 	_label(Loc.t("exam_round_" + exam.round_kind()), 64, &"TitleLabel")
 	var row: HBoxContainer = HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -117,21 +116,22 @@ func _show_intro() -> void:
 	_box.add_child(row)
 	var portrait: Portrait = Portrait.new()
 	portrait.custom_minimum_size = Vector2(150, 150)
-	portrait.character_id = exam.examiner_id()
+	portrait.character_id = monster_id
 	row.add_child(portrait)
 	var who: VBoxContainer = VBoxContainer.new()
 	who.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.add_child(who)
-	_label(Loc.text(character.get("name", {})), 44, &"TitleLabel", who, HORIZONTAL_ALIGNMENT_LEFT)
-	_label(Loc.text(character.get("job", {})), 22, &"SecondaryLabel", who, HORIZONTAL_ALIGNMENT_LEFT)
-	_label(Loc.t("round_target", {"target": Loc.number(exam.target())}), 40, &"").add_theme_color_override(
-		"font_color", RULE_COLOR)
-	if exam.round_kind() == "examiner":
-		var rule: Label = _label(Loc.t("exam_rule", {"title": Loc.text(examiner.get("title", {})),
-			"text": Loc.text(examiner.get("text", {}))}), 28, &"")
+	_label(Loc.text(entry.get("name", {})), 44, &"TitleLabel", who, HORIZONTAL_ALIGNMENT_LEFT)
+	_label(Loc.t("exam_monster_hp", {"n": Loc.number(exam.monster_hp())}), 26, &"", who,
+		HORIZONTAL_ALIGNMENT_LEFT).add_theme_color_override("font_color", RULE_COLOR)
+	_label(Loc.text(entry.get("description", {})), 24, &"SecondaryLabel")
+	var traits: String = _traits_line(entry)
+	if not traits.is_empty():
+		_label(traits, 24, &"")
+	if exam.round_kind() == "boss":
+		var rule: Label = _label(Loc.t("exam_rule", {"text": SpellText.rule_text(entry)}), 28, &"")
 		rule.add_theme_color_override("font_color", RULE_COLOR)
-		_label("„%s”" % Loc.text(examiner.get("intro", {})), 26, &"SecondaryLabel")
-		EventBus.examiner_met.emit(exam.examiner_id())
+		EventBus.examiner_met.emit(monster_id)
 	else:
 		_label(Loc.t("exam_no_rule"), 24, &"SecondaryLabel")
 	_peek_line()
@@ -139,16 +139,31 @@ func _show_intro() -> void:
 	_button(Loc.t("exam_start_round"), _start_round, true)
 
 
-## Sun against the Examiner: who waits in the next trials.
+## Weak to Fire · Resists Ice … (the Balaur's first head).
+func _traits_line(entry: Dictionary) -> String:
+	var lists: Dictionary = entry
+	var heads: Array = entry.get("heads", [])
+	if not heads.is_empty():
+		lists = heads[0]
+	var parts: PackedStringArray = []
+	for key: String in ["weak", "resist", "immune"]:
+		var names: PackedStringArray = []
+		for element: Variant in lists.get(key, []):
+			names.append(SpellText.element_name(str(element)))
+		if not names.is_empty():
+			parts.append(Loc.t("monster_" + key, {"list": ", ".join(names)}))
+	return " · ".join(parts)
+
+
+## Sun upon the Lord: who waits in the next Realms.
 func _peek_line() -> void:
 	var count: int = int(exam.carry.get("peek_examiners", 0))
 	if count <= 0:
 		return
 	var names: PackedStringArray = []
-	for id: String in exam.upcoming_examiners(count):
-		var entry: Dictionary = GameData.examiners.get(id, {})
-		names.append("%s (%s)" % [Loc.text((GameData.characters.get(id, {}) as Dictionary).get("name", {})),
-			Loc.text(entry.get("title", {}))])
+	for id: String in exam.upcoming_bosses(count):
+		var entry: Dictionary = GameData.monsters.get(id, {})
+		names.append("%s (%s)" % [Loc.text(entry.get("name", {})), SpellText.rule_text(entry)])
 	if not names.is_empty():
 		_label(Loc.t("exam_peek", {"list": ", ".join(names)}), 22, &"SecondaryLabel")
 
@@ -158,17 +173,10 @@ func _peek_line() -> void:
 func _start_round() -> void:
 	_board.visible = false
 	_state = exam.new_round()
-	var examiner: Dictionary = exam.examiner()
-	var rule: Dictionary = Loc.both("exam_no_rule")
-	if exam.round_kind() == "examiner":
-		rule = {}
-		for language: String in ["ro", "en"]:
-			rule[language] = "%s: %s" % [(examiner["title"] as Dictionary)[language], (examiner["text"] as Dictionary)[language]]
 	_round_screen = ROUND_SCENE.instantiate()
 	_round_screen.set("config", {
-		"round_state": _state, "seed": exam.exam_seed, "examiner": exam.examiner_id(), "backdrop": "night",
-		"title": Loc.both("exam_title_" + exam.round_kind(), {"n": exam.trial_index + 1}), "rule": rule,
-		"show_result": false,
+		"fight": _state, "seed": exam.exam_seed, "backdrop": "night",
+		"title": Loc.both("exam_title_" + exam.round_kind(), {"n": exam.trial_index + 1}), "show_result": false,
 	})
 	_round_slot.add_child(_round_screen)
 	_waiting_for_round = true
@@ -179,7 +187,7 @@ func _on_round_over() -> void:
 		return
 	_waiting_for_round = false
 	await get_tree().create_timer(ROUND_END_PAUSE).timeout
-	Progress.record_round(SaveManager.data, _state.best_cast_score, exam.word_levels)
+	Progress.record_round(SaveManager.data, _state.best_cast_damage, exam.element_levels)
 	var summary: Dictionary = exam.finish_round(_state)
 	_round_screen.queue_free()
 	_round_screen = null
@@ -201,10 +209,8 @@ func _show_reward(summary: Dictionary) -> void:
 	_label(Loc.t("exam_round_won"), 60, &"TitleLabel")
 	var defeated: String = str(summary["defeated"])
 	if not defeated.is_empty():
-		var entry: Dictionary = GameData.examiners.get(defeated, {})
-		_label(Loc.t("exam_defeated", {"name": Loc.text((GameData.characters.get(defeated, {}) as Dictionary).get("name", {}))}),
+		_label(Loc.t("exam_defeated", {"name": Loc.text((GameData.monsters.get(defeated, {}) as Dictionary).get("name", {}))}),
 			32, &"")
-		_label("„%s”" % Loc.text(entry.get("defeated", {})), 26, &"SecondaryLabel")
 	var reward: Dictionary = summary["reward"]
 	_label(Loc.t("exam_reward_" + str(summary["kind"]), {"n": reward["round"]}), 28, &"")
 	if int(reward["casts"]) > 0:
@@ -219,16 +225,13 @@ func _show_reward(summary: Dictionary) -> void:
 ## The Night Market between two rounds.
 func _open_shop() -> void:
 	_board.visible = false
-	var known: Array[String] = []
-	for word_id: Variant in (SaveManager.data.get("discoveries", {}) as Dictionary).get("words", []):
-		known.append(str(word_id))
 	var spells_known: Array[String] = []
 	var discoveries: Dictionary = SaveManager.data.get("discoveries", {})
 	for category: String in ["spells", "torn_pages"]:
 		for spell_id: Variant in discoveries.get(category, []):
 			spells_known.append(str(spell_id))
 	var logic: ShopLogic = ShopLogic.new()
-	logic.setup(exam, tables(), known, spells_known)
+	logic.setup(exam, tables(), spells_known)
 	var screen: ShopScreen = ShopScreen.new()
 	_round_slot.add_child(screen)
 	screen.open(logic)
@@ -252,17 +255,13 @@ func _show_result(summary: Dictionary) -> void:
 	var earned: Dictionary = Progress.finish_exam(SaveManager.data, exam, GameData.rules)
 	SaveManager.save_game()
 	EventBus.exam_finished.emit(passed)
-	var aeva: Dictionary = GameData.examiners.get("aeva", {})
 	if passed:
 		_label(Loc.t("exam_passed_title"), 72, &"TitleLabel")
-		_label("„%s”" % Loc.text(aeva.get("defeated", {})), 28, &"SecondaryLabel")
+		_label(Loc.t("exam_passed_text"), 28, &"SecondaryLabel")
 	else:
 		_label(Loc.t("exam_failed_title"), 72, &"TitleLabel")
-		var by: Dictionary = exam.examiner()
-		_label("%s: „%s”" % [Loc.text((GameData.characters.get(exam.examiner_id(), {}) as Dictionary).get("name", {})),
-			Loc.text(by.get("won", {}))], 28, &"")
-		_label("%s: „%s”" % [Loc.text((GameData.characters.get("aeva", {}) as Dictionary).get("name", {})),
-			Loc.text(aeva.get("won", {}))], 26, &"SecondaryLabel")
+		_label(Loc.t("exam_failed_by", {"name": Loc.text(exam.monster_entry().get("name", {}))}), 28, &"")
+		_label(Loc.t("exam_failed_text"), 26, &"SecondaryLabel")
 	_label(Loc.t("exam_stats", {"trial": exam.trial_index + 1, "total": exam.trial_count(),
 		"defeated": exam.defeated.size(), "rounds": exam.rounds_won}), 26, &"")
 	_show_memories(earned)

@@ -1,11 +1,13 @@
 extends Control
-## The round screen (DESIGN 3.16): hand of stones, Rune Circle, score, Power × Resonance,
-## candles for Casts, chalk lines for Swaps, the examiner card. Stage 2 plays a practice
-## round with a fixed target; the tutorial and the full exam (Stage 3) reuse this screen.
+## The fight screen (docs/PROMPT_ETAPA5.md 9; provisional layout until step G): the hand of
+## stones, the Rune Circle that reads the spells, the damage estimate, candles for Casts,
+## chalk lines for Swaps, and the monster's card with its life bar. A practice fight against
+## the Training Dummy when opened alone; the Journey (exam_screen) builds its own fights.
 ## It reports what happens on the EventBus and respects its action gate; it knows nothing
 ## about who listens.
 
-const RoundState = preload("res://scripts/core/round_state.gd")
+const FightState = preload("res://scripts/core/fight_state.gd")
+const Monster = preload("res://scripts/core/monster.gd")
 const Stone = preload("res://scripts/core/stone.gd")
 const StoneView = preload("res://scripts/ui/stone_view.gd")
 const ScoringPlayer = preload("res://scripts/ui/scoring_player.gd")
@@ -14,12 +16,11 @@ const HandView = preload("res://scripts/ui/hand_view.gd")
 const RuneCircle = preload("res://scripts/ui/rune_circle.gd")
 const CandleRow = preload("res://scripts/ui/candle_row.gd")
 const Portrait = preload("res://scripts/ui/portrait.gd")
+const HpBar = preload("res://scripts/ui/hp_bar.gd")
 const TalismanString = preload("res://scripts/ui/talisman_string.gd")
 const SpellReveal = preload("res://scripts/ui/spell_reveal.gd")
 const FloatLayer = preload("res://scripts/ui/float_layer.gd")
 const StoneCard = preload("res://scripts/ui/stone_card.gd")
-const WordBook = preload("res://scripts/ui/word_book.gd")
-const WordCard = preload("res://scripts/ui/word_card.gd")
 const RuneBook = preload("res://scripts/ui/rune_book.gd")
 const SpellText = preload("res://scripts/ui/spell_text.gd")
 const SentenceParser = preload("res://scripts/core/sentence_parser.gd")
@@ -30,8 +31,8 @@ const ActionLearned = preload("res://scripts/ui/action_learned.gd")
 
 const MAIN_MENU_SCENE: String = "res://scenes/main_menu.tscn"
 const SPEEDS: Array[int] = [1, 2, 4]
-const FUTHARK: Array[String] = ["fehu", "uruz", "thurisaz", "ansuz", "raidho"]
-const SHAKE_SHARE: float = 0.35
+## A hit bigger than this share of the monster's life shakes the screen.
+const SHAKE_SHARE: float = 0.3
 ## More Swaps than this are shown as "endless" (Aeva's Hourglass).
 const ENDLESS_SWAPS: int = 12
 
@@ -43,24 +44,27 @@ const ENDLESS_SWAPS: int = 12
 @onready var _seed_label: Label = %SeedLabel
 @onready var _speed_button: Button = %SpeedButton
 @onready var _menu_button: Button = %MenuButton
-@onready var _score_value: Label = %ScoreValue
-@onready var _score_target: Label = %ScoreTarget
-@onready var _score_bar: ProgressBar = %ScoreBar
+@onready var _estimate_label: Label = %EstimateLabel
+@onready var _estimate_value: Label = %EstimateValue
+@onready var _estimate_note: Label = %EstimateNote
 @onready var _power_value: Label = %PowerValue
 @onready var _res_value: Label = %ResValue
 @onready var _casts_label: Label = %CastsLabel
 @onready var _candles: CandleRow = %Candles
 @onready var _swaps_label: Label = %SwapsLabel
 @onready var _chalk: CandleRow = %Chalk
+@onready var _monster_card: Control = %MonsterCard
 @onready var _portrait: Portrait = %Portrait
-@onready var _examiner_name: Label = %ExaminerName
-@onready var _examiner_role: Label = %ExaminerRole
+@onready var _monster_name: Label = %MonsterName
+@onready var _hp_bar: HpBar = %HpBar
+@onready var _monster_traits: Label = %MonsterTraits
+@onready var _monster_status: Label = %MonsterStatus
+@onready var _rule_box: Control = %RuleBox
 @onready var _rule_text: Label = %RuleText
-@onready var _target_label: Label = %TargetLabel
 @onready var _circle: RuneCircle = %RuneCircle
-@onready var _word_name: Label = %WordName
-@onready var _word_level: Label = %WordLevel
-@onready var _scoring_count: Label = %ScoringCount
+@onready var _spell_name: Label = %SpellName
+@onready var _spell_second: Label = %SpellSecond
+@onready var _circle_info: Label = %CircleInfo
 @onready var _preview_value: Label = %PreviewValue
 @onready var _sentence_bar: SentenceBar = %SentenceBar
 @onready var _scroll_slot: ScrollSlot = %ScrollSlot
@@ -68,12 +72,12 @@ const ENDLESS_SWAPS: int = 12
 @onready var _action_learned: ActionLearned = %ActionLearned
 @onready var _talismans: TalismanString = %Talismans
 @onready var _consumables: TalismanString = %Consumables
-@onready var _kenaz_panel: Control = %KenazPanel
-@onready var _kenaz_label: Label = %KenazLabel
-@onready var _kenaz_stones: HBoxContainer = %KenazStones
+@onready var _peek_panel: Control = %PeekPanel
+@onready var _peek_label: Label = %PeekLabel
+@onready var _peek_stones: HBoxContainer = %PeekStones
 @onready var _hand: HandView = %Hand
 @onready var _sort_label: Label = %SortLabel
-@onready var _sort_position: Button = %SortPositionButton
+@onready var _sort_role: Button = %SortRoleButton
 @onready var _sort_kin: Button = %SortKinButton
 @onready var _cast_button: Button = %CastButton
 @onready var _swap_button: Button = %SwapButton
@@ -82,12 +86,10 @@ const ENDLESS_SWAPS: int = 12
 @onready var _spell_reveal: SpellReveal = %SpellReveal
 @onready var _result_panel: Control = %ResultPanel
 @onready var _result_title: Label = %ResultTitle
-@onready var _result_score: Label = %ResultScore
+@onready var _result_damage: Label = %ResultDamage
 @onready var _result_money: Label = %ResultMoney
 @onready var _again_button: Button = %AgainButton
 @onready var _result_menu_button: Button = %ResultMenuButton
-@onready var _word_book_button: Button = %WordBookButton
-@onready var _word_book: WordBook = %WordBook
 @onready var _classroom: Control = %Classroom
 @onready var _night: Control = %Backdrop
 @onready var _pause_panel: Control = %PausePanel
@@ -99,31 +101,28 @@ const ENDLESS_SWAPS: int = 12
 @onready var _rune_book_button: Button = %RuneBookButton
 @onready var _rune_book: RuneBook = %RuneBook
 
-## Set before the screen enters the tree (the tutorial does it). Every key is optional:
-##   title, rule: {"ro", "en"} texts for the card    target: int    seed: int
-##   casts, swaps, hand, bag_top, bag_only, spells: see RoundState.setup
-##   examiner: character id    backdrop: "night" | "classroom"
-##   hide_swap: bool    show_result: bool (default true)
-##   round_state: a RoundState already set up and started (the exam builds its rounds)
+## Set before the screen enters the tree. Every key is optional:
+##   title: {"ro", "en"} text for the top left    seed: int
+##   monster: monster id for a practice fight (default: rules "test_fight_monster")
+##   casts, swaps, hand, bag_top, bag_only, spells: see FightState.setup
+##   backdrop: "night" | "classroom"    hide_swap: bool    show_result: bool (default true)
+##   fight: a FightState already set up and started (the Journey builds its fights)
 var config: Dictionary = {}
-## Half-speed score animation (the tutorial explains it phase by phase).
+## Half-speed animation (the tutorial explains it phase by phase).
 var slow_scoring: bool = false
 
-var _round: RoundState
+var _fight: FightState
 var _seed: int = 0
 var _busy: bool = false
 var _speed: int = 1
-var _shown_score: float = 0.0
 var _player: ScoringPlayer
 var _casts_total: int = 0
 var _swaps_total: int = 0
 ## Extra pause-menu buttons: [{"key": ui_text key, "button": Button}].
 var _pause_actions: Array[Dictionary] = []
 var _card: StoneCard
-var _word_card: WordCard
-## The selection's preview (RoundState.preview), kept for the circle's card.
+## The selection's preview (FightState.preview).
 var _preview: Dictionary = {}
-var _word_card_shown: bool = false
 ## A spell's pick waits for the player (the hand picks stones for it).
 var _picking: bool = false
 
@@ -132,20 +131,12 @@ func _ready() -> void:
 	_seed = int(config.get("seed", 0))
 	if _seed == 0:
 		_seed = randi()
-	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
-	rng.seed = _seed
-	if config.has("round_state"):
-		_round = config["round_state"]
+	if config.has("fight"):
+		_fight = config["fight"]
 	else:
-		_round = RoundState.new()
-		var target: float = float(config.get("target", GameData.rule("test_round_target", 1500)))
-		_round.setup({"runes": GameData.runes, "words": GameData.words, "spells": GameData.spells,
-			"spell_actions": GameData.spell_actions, "rules": GameData.rules, "economy": GameData.economy,
-			"examiners": GameData.examiners, "talismans": GameData.talismans,
-			"lessons": GameData.lessons, "engravings": GameData.engravings}, rng, target, config)
-		_round.start()
-	_casts_total = _round.casts_left
-	_swaps_total = _round.swaps_left
+		_fight = practice_fight(config, _seed)
+	_casts_total = _fight.casts_left
+	_swaps_total = _fight.swaps_left
 	_speed = int(SaveManager.get_setting("scoring_speed", GameData.rule("scoring_speed", 1)))
 
 	_player = ScoringPlayer.new()
@@ -153,39 +144,41 @@ func _ready() -> void:
 	_player.float_layer = _float_layer
 	_player.power_label = _power_value
 	_player.res_label = _res_value
-	_player.word_label = _word_name
-	_player.level_label = _word_level
+	_player.spell_label = _spell_name
 	_player.total_label = _preview_value
+	_player.monster_card = _monster_card
+	_player.hp_bar = _hp_bar
+	_player.monster = _fight.monster
 	_player.talisman_string = _talismans
+	_player.on_hit = func(amount: float) -> void:
+		if amount >= _fight.monster.max_hp * SHAKE_SHARE:
+			_shake()
 	_talismans.moved.connect(_on_talisman_moved)
 	_consumables.consumable_mode = true
 	_consumables.used.connect(_on_consumable_used)
 
-	_hand.max_selection = _round.max_selection()
+	_hand.max_selection = _fight.max_selection()
 	_hand.can_select = func(stone: Stone) -> bool:
 		return _picking or (EventBus.is_allowed("select") and EventBus.can_select(stone.rune_id))
 	# Before the evening class teaches the grammar, stones have no roles and no casting order.
-	_hand.show_order = _round.spells_enabled
-	_hand.show_roles = _round.spells_enabled
+	_hand.show_order = _fight.spells_enabled
+	_hand.show_roles = _fight.spells_enabled
 	_hand.selection_changed.connect(_on_selection_changed)
 	_hand.stone_moved.connect(_on_stone_moved)
 	_card = StoneCard.new()
-	_card.show_role = _round.spells_enabled
+	_card.show_role = _fight.spells_enabled
+	_card.levels = _fight.element_levels
 	add_child(_card)
-	_word_card = WordCard.new()
-	add_child(_word_card)
 	_hand.hover_changed.connect(func(view: StoneView) -> void:
 		_card.show_stone(view.stone if view != null else null, view)
 		EventBus.stone_hovered.emit(view.stone.rune_id if view != null else ""))
-	_scroll_slot.visible = _round.spells_enabled
+	_scroll_slot.visible = _fight.spells_enabled
 	_scroll_slot.pressed.connect(_on_scroll_pressed)
 	_cast_button.pressed.connect(_on_cast_pressed)
 	_swap_button.pressed.connect(_on_swap_pressed)
-	_sort_position.pressed.connect(_on_sort.bind(true))
+	_sort_role.pressed.connect(_on_sort.bind(true))
 	_sort_kin.pressed.connect(_on_sort.bind(false))
 	_speed_button.pressed.connect(_on_speed_pressed)
-	_word_book_button.pressed.connect(open_word_book)
-	_word_book.closed.connect(func() -> void: EventBus.book_closed.emit("words"))
 	_menu_button.pressed.connect(open_pause)
 	_resume_button.pressed.connect(close_pause)
 	_rune_book_button.pressed.connect(open_rune_book)
@@ -199,7 +192,8 @@ func _ready() -> void:
 	Loc.language_changed.connect(func(_language: String) -> void: _refresh_texts())
 	EventBus.gate_changed.connect(_refresh_state)
 
-	_portrait.character_id = str(config.get("examiner", GameData.rule("test_round_examiner", "ilinca")))
+	_portrait.character_id = _fight.monster.id
+	_reset_monster_bar()
 	var classroom: bool = str(config.get("backdrop", "night")) == "classroom"
 	_classroom.visible = classroom
 	_night.visible = not classroom
@@ -216,43 +210,66 @@ func _ready() -> void:
 	_refresh_texts()
 
 
+## A practice fight against one monster with its life from data (the Training Dummy unless
+## config names another).
+static func practice_fight(options: Dictionary, seed_value: int) -> FightState:
+	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+	rng.seed = seed_value
+	var monster_id: String = str(options.get("monster", GameData.rule("test_fight_monster", "dummy")))
+	var entry: Dictionary = GameData.monsters.get(monster_id, {})
+	var monster: Monster = Monster.new()
+	monster.setup(entry, float(entry.get("hp", 100)))
+	var fight: FightState = FightState.new()
+	fight.setup(tables(), rng, monster, options)
+	fight.start()
+	return fight
+
+
+## The GameData tables a fight needs.
+static func tables() -> Dictionary:
+	return {
+		"runes": GameData.runes, "elements": GameData.elements, "targets": GameData.targets,
+		"spells": GameData.spells, "spell_actions": GameData.spell_actions, "rules": GameData.rules,
+		"economy": GameData.economy, "talismans": GameData.talismans, "lessons": GameData.lessons,
+		"engravings": GameData.engravings, "monsters": GameData.monsters, "realms": GameData.realms,
+		"parents": GameData.parents,
+	}
+
+
 func _exit_tree() -> void:
 	EventBus.round_closed.emit()
 
 
-## Lays the round's hand out on screen and reports it.
+## Lays the fight's hand out on screen and reports it.
 func _show_hand() -> void:
-	_hand.set_stones(_round.hand)
+	_hand.set_stones(_fight.hand)
 	var runes: Array[String] = []
-	for stone: Stone in _round.hand:
+	for stone: Stone in _fight.hand:
 		runes.append(stone.rune_id)
 	EventBus.hand_changed.emit(runes)
 
 
 func _refresh_texts() -> void:
-	var examiner: Dictionary = GameData.characters.get(_portrait.character_id, {})
 	_trial_label.text = Loc.text(config["title"]) if config.has("title") else Loc.t("round_practice")
 	_coins_label.text = Loc.t("round_coins")
 	_bag_label.text = Loc.t("round_bag")
 	_seed_label.text = Loc.t("round_seed", {"seed": _seed})
 	_speed_button.text = Loc.t("round_speed", {"n": _speed})
 	_menu_button.text = Loc.t("round_menu")
+	_estimate_label.text = Loc.t("round_estimate")
 	_casts_label.text = Loc.t("round_casts")
 	_swaps_label.text = Loc.t("round_swaps")
-	_examiner_name.text = Loc.text(examiner.get("name", {}))
-	_examiner_role.text = Loc.text(examiner.get("job", {}))
-	_rule_text.text = Loc.text(config["rule"]) if config.has("rule") else Loc.t("round_practice_rule")
+	_monster_name.text = Loc.text(_fight.monster.entry.get("name", {}))
 	_sort_label.text = Loc.t("round_sort")
-	_sort_position.text = Loc.t("round_sort_position")
+	_sort_role.text = Loc.t("round_sort_role")
 	_sort_kin.text = Loc.t("round_sort_kin")
 	_cast_button.text = Loc.t("round_cast_button")
 	_swap_button.text = Loc.t("round_swap_button")
-	_kenaz_label.text = Loc.t("kenaz_peek")
+	_peek_label.text = Loc.t("peek_label")
 	_talismans.empty_label = Loc.t("round_talisman_slot")
 	_consumables.empty_label = Loc.t("round_consumable_slot")
 	_again_button.text = Loc.t("result_again")
 	_result_menu_button.text = Loc.t("result_menu")
-	_word_book_button.text = Loc.t("word_book_button")
 	_pause_title.text = Loc.t("pause_title")
 	_pause_seed.text = Loc.t("round_seed", {"seed": _seed})
 	_resume_button.text = Loc.t("pause_resume")
@@ -264,64 +281,107 @@ func _refresh_texts() -> void:
 	_on_selection_changed()
 
 
-## Counters, target, buttons and the Kenaz preview.
+## Counters, buttons, the monster's card and the peek at the bag.
 func _refresh_state() -> void:
-	_coins_value.text = Loc.number(_round.money)
-	_bag_value.text = Loc.t("round_bag_value", {"left": _round.bag.remaining(), "total": _round.bag.size()})
-	_score_value.text = Loc.number(_shown_score)
-	_score_target.text = Loc.t("round_score_of", {"target": Loc.number(_round.target)})
-	_target_label.text = Loc.t("round_target", {"target": Loc.number(_round.target)})
-	_score_bar.max_value = maxf(1.0, _round.target)
-	_score_bar.value = minf(_shown_score, _round.target)
-	_candles.total = maxi(_casts_total, _round.casts_left)
-	_candles.left = _round.casts_left
-	_chalk.total = maxi(_swaps_total, _round.swaps_left)
-	_chalk.left = _round.swaps_left
+	_coins_value.text = Loc.number(_fight.money)
+	_bag_value.text = Loc.t("round_bag_value", {"left": _fight.bag.remaining(), "total": _fight.bag.size()})
+	_candles.total = maxi(_casts_total, _fight.casts_left)
+	_candles.left = _fight.casts_left
+	_chalk.total = maxi(_swaps_total, _fight.swaps_left)
+	_chalk.left = _fight.swaps_left
 	# Aeva's Hourglass: Swaps without end, no chalk to draw.
-	var endless: bool = _round.swaps_left > ENDLESS_SWAPS
+	var endless: bool = _fight.swaps_left > ENDLESS_SWAPS
 	_chalk.visible = not endless and not bool(config.get("hide_swap", false))
 	_swaps_label.text = Loc.t("round_swaps_endless") if endless else Loc.t("round_swaps")
-	var cost: int = _round.swap_cost()
+	var cost: int = _fight.swap_cost()
 	_swap_button.text = Loc.t("round_swap_button_cost", {"n": cost}) if cost > 0 else Loc.t("round_swap_button")
 	var selection: Array[int] = _hand.selected_indices()
-	_cast_button.disabled = _busy or not _round.can_cast(selection) or not EventBus.is_allowed("cast")
-	_swap_button.disabled = _busy or not _round.can_swap(selection) or not EventBus.is_allowed("swap")
-	_sort_position.disabled = _busy or not EventBus.is_allowed("sort")
-	_sort_kin.disabled = _sort_position.disabled
+	_cast_button.disabled = _busy or not _fight.can_cast(selection) or not EventBus.is_allowed("cast")
+	_swap_button.disabled = _busy or not _fight.can_swap(selection) or not EventBus.is_allowed("swap")
+	_sort_role.disabled = _busy or not EventBus.is_allowed("sort")
+	_sort_kin.disabled = _sort_role.disabled
 	_speed_button.disabled = not EventBus.is_allowed("speed")
 	_menu_button.disabled = not EventBus.is_allowed("menu")
-	_word_book_button.disabled = not EventBus.is_allowed("word_book")
 	_hand.enabled = not _busy or (_picking and _choice_panel.uses_hand())
-	_talismans.set_owned(_round.talismans, 0 if _round.active_rule() == "trick" else -1)
+	_talismans.set_owned(_fight.talismans, 0 if _fight.active_rule() == "trick" else -1)
 	_talismans.enabled = not _busy
-	_consumables.set_owned(_round.consumables)
+	_consumables.set_owned(_fight.consumables)
 	_consumables.enabled = not _busy and EventBus.is_allowed("cast")
-	_scroll_slot.spell_id = _round.scroll_spell()
-	_scroll_slot.armed = _round.scroll_armed()
+	_scroll_slot.spell_id = _fight.scroll_spell()
+	_scroll_slot.armed = _fight.scroll_armed()
 	_scroll_slot.enabled = not _busy and EventBus.is_allowed("cast")
-	_refresh_kenaz()
+	_refresh_monster()
+	_refresh_peek()
 
 
-func _refresh_kenaz() -> void:
-	for child: Node in _kenaz_stones.get_children():
+## The monster's card: weaknesses of the head in front, Burn / Freeze / Shield, the rule.
+func _refresh_monster() -> void:
+	var monster: Monster = _fight.monster
+	var lists: Dictionary = monster.entry
+	var all_heads: Array = monster.entry.get("heads", [])
+	if not all_heads.is_empty():
+		lists = all_heads[clampi(monster.head, 0, all_heads.size() - 1)]
+	var parts: PackedStringArray = []
+	for key: String in ["weak", "resist", "immune"]:
+		var names: PackedStringArray = []
+		for element: Variant in lists.get(key, []):
+			names.append(SpellText.element_name(str(element)))
+		if not names.is_empty():
+			parts.append(Loc.t("monster_" + key, {"list": ", ".join(names)}))
+	_monster_traits.text = " · ".join(parts) if not parts.is_empty() else Loc.t("monster_plain")
+	var status: PackedStringArray = []
+	if monster.burn_stacks > 0:
+		status.append(Loc.t("monster_burn", {"n": monster.burn_stacks,
+			"value": Loc.number(monster.burn_per_stack * monster.burn_stacks)}))
+	if monster.frozen > 0:
+		status.append(Loc.t("monster_frozen", {"n": monster.frozen}))
+	if monster.shield_broken:
+		status.append(Loc.t("monster_shield_broken"))
+	if not all_heads.is_empty():
+		status.append(Loc.t("monster_head", {"n": monster.head + 1, "total": monster.heads()}))
+	_monster_status.text = " · ".join(status)
+	# The rule of a Lord (or the Balaur's heads); the board before the fight told the story.
+	var rule_text: String = SpellText.rule_text(_fight.rule)
+	if rule_text.is_empty():
+		rule_text = SpellText.rule_text(monster.entry)
+	elif _fight.active_rule().is_empty():
+		rule_text = Loc.t("monster_rule_resting", {"text": rule_text})
+	_rule_text.text = rule_text
+	_rule_box.visible = not rule_text.is_empty()
+	if not _busy:
+		_hp_bar.shield = 0.0 if monster.shield_broken else monster.shield
+		_hp_bar.heads_left = maxi(0, monster.heads() - 1 - monster.head)
+		_hp_bar.set_life(maxf(0.0, monster.hp))
+
+
+func _reset_monster_bar() -> void:
+	var monster: Monster = _fight.monster
+	_hp_bar.heads_left = maxi(0, monster.heads() - 1 - monster.head)
+	_hp_bar.shield = 0.0 if monster.shield_broken else monster.shield
+	_hp_bar.reset(maxf(0.0, monster.hp), monster.max_hp)
+
+
+## The next stones of the bag, when a spell lets the player see them.
+func _refresh_peek() -> void:
+	for child: Node in _peek_stones.get_children():
 		child.queue_free()
-	var next: Array[Stone] = _round.kenaz_peek()
-	_kenaz_panel.visible = not next.is_empty()
+	var next: Array[Stone] = _fight.peek()
+	_peek_panel.visible = not next.is_empty()
 	for stone: Stone in next:
 		var glyph: RuneGlyphScript = RuneGlyphScript.new()
 		glyph.custom_minimum_size = Vector2(64, 64)
 		glyph.rune_id = stone.rune_id
-		_kenaz_stones.add_child(glyph)
+		_peek_stones.add_child(glyph)
 
 
-## What is selected right now: {"word": id or "", "spells": [...], "runes": [...]}.
+## What is selected right now: {"spells": [...], "runes": [...]}.
 func selection_info() -> Dictionary:
 	var indices: Array[int] = _hand.selected_indices()
-	var preview: Dictionary = _round.preview(indices)
+	var preview: Dictionary = _fight.preview(indices)
 	var runes: Array[String] = []
 	for i: int in indices:
-		runes.append(_round.hand[i].rune_id)
-	return {"word": preview.get("word", ""), "spells": preview.get("spells", []), "runes": runes}
+		runes.append(_fight.hand[i].rune_id)
+	return {"spells": preview.get("spells", []), "runes": runes}
 
 
 func clear_selection() -> void:
@@ -378,21 +438,8 @@ func open_rune_book() -> void:
 	EventBus.book_opened.emit("runes")
 
 
-## The Book of Words over the round (button or key C).
-func open_word_book() -> void:
-	if _word_book.visible or _pause_panel.visible or not EventBus.is_allowed("word_book"):
-		return
-	_word_book.open(_round.word_levels)
-	EventBus.book_opened.emit("words")
-
-
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and (event as InputEventKey).pressed and not (event as InputEventKey).echo \
-			and (event as InputEventKey).keycode == KEY_C:
-		get_viewport().set_input_as_handled()
-		open_word_book()
-		return
-	if _word_book.visible or _rune_book.visible:
+	if _rune_book.visible:
 		return
 	if event.is_action_pressed("ui_cancel") and EventBus.is_allowed("menu"):
 		get_viewport().set_input_as_handled()
@@ -402,91 +449,94 @@ func _unhandled_input(event: InputEvent) -> void:
 			open_pause()
 
 
-## The middle of the Rune Circle: Word, scoring stones, Power × Resonance, Spells.
+## The middle of the Rune Circle: the spells read, Power × Resonance, the damage estimate.
 func _on_selection_changed() -> void:
 	if _picking:
 		var picked: Array[int] = _hand.selected_indices()
 		_choice_panel.set_hand_picks(picked.size())
-		# The Reshaping: the runes of the picked stone's Kin.
+		# The Reshaping: other runes of the same role.
 		var runes: Array[String] = []
 		if not picked.is_empty():
-			runes = _round.rune_choices(_round.hand[picked[0]])
+			runes = _fight.rune_choices(_fight.hand[picked[0]])
 		_choice_panel.set_rune_options(runes)
 		return
 	if _busy:
 		return
 	var info: Dictionary = selection_info()
-	EventBus.selection_changed.emit(info["word"], info["spells"], info["runes"])
-	var preview: Dictionary = _round.preview(_hand.selected_indices())
-	_preview = preview
-	_set_word_card(false)
+	EventBus.selection_changed.emit("", info["spells"], info["runes"])
+	_preview = _fight.preview(_hand.selected_indices())
 	_circle.glow_color = Color(0, 0, 0, 0)
 	_circle.awakening = false
 	_sentence_bar.clear()
-	if preview.is_empty():
-		_word_name.text = Loc.t("circle_hint")
-		_word_level.text = ""
-		_scoring_count.text = ""
-		_preview_value.text = ""
-		_power_value.text = "0"
-		_res_value.text = "0"
+	_spell_second.text = ""
+	_circle_info.text = ""
+	_preview_value.text = ""
+	_estimate_value.text = "—"
+	_estimate_note.text = ""
+	_power_value.text = "0"
+	_res_value.text = "0"
+	if _preview.is_empty():
+		_spell_name.text = Loc.t("circle_hint")
 	elif _selection_has_face_down():
-		# Lunet's Dream: a face-down stone keeps its secret until it is cast.
-		_word_name.text = Loc.t("word_hidden")
-		_word_level.text = ""
-		_scoring_count.text = Loc.t("circle_face_down")
-		_preview_value.text = ""
+		# The dream: a face-down stone keeps its secret until it is cast.
+		_spell_name.text = Loc.t("word_hidden")
+		_circle_info.text = Loc.t("circle_face_down")
 		_power_value.text = "?"
 		_res_value.text = "?"
-		_preview = {}
+		_estimate_value.text = "?"
 	else:
-		_word_name.text = _word_display_name(preview["word"])
-		_word_level.text = Loc.t("circle_level", {"n": _round.word_level(preview["word"])})
-		var count: int = (preview["scoring"] as Array).size()
-		_scoring_count.text = Loc.t("circle_scoring_one") if count == 1 else Loc.t("circle_scoring_many", {"n": count})
-		_preview_value.text = "%s × %s" % [Loc.number(preview["power"]), Loc.number(preview["res"])]
-		_power_value.text = Loc.number(preview["power"])
-		_res_value.text = Loc.number(preview["res"])
-		_show_sentence(preview.get("sentence", {}), preview.get("plan", {}))
+		_show_preview(_preview)
 	_preview_value.modulate.a = 1.0
 	_refresh_state()
 
 
-## The circle's card follows the mouse over the middle of the circle.
-func _process(_delta: float) -> void:
-	var covered: bool = _pause_panel.visible or _word_book.visible or _rune_book.visible or _result_panel.visible
-	_set_word_card(not _busy and not covered and not _preview.is_empty() and _mouse_over_circle())
+func _show_preview(preview: Dictionary) -> void:
+	var parsed: Dictionary = preview["sentence"]
+	var per_spell: Array = preview["per_spell"]
+	_show_sentence(parsed, preview.get("plan", {}))
+	if per_spell.is_empty():
+		_spell_name.text = SpellText.circle_line(parsed)
+		if _spell_name.text.is_empty():
+			_spell_name.text = Loc.t("circle_no_spell")
+	else:
+		var first: Dictionary = per_spell[0]
+		_spell_name.text = SpellText.spell_name(str(first["spell"]))
+		_power_value.text = Loc.number(first["power"])
+		_res_value.text = Loc.number(first["res"])
+		if per_spell.size() > 1:
+			_spell_second.text = Loc.t("circle_second_spell", {"name": SpellText.spell_name(str(per_spell[1]["spell"]))})
+	var notes: PackedStringArray = []
+	var blocked: String = str(preview.get("blocked", ""))
+	if not blocked.is_empty():
+		notes.append(Loc.t("blocked_" + blocked, {"n": _fight.required_count() if blocked == "exact_count"
+			else int(_fight.rule.get("rule_value", 4))}))
+	if bool(preview.get("kin_bonus", false)):
+		notes.append(Loc.t("circle_kin_bonus", {"n": Loc.number(float(GameData.economy.get("kin_bonus_res", 1.5)))}))
+	for info: Dictionary in per_spell:
+		if bool(info.get("zero", false)):
+			notes.append(Loc.t("circle_zero_by_rule"))
+			break
+	_circle_info.text = "\n".join(notes)
+	var damage: float = float(preview["damage"])
+	var most: float = float(preview["damage_max"])
+	_estimate_value.text = Loc.number(damage)
+	if not per_spell.is_empty():
+		_preview_value.text = Loc.t("circle_estimate", {"n": Loc.number(damage)})
+	if bool(preview["kill"]):
+		_estimate_note.text = Loc.t("round_estimate_kill")
+	elif most > damage:
+		_estimate_note.text = Loc.t("round_estimate_max", {"n": Loc.number(most)})
+	else:
+		for info: Dictionary in per_spell:
+			if bool(info.get("later", false)):
+				_estimate_note.text = Loc.t("round_estimate_later")
 
 
 func _selection_has_face_down() -> bool:
 	for i: int in _hand.selected_indices():
-		if _round.hand[i].face_down:
+		if _fight.hand[i].face_down:
 			return true
 	return false
-
-
-func _mouse_over_circle() -> bool:
-	var rect: Rect2 = _circle.get_global_rect()
-	var radius: float = minf(rect.size.x, rect.size.y) * 0.5 - 12.0
-	return get_global_mouse_position().distance_to(rect.get_center()) <= radius
-
-
-## Shows or hides the circle's card; while shown, the scoring stones glow in hand.
-func _set_word_card(wanted: bool) -> void:
-	if wanted == _word_card_shown:
-		return
-	_word_card_shown = wanted
-	if not wanted:
-		_word_card.hide_card()
-		_hand.mark_scoring([])
-		return
-	var word_id: String = _preview["word"]
-	var word: Dictionary = GameData.words[word_id]
-	var known: bool = not bool(word.get("hidden", false)) or SaveManager.has_discovery("words", word_id)
-	_word_card.show_word(_word_display_name(word_id),
-		Loc.text(word["description"]) if known else Loc.t("word_hidden"),
-		_preview, _round.word_level(word_id), _hand.selected_indices().size(), _circle)
-	_hand.mark_scoring(_preview["scoring"])
 
 
 ## The sentence the selection reads, in its slots under the circle; the circle glows in the
@@ -506,41 +556,34 @@ func _show_sentence(parsed: Dictionary, plan: Dictionary) -> void:
 		EventBus.sentence_read.emit(status, str(parsed.get("spell", "")), (parsed.get("actions", []) as Array).size())
 
 
-func _word_display_name(word_id: String) -> String:
-	var word: Dictionary = GameData.words[word_id]
-	if bool(word.get("hidden", false)) and not SaveManager.has_discovery("words", word_id):
-		return Loc.t("word_hidden")
-	return Loc.text(word["name"])
-
-
-## Talismans act left to right: dragging one changes the exam's order.
+## Talismans act left to right: dragging one changes the order.
 func _on_talisman_moved(from: int, to: int) -> void:
 	if _busy:
 		return
-	var item: Dictionary = _round.talismans.pop_at(from)
-	_round.talismans.insert(clampi(to, 0, _round.talismans.size()), item)
+	var item: Dictionary = _fight.talismans.pop_at(from)
+	_fight.talismans.insert(clampi(to, 0, _fight.talismans.size()), item)
 	_refresh_state()
 
 
 func _on_stone_moved(from: int, to: int) -> void:
-	_round.move_stone(from, to)
+	_fight.move_stone(from, to)
 	_on_selection_changed()
 
 
-func _on_sort(by_position: bool) -> void:
+func _on_sort(by_role: bool) -> void:
 	if _busy:
 		return
 	_hand.clear_selection()
-	if by_position:
-		_round.sort_by_position()
+	if by_role:
+		_fight.sort_by_role()
 	else:
-		_round.sort_by_kin()
-	_hand.set_stones(_round.hand)
+		_fight.sort_by_kin()
+	_hand.set_stones(_fight.hand)
 
 
 func _on_swap_pressed() -> void:
 	var count: int = _hand.selected_indices().size()
-	if _busy or not EventBus.is_allowed("swap") or not _round.swap(_hand.selected_indices()):
+	if _busy or not EventBus.is_allowed("swap") or not _fight.swap(_hand.selected_indices()):
 		return
 	_show_hand()
 	EventBus.swap.emit(count)
@@ -549,27 +592,20 @@ func _on_swap_pressed() -> void:
 
 func _on_cast_pressed() -> void:
 	var selection: Array[int] = _hand.selected_indices()
-	if _busy or not EventBus.is_allowed("cast") or not _round.can_cast(selection):
+	if _busy or not EventBus.is_allowed("cast") or not _fight.can_cast(selection):
 		return
 	var info: Dictionary = selection_info()
-	EventBus.cast.emit(info["word"], info["runes"])
+	EventBus.cast.emit("", info["runes"])
 	_busy = true
 	_refresh_state()
-	var held_views: Array[StoneView] = []
-	for i: int in _round.hand.size():
-		if not selection.has(i):
-			held_views.append(_hand.view_at(i))
 	_sentence_bar.clear()
-	var result: Dictionary = _round.cast(selection)
-	# The scorer's indices follow the casting order.
+	# The views of the cast stones, in casting order (the selection order).
 	var cast_views: Array[StoneView] = []
-	for stone: Stone in result["cast_stones"]:
-		cast_views.append(_hand.view_for(stone))
-	result["won"] = _round.is_won()
-	result["lost"] = false
+	for i: int in selection:
+		cast_views.append(_hand.view_at(i))
+	var result: Dictionary = _fight.cast(selection)
 	_player.speed = float(_speed) * (0.5 if slow_scoring else 1.0)
-	await _player.play(result, cast_views, held_views)
-	await _add_score(float(result["score"]))
+	await _player.play(result, cast_views)
 	await _announce(result)
 	for view: StoneView in cast_views:
 		view.selected = false
@@ -579,43 +615,43 @@ func _on_cast_pressed() -> void:
 	_show_hand()
 	await _resolve_picks()
 	_busy = false
+	_reset_monster_bar()
 	_on_selection_changed()
 	EventBus.cast_resolved.emit()
-	if _round.is_won() or _round.is_lost():
+	if _fight.is_won() or _fight.is_lost():
 		_finish_round()
 
 
-## Picks waiting when the round starts (The Tide: put the extra stones back). A round can
-## also start already won (Provisions carried more score than the new target), or with no stone
-## to draw: then it ends at once.
+## Picks waiting when the fight starts (stones carried over to put back). A fight can also
+## start already won (Raidho carried enough damage), or with no stone to draw: then it ends at
+## once.
 func _resolve_start_picks() -> void:
-	if not _round.pending.is_empty():
+	if not _fight.pending.is_empty():
 		_busy = true
 		_refresh_state()
 		await _resolve_picks()
 		_busy = false
 		_show_hand()
 		_on_selection_changed()
-	if _round.is_won():
+	if _fight.is_won():
 		_busy = true
 		_refresh_state()
 		await _show_toast(Loc.t("round_won_at_start"))
 		_busy = false
 		_finish_round()
-	elif _round.is_lost():
-		# No stone left to draw: nothing can be cast.
+	elif _fight.is_lost():
 		_finish_round()
 
 
 ## The spells' picks, one after another. Stones are picked in the hand; where the player may
-## not select (a tutorial step) the round answers by itself.
+## not select (a tutorial step) the fight answers by itself.
 func _resolve_picks() -> void:
-	while not _round.pending.is_empty():
-		var choice: Dictionary = _round.current_choice()
-		var limits: Dictionary = _round.pick_limits(choice)
+	while not _fight.pending.is_empty():
+		var choice: Dictionary = _fight.current_choice()
+		var limits: Dictionary = _fight.pick_limits(choice)
 		if not EventBus.is_allowed("select") or limits.is_empty():
-			if not _round.answer(_round.auto_answer()):
-				_round.skip_choice()
+			if not _fight.answer(_fight.auto_answer()):
+				_fight.skip_choice()
 			_show_hand()
 			continue
 		_picking = true
@@ -625,23 +661,24 @@ func _resolve_picks() -> void:
 		var stones: Array = []
 		match str(limits["source"]):
 			"talisman":
-				stones = _round.talismans
+				stones = _fight.talismans
 			"bag_top":
-				stones = _round.bag.peek(int(limits["count"]))
+				stones = _fight.bag.peek(int(limits["count"]))
 			"offer":
-				stones = _round.offer
-		_choice_panel.ask(choice, limits, {"money": _round.money, "stones": stones, "kins": _round.kin_choices()})
+				stones = _fight.offer
+		_choice_panel.ask(choice, limits, {"money": _fight.money, "swaps": _fight.swaps_left, "stones": stones,
+			"kins": _fight.kin_choices()})
 		_refresh_state()
 		var reply: Dictionary = await _choice_panel.answered
 		if str(limits["source"]) == "hand":
 			reply["stones"] = _hand.selected_indices()
-		if not _round.answer(reply):
-			_round.skip_choice()
+		if not _fight.answer(reply):
+			_fight.skip_choice()
 		_choice_panel.close()
 		_picking = false
 		_hand.clear_selection()
-		_hand.max_selection = _round.max_selection()
-		_hand.show_order = _round.spells_enabled
+		_hand.max_selection = _fight.max_selection()
+		_hand.show_order = _fight.spells_enabled
 		_show_hand()
 		_refresh_state()
 
@@ -650,22 +687,24 @@ func _choice_panel_max(limits: Dictionary) -> int:
 	return int(limits.get("max", 0)) if str(limits.get("source", "")) == "hand" else 0
 
 
-## A click on a Lesson or an Engraving: a Lesson raises its Word now; an Engraving asks
+## A click on a Lesson or an Engraving: a Lesson raises its Element now; an Engraving asks
 ## which stones in hand it changes.
 func _on_consumable_used(slot: int) -> void:
-	if _busy or slot >= _round.consumables.size():
+	if _busy or slot >= _fight.consumables.size():
 		return
-	var item: Dictionary = _round.consumables[slot]
+	var item: Dictionary = _fight.consumables[slot]
 	var lesson: bool = str(item["type"]) == "lesson"
-	if not _round.use_consumable(slot):
+	if not _fight.use_consumable(slot):
 		await _show_toast(Loc.t("consumable_cannot"))
 		return
 	if lesson:
-		var word_id: String = str((GameData.lessons.get(str(item["id"]), {}) as Dictionary).get("word", ""))
+		var element_id: String = str((GameData.lessons.get(str(item["id"]), {}) as Dictionary).get("element", ""))
 		EventBus.consumable_used.emit("lesson", str(item["id"]))
 		_refresh_state()
 		_on_selection_changed()
-		await _show_toast(Loc.t("lesson_learned", {"word": _word_display_name(word_id), "n": _round.word_level(word_id)}))
+		await _show_toast(Loc.t("lesson_learned", {
+			"element": SpellText.element_name(element_id),
+			"n": _fight.element_level(element_id)}))
 		return
 	EventBus.consumable_used.emit("engraving", str(item["id"]))
 	_busy = true
@@ -678,40 +717,17 @@ func _on_consumable_used(slot: int) -> void:
 
 ## A click on the Scroll: ready to happen with the next Cast, or put away again.
 func _on_scroll_pressed() -> void:
-	if _busy or not _round.has_scroll():
+	if _busy or not _fight.has_scroll():
 		return
-	if _round.scroll_armed():
-		_round.disarm_scroll()
+	if _fight.scroll_armed():
+		_fight.disarm_scroll()
 	else:
-		_round.use_scroll()
+		_fight.use_scroll()
 	_refresh_state()
 
 
-## The round score counts up; big casts shake the screen.
-func _add_score(amount: float) -> void:
-	if amount >= _round.target * SHAKE_SHARE:
-		_shake()
-	var tween: Tween = create_tween()
-	tween.tween_method(_set_shown_score, _shown_score, _shown_score + amount, 0.6 / float(_speed))
-	await tween.finished
-
-
-func _set_shown_score(value: float) -> void:
-	_shown_score = value
-	_score_value.text = Loc.number(roundf(value))
-	_score_bar.value = minf(value, _round.target)
-
-
-## Spells, discoveries and the FUÞAR easter egg after a Cast.
+## Discoveries after a Cast: new spells, new Actions, Talismans worn out, the Scroll.
 func _announce(result: Dictionary) -> void:
-	var word_id: String = result["word"]
-	var word: Dictionary = GameData.words[word_id]
-	if bool(word.get("hidden", false)) and SaveManager.add_discovery("words", word_id):
-		SaveManager.data["memories"] = int(SaveManager.data.get("memories", 0)) + int(GameData.rule("memories_per_word", 3))
-		SaveManager.save_game()
-		await _show_toast(Loc.t("word_discovered", {"name": Loc.text(word["name"]), "n": GameData.rule("memories_per_word", 3)}))
-	if word_id == "chant" and _spells_out(result["cast_stones"]) == FUTHARK:
-		await _show_toast(Loc.t("futhark_message"))
 	for gone: String in result.get("talismans_gone", []):
 		await _show_toast(Loc.t("talisman_gone", {"name": Loc.text((GameData.talismans.get(gone, {}) as Dictionary).get("name", {}))}))
 	var plans: Array = result["plans"]
@@ -733,12 +749,8 @@ func _announce(result: Dictionary) -> void:
 			await _spell_reveal.closed
 			EventBus.overlay_closed.emit("spell_reveal")
 			EventBus.spell_discovered.emit(id)
-		elif bool(plan["fizzled"]):
-			await _show_toast(Loc.t("spell_fizzled", {"name": Loc.text(spell["name"])}))
 		elif bool(plan["gift"]):
 			await _show_toast(Loc.t("spell_scroll_kept", {"name": Loc.text(spell["name"])}))
-		else:
-			await _show_toast("%s: %s" % [Loc.text(spell["name"]), SpellText.effect(spell, float(plan["scale"]))])
 		for action_id: String in plan["actions"]:
 			if SaveManager.add_discovery("actions", action_id):
 				_action_learned.center = _circle.get_global_rect().get_center() - get_global_rect().position
@@ -748,13 +760,6 @@ func _announce(result: Dictionary) -> void:
 		EventBus.spell_sentence_cast.emit(id, plan["actions"])
 		EventBus.spell_cast.emit(id)
 	_refresh_state()
-
-
-func _spells_out(stones: Array) -> Array[String]:
-	var ids: Array[String] = []
-	for stone: Stone in stones:
-		ids.append(stone.rune_id)
-	return ids
 
 
 func _show_toast(text: String) -> void:
@@ -774,16 +779,17 @@ func _shake() -> void:
 
 
 func _finish_round() -> void:
-	var finished: Dictionary = _round.finish()
+	var finished: Dictionary = _fight.finish()
 	_refresh_state()
-	if _round.is_won():
+	if _fight.is_won():
 		EventBus.round_won.emit()
 	else:
 		EventBus.round_lost.emit()
 	if not bool(config.get("show_result", true)):
 		return
-	_result_title.text = Loc.t("result_won_title") if _round.is_won() else Loc.t("result_lost_title")
-	_result_score.text = Loc.t("result_score", {"score": Loc.number(_round.score), "target": Loc.number(_round.target)})
+	_result_title.text = Loc.t("result_won_title") if _fight.is_won() else Loc.t("result_lost_title")
+	_result_damage.text = Loc.t("result_damage", {"n": Loc.number(_fight.damage_dealt),
+		"best": Loc.number(_fight.best_cast_damage)})
 	_result_money.text = Loc.t("result_money", {"n": finished["money"]}) if int(finished["money"]) > 0 else ""
 	_result_panel.visible = true
 	_again_button.grab_focus()

@@ -1,4 +1,4 @@
-# Generates scenes/round.tscn (the round screen layout). Run from the project root:
+# Generates scenes/round.tscn (the fight screen layout, provisional until Stage 5 step G). Run from the project root:
 #   python3 tools/gen_round.py
 
 def node(name, typ, parent=None, props=None, unique=False, script=None, instance=None):
@@ -38,40 +38,19 @@ ext=[("Script","res://scripts/ui/round_screen.gd","1_round"),("Script","res://sc
      ("Script","res://scripts/ui/rune_circle.gd","5_circle"),("Script","res://scripts/ui/talisman_string.gd","6_string"),
      ("Script","res://scripts/ui/hand_view.gd","7_hand"),("Script","res://scripts/ui/float_layer.gd","8_float"),
      ("PackedScene","res://scenes/spell_reveal.tscn","9_reveal"),("Script","res://scripts/ui/classroom_backdrop.gd","10_classroom"),
-     ("Script","res://scripts/ui/word_book.gd","11_word_book"),
+     ("Script","res://scripts/ui/hp_bar.gd","11_hp_bar"),
      ("Script","res://scripts/ui/rune_book.gd","12_rune_book"),
      ("Script","res://scripts/ui/sentence_bar.gd","13_sentence"),("Script","res://scripts/ui/scroll_slot.gd","14_scroll"),
      ("Script","res://scripts/ui/choice_panel.gd","15_choice"),("Script","res://scripts/ui/action_learned.gd","16_action")]
-subs='''[sub_resource type="StyleBoxFlat" id="bar_bg"]
-bg_color = Color(0.0588235, 0.0509804, 0.109804, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.0196078, 0.0235294, 0.0392157, 1)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
-
-[sub_resource type="StyleBoxFlat" id="bar_fill"]
-bg_color = Color(1, 0.415686, 0.239216, 1)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
-shadow_color = Color(1, 0.415686, 0.239216, 0.4)
-shadow_size = 8
-'''
-out=[f'[gd_scene load_steps={len(ext)+3} format=3]\n']
+subs=''
+out=[f'[gd_scene load_steps={len(ext)+1} format=3]\n']
 for t,p,i in ext: out.append(f'[ext_resource type="{t}" path="{p}" id="{i}"]')
 out.append("")
-out.append(subs)
 out.append(node("Round","Control",None,dict(FULL,layout_mode="3"),script="1_round"))
 out.append(node("Backdrop","Control",".",dict(FULL,mouse_filter="2"),unique=True,script="2_backdrop"))
 out.append(node("Classroom","Control",".",dict(FULL,mouse_filter="2",visible="false"),unique=True,script="10_classroom"))
 
-# --- left column: info, score, Power x Resonance, candles, chalk, sort
+# --- left column: info, damage estimate, Power x Resonance, candles, chalk, sort
 out.append(node("Info","VBoxContainer",".",dict(rect(40,18,400,214),**{"theme_override_constants/separation":"2"})))
 out.append(label("TrialLabel","Info","Rundă",38,"TitleLabel"))
 out.append(node("InfoGrid","GridContainer","Info",{"layout_mode":"2","columns":"2","theme_override_constants/h_separation":"18","theme_override_constants/v_separation":"0"}))
@@ -84,11 +63,11 @@ out.append(node("TopButtons","HBoxContainer","Info",{"layout_mode":"2","theme_ov
 out.append(node("SpeedButton","Button","Info/TopButtons",{"custom_minimum_size":"Vector2(160, 44)","layout_mode":"2","theme_override_font_sizes/font_size":"22","text":'"x1"'},unique=True))
 out.append(node("MenuButton","Button","Info/TopButtons",{"metadata/tutorial_id":'"btn_menu"',"custom_minimum_size":"Vector2(120, 44)","layout_mode":"2","theme_override_font_sizes/font_size":"22","text":'"Menu"'},unique=True))
 
-out.append(node("ScorePanel","PanelContainer",".",tid(rect(40,250,400,180),"score")))
-out.append(node("ScoreBox","VBoxContainer","ScorePanel",{"layout_mode":"2","theme_override_constants/separation":"0"}))
-out.append(label("ScoreValue","ScorePanel/ScoreBox","0",72,align=0,extra={"theme_override_constants/line_spacing":"-10"}))
-out.append(label("ScoreTarget","ScorePanel/ScoreBox","din 1 500",26,"SecondaryLabel"))
-out.append(node("ScoreBar","ProgressBar","ScorePanel/ScoreBox",{"unique_name_in_owner":"true","custom_minimum_size":"Vector2(0, 22)","layout_mode":"2","theme_override_styles/background":'SubResource("bar_bg")',"theme_override_styles/fill":'SubResource("bar_fill")',"show_percentage":"false"}))
+out.append(node("EstimatePanel","PanelContainer",".",tid(rect(40,250,400,180),"estimate")))
+out.append(node("EstimateBox","VBoxContainer","EstimatePanel",{"layout_mode":"2","theme_override_constants/separation":"0"}))
+out.append(label("EstimateLabel","EstimatePanel/EstimateBox","Daună",24,"SecondaryLabel"))
+out.append(label("EstimateValue","EstimatePanel/EstimateBox","0",64,align=0,extra={"theme_override_constants/line_spacing":"-10"}))
+out.append(label("EstimateNote","EstimatePanel/EstimateBox","",26,color="Color(1, 0.701961, 0.278431, 1)"))
 out.append(node("PowerRes","HBoxContainer",".",dict(tid(rect(40,446,400,84),"power_res"),**{"theme_override_constants/separation":"10","alignment":"1"})))
 out.append(node("PowerBox","PanelContainer","PowerRes",{"custom_minimum_size":"Vector2(165, 0)","layout_mode":"2","theme_type_variation":'&"BonePanel"'}))
 out.append(label("PowerValue","PowerRes/PowerBox","0",52,color="Color(0.0196078, 0.0235294, 0.0392157, 1)",align=1))
@@ -101,36 +80,35 @@ out.append(node("SwapsLabel","Label",".",dict(rect(40,706,300,34),**{"theme_type
 out.append(node("Chalk","Control",".",dict(tid(rect(40,738,240,64),"chalk"),mouse_filter="2",style="1"),unique=True,script="3_candles"))
 out.append(node("SortBox","VBoxContainer",".",tid(rect(40,872,250,170),"sort")))
 out.append(label("SortLabel","SortBox","Sortează",24,"SecondaryLabel"))
-out.append(node("SortPositionButton","Button","SortBox",{"custom_minimum_size":"Vector2(220, 52)","layout_mode":"2","theme_override_font_sizes/font_size":"24","text":'"Poziție"'},unique=True))
+out.append(node("SortRoleButton","Button","SortBox",{"custom_minimum_size":"Vector2(220, 52)","layout_mode":"2","theme_override_font_sizes/font_size":"24","text":'"Rol"'},unique=True))
 out.append(node("SortKinButton","Button","SortBox",{"custom_minimum_size":"Vector2(220, 52)","layout_mode":"2","theme_override_font_sizes/font_size":"24","text":'"Neam"'},unique=True))
 
-# --- top center: examiner card
-out.append(node("ExaminerCard","PanelContainer",".",tid(rect(620,14,680,222),"examiner")))
-out.append(node("CardRow","HBoxContainer","ExaminerCard",{"layout_mode":"2","theme_override_constants/separation":"18"}))
-out.append(node("Portrait","Control","ExaminerCard/CardRow",{"custom_minimum_size":"Vector2(140, 140)","layout_mode":"2","size_flags_vertical":"4","mouse_filter":"2"},unique=True,script="4_portrait"))
-out.append(node("CardText","VBoxContainer","ExaminerCard/CardRow",{"layout_mode":"2","size_flags_horizontal":"3","theme_override_constants/separation":"2"}))
-out.append(label("ExaminerName","ExaminerCard/CardRow/CardText","Nume",40,"TitleLabel"))
-out.append(label("ExaminerRole","ExaminerCard/CardRow/CardText","rol",22,"SecondaryLabel"))
-out.append(node("RuleBox","PanelContainer","ExaminerCard/CardRow/CardText",{"layout_mode":"2","theme_type_variation":'&"RulePanel"'}))
-out.append(label("RuleText","ExaminerCard/CardRow/CardText/RuleBox","regula",20,extra={"autowrap_mode":"3"}))
-out.append(label("TargetLabel","ExaminerCard/CardRow/CardText","Ținta",30,color="Color(1, 0.701961, 0.278431, 1)",extra={"metadata/tutorial_id":'"target"'}))
+# --- top center: the monster's card
+out.append(node("MonsterCard","PanelContainer",".",tid(rect(560,14,760,232),"monster"),unique=True))
+out.append(node("CardRow","HBoxContainer","MonsterCard",{"layout_mode":"2","theme_override_constants/separation":"18"}))
+out.append(node("Portrait","Control","MonsterCard/CardRow",{"custom_minimum_size":"Vector2(130, 130)","layout_mode":"2","size_flags_vertical":"4","mouse_filter":"2"},unique=True,script="4_portrait"))
+out.append(node("CardText","VBoxContainer","MonsterCard/CardRow",{"layout_mode":"2","size_flags_horizontal":"3","theme_override_constants/separation":"2"}))
+out.append(label("MonsterName","MonsterCard/CardRow/CardText","Nume",36,"TitleLabel"))
+out.append(node("HpBar","Control","MonsterCard/CardRow/CardText",{"custom_minimum_size":"Vector2(0, 38)","layout_mode":"2","metadata/tutorial_id":'"hp"'},unique=True,script="11_hp_bar"))
+out.append(label("MonsterTraits","MonsterCard/CardRow/CardText","",20,"SecondaryLabel"))
+out.append(label("MonsterStatus","MonsterCard/CardRow/CardText","",20,color="Color(1, 0.415686, 0.239216, 1)"))
+out.append(node("RuleBox","PanelContainer","MonsterCard/CardRow/CardText",{"layout_mode":"2","theme_type_variation":'&"RulePanel"'},unique=True))
+out.append(label("RuleText","MonsterCard/CardRow/CardText/RuleBox","regula",18,extra={"autowrap_mode":"3"}))
 
 # --- center: rune circle
 out.append(node("RuneCircle","Control",".",tid(rect(740,246,440,440),"circle"),unique=True,script="5_circle"))
 out.append(node("CircleText","VBoxContainer","RuneCircle",{"layout_mode":"1","anchors_preset":"8","anchor_left":"0.5","anchor_top":"0.5","anchor_right":"0.5","anchor_bottom":"0.5","offset_left":"-150.0","offset_top":"-120.0","offset_right":"150.0","offset_bottom":"120.0","grow_horizontal":"2","grow_vertical":"2","mouse_filter":"2","alignment":"1","theme_override_constants/separation":"2"}))
-out.append(label("WordName","RuneCircle/CircleText","Alege",44,"TitleLabel",align=1))
-out.append(label("WordLevel","RuneCircle/CircleText","",20,"SecondaryLabel",align=1))
-out.append(label("ScoringCount","RuneCircle/CircleText","",22,"SecondaryLabel",align=1))
+out.append(label("SpellName","RuneCircle/CircleText","Alege",40,"TitleLabel",align=1,extra={"autowrap_mode":"3"}))
+out.append(label("SpellSecond","RuneCircle/CircleText","",22,"SecondaryLabel",align=1,extra={"autowrap_mode":"3"}))
+out.append(label("CircleInfo","RuneCircle/CircleText","",22,"SecondaryLabel",align=1,extra={"autowrap_mode":"3"}))
 out.append(label("PreviewValue","RuneCircle/CircleText","",40,align=1))
 
-out.append(node("WordBookButton","Button",".",dict(tid(rect(1222,486,200,60),"btn_word_book"),**{"theme_override_font_sizes/font_size":"26","text":'"Cuvinte"'}),unique=True))
-
-# --- right: talismans, consumables, Kenaz
+# --- right: talismans, consumables, the stones seen ahead
 out.append(node("Talismans","Control",".",dict(rect(1320,14,580,210),mouse_filter="2"),unique=True,script="6_string"))
 out.append(node("Consumables","Control",".",dict(rect(1600,262,290,190),mouse_filter="2",slots="2",show_rope="false"),unique=True,script="6_string"))
-out.append(node("KenazPanel","VBoxContainer",".",dict(tid(rect(1400,560,500,120),"kenaz"),mouse_filter="2"),unique=True))
-out.append(label("KenazLabel","KenazPanel","Kenaz",22,"SecondaryLabel",align=1))
-out.append(node("KenazStones","HBoxContainer","KenazPanel",{"layout_mode":"2","alignment":"1","theme_override_constants/separation":"14"},unique=True))
+out.append(node("PeekPanel","VBoxContainer",".",dict(tid(rect(1400,560,500,120),"peek"),mouse_filter="2"),unique=True))
+out.append(label("PeekLabel","PeekPanel","Urmează",22,"SecondaryLabel",align=1))
+out.append(node("PeekStones","HBoxContainer","PeekPanel",{"layout_mode":"2","alignment":"1","theme_override_constants/separation":"14"},unique=True))
 
 # --- bottom: hand and actions
 out.append(node("Hand","Control",".",tid(rect(310,690,1310,390),"hand"),unique=True,script="7_hand"))
@@ -149,12 +127,11 @@ out.append(node("SpellReveal",None,".",FULL,unique=True,instance="9_reveal"))
 out.append(node("ResultPanel","PanelContainer",".",{"visible":"false","layout_mode":"1","anchors_preset":"8","anchor_left":"0.5","anchor_top":"0.5","anchor_right":"0.5","anchor_bottom":"0.5","offset_left":"-400.0","offset_top":"-210.0","offset_right":"400.0","offset_bottom":"210.0","grow_horizontal":"2","grow_vertical":"2"},unique=True))
 out.append(node("ResultBox","VBoxContainer","ResultPanel",{"layout_mode":"2","alignment":"1","theme_override_constants/separation":"16"}))
 out.append(label("ResultTitle","ResultPanel/ResultBox","Rezultat",72,"TitleLabel",align=1))
-out.append(label("ResultScore","ResultPanel/ResultBox","scor",34,align=1))
+out.append(label("ResultDamage","ResultPanel/ResultBox","daună",34,align=1))
 out.append(label("ResultMoney","ResultPanel/ResultBox","",26,color="Color(0.921569, 0.666667, 0.235294, 1)",align=1))
 out.append(node("ResultButtons","HBoxContainer","ResultPanel/ResultBox",{"layout_mode":"2","alignment":"1","theme_override_constants/separation":"20"}))
 out.append(node("AgainButton","Button","ResultPanel/ResultBox/ResultButtons",{"custom_minimum_size":"Vector2(320, 72)","layout_mode":"2","theme_type_variation":'&"CastButton"',"theme_override_font_sizes/font_size":"32","text":'"Again"'},unique=True))
 out.append(node("ResultMenuButton","Button","ResultPanel/ResultBox/ResultButtons",{"custom_minimum_size":"Vector2(220, 72)","layout_mode":"2","text":'"Menu"'},unique=True))
-out.append(node("WordBook","Control",".",FULL,unique=True,script="11_word_book"))
 
 # --- pause menu
 out.append(node("PausePanel","Control",".",FULL,unique=True))

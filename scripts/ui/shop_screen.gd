@@ -11,6 +11,7 @@ const ShopLogic = preload("res://scripts/core/shop_logic.gd")
 const Portrait = preload("res://scripts/ui/portrait.gd")
 const TalismanRules = preload("res://scripts/core/talisman_rules.gd")
 const MiniStone = preload("res://scripts/ui/mini_stone.gd")
+const SpellText = preload("res://scripts/ui/spell_text.gd")
 const Progress = preload("res://scripts/core/progress.gd")
 
 const MONEY_COLOR: Color = Color("#ebaa3c")
@@ -194,9 +195,9 @@ func _describe(type: String, id: String, owned: Dictionary = {}) -> Dictionary:
 				"name": Loc.text(entry.get("name", {})), "text": Loc.text(entry.get("description", {}), values)}
 		"lesson":
 			var lesson: Dictionary = GameData.lessons.get(id, {})
-			var word: Dictionary = GameData.words.get(str(lesson.get("word", "")), {})
 			return {"kind": Loc.t("consumable_lesson"), "name": Loc.text(lesson.get("name", {})),
-				"text": "%s\n%s" % [Loc.t("lesson_effect", {"word": Loc.text(word.get("name", {}))}), Loc.text(lesson.get("text", {}))]}
+				"text": "%s\n%s" % [Loc.t("lesson_effect", {"element": SpellText.element_name(str(lesson.get("element", "")))}),
+					Loc.text(lesson.get("text", {}))]}
 		"engraving":
 			var engraving: Dictionary = GameData.engravings.get(id, {})
 			var numbers: Dictionary = {}
@@ -316,7 +317,7 @@ func _pack_card(item: Dictionary, index: int) -> Control:
 		box.add_child(mini)
 		var rune: Dictionary = GameData.runes.get(str(stone.get("rune_id")), {})
 		_label(box, Loc.text(rune.get("name", {})), 28, &"TitleLabel")
-		var text: String = Loc.text(rune.get("voice", {}))
+		var text: String = SpellText.rune_role(str(stone.get("rune_id")))
 		var material: String = str(stone.get("material"))
 		if not material.is_empty():
 			var value: float = 0.0

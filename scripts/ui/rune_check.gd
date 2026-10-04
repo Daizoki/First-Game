@@ -4,6 +4,7 @@ extends Control
 
 const MAIN_MENU_SCENE: String = "res://scenes/main_menu.tscn"
 const RuneGlyphScript = preload("res://scripts/ui/rune_glyph.gd")
+const SpellText = preload("res://scripts/ui/spell_text.gd")
 const GLYPH_SIZE: Vector2 = Vector2(124, 124)
 
 @onready var _title: Label = %Title
@@ -65,7 +66,7 @@ func _make_rune_cell(rune: Dictionary) -> Control:
 	glyph.rune_id = rune["id"]
 	glyph.tooltip_text = Loc.t("rune_tooltip", {
 		"meaning": Loc.text(rune["meaning"]),
-		"voice": Loc.text(rune["voice"]),
+		"does": SpellText.rune_role(str(rune["id"])),
 	})
 	cell.add_child(glyph)
 
@@ -76,7 +77,7 @@ func _make_rune_cell(rune: Dictionary) -> Control:
 	cell.add_child(name_label)
 
 	var position_label: Label = Label.new()
-	position_label.text = Loc.t("rune_position", {"n": rune["position"], "power": rune["base_power"]})
+	position_label.text = Loc.t("role_" + str(rune.get("role", "")))
 	position_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	position_label.theme_type_variation = &"SecondaryLabel"
 	position_label.add_theme_font_size_override("font_size", 22)

@@ -11,6 +11,7 @@ signal moved(from: int, to: int)
 signal used(slot: int)
 
 const TalismanRules = preload("res://scripts/core/talisman_rules.gd")
+const SpellText = preload("res://scripts/ui/spell_text.gd")
 
 const INK: Color = Color("#05060a")
 const ROPE: Color = Color("#8a6a3e")
@@ -294,8 +295,8 @@ func _consumable_tooltip(item: Dictionary) -> Control:
 	text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	text.add_theme_font_size_override("font_size", 24)
 	if lesson:
-		var word: Dictionary = GameData.words.get(str(entry.get("word", "")), {})
-		text.text = "%s\n%s" % [Loc.t("lesson_effect", {"word": Loc.text(word.get("name", {}))}), Loc.text(entry.get("text", {}))]
+		text.text = "%s\n%s" % [Loc.t("lesson_effect", {"element": SpellText.element_name(str(entry.get("element", "")))}),
+			Loc.text(entry.get("text", {}))]
 	else:
 		var values: Dictionary = {}
 		for key: String in ["value", "count"]:

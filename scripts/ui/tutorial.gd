@@ -196,7 +196,7 @@ func _show_step() -> void:
 	var wait: Dictionary = step.get("wait_for", {})
 	if str(wait.get("event", "")) == "selection":
 		var info: Dictionary = _round.call("selection_info")
-		_feed("selection", {"word": info["word"], "runes": info["runes"]}, false)
+		_feed("selection", {"word": str(info.get("word", "")), "runes": info["runes"]}, false)
 
 
 ## A game event for the flow. During a Cast, results wait until the Cast is played out.

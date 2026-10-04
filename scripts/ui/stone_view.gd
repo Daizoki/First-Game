@@ -161,7 +161,9 @@ func _draw() -> void:
 		if selected and order > 0:
 			_draw_order(font)
 		return
-	draw_string(font, Vector2(18, 38), str(stone.position), HORIZONTAL_ALIGNMENT_LEFT, -1, 30, BONE)
+	if stone.power() != 0:
+		# Tempered Power (Uruz, a spell that grows the stone).
+		draw_string(font, Vector2(14, 38), "+%d" % stone.power(), HORIZONTAL_ALIGNMENT_LEFT, -1, 26, BONE)
 	_draw_kin_sign(STONE_SIZE - Vector2(30, 30), 13.0)
 	if show_role:
 		RoleSign.draw(self, RoleSign.role_of(stone.rune_id), Vector2(STONE_SIZE.x - 32.0, 30.0), 11.0)

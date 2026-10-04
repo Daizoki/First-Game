@@ -1,10 +1,14 @@
 extends Control
-## A round portrait. Uses art/portraits/<id>.png or art/examiners/<id>.png when Relax has
-## drawn it; otherwise a circle in the character's color with the initial.
+## A round portrait of a character or a monster. Uses art/portraits/<id>.png,
+## art/examiners/<id>.png or art/monsters/<id>.png when Relax has drawn it; otherwise a circle
+## in the character's color with the initial.
 
 const INK: Color = Color("#05060a")
 const BONE: Color = Color("#e9e3d2")
-const ART_PATHS: Array[String] = ["res://art/portraits/%s.png", "res://art/examiners/%s.png"]
+const ART_PATHS: Array[String] = [
+	"res://art/portraits/%s.png", "res://art/examiners/%s.png", "res://art/monsters/%s.png",
+]
+const MONSTER_COLOR: String = "#7a2630"
 
 var character_id: String = "": set = set_character_id
 
@@ -16,7 +20,12 @@ var _art: Texture2D = null
 func set_character_id(value: String) -> void:
 	character_id = value
 	var character: Dictionary = GameData.characters.get(value, {})
-	_color = Color.html(str(character.get("color", "#808080")))
+	if character.is_empty():
+		# A monster: no color of its own yet, a dark blood red until Relax draws it.
+		character = GameData.monsters.get(value, {})
+		_color = Color.html(str(character.get("color", MONSTER_COLOR)))
+	else:
+		_color = Color.html(str(character.get("color", "#808080")))
 	_initial = Loc.text(character.get("name", {})).substr(0, 1)
 	_art = null
 	for pattern: String in ART_PATHS:
