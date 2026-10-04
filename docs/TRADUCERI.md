@@ -227,38 +227,38 @@
 | `thurisaz_ingwaz · efect` | Următoarea Rostire are ×{factor} Rezonanță, cea de după ×0,5. | Your next Cast has ×{factor} Resonance, the one after ×0.5. |
 | `dagaz_ingwaz` | Ziua de mâine | Tomorrow |
 | `dagaz_ingwaz · efect` | Runda următoare are +{count} Rostire. | Next round has +{count} Cast. |
-| `kenaz_wunjo (doarme)` | Scânteia | Spark |
-| `kenaz_wunjo (doarme) · efect` | Talismanul din stânga se declanșează de două ori la Rostirea asta. | The leftmost Talisman triggers twice on this Cast. |
-| `uruz_wunjo (doarme)` | Fanfara | Fanfare |
-| `uruz_wunjo (doarme) · efect` | +{amount} Putere pentru fiecare Talisman. | +{amount} Power for every Talisman. |
-| `isaz_wunjo (doarme)` | Conserva | Preserves |
-| `isaz_wunjo (doarme) · efect` | Talismanele care se consumă nu scad în runda asta. | Talismans that wear out don't wear this round. |
-| `hagalaz_wunjo (doarme)` | Lichidarea | Clearance |
-| `hagalaz_wunjo (doarme) · efect` | Vinzi un Talisman ales pe prețul întreg. | Sell a Talisman you pick for its full price. |
-| `laguz_wunjo (doarme)` | Metamorfoza | Metamorphosis |
-| `laguz_wunjo (doarme) · efect` | Un Talisman ales devine altul, aleatoriu, de aceeași raritate. | A Talisman you pick becomes another random one of the same rarity. |
-| `sowilo_wunjo (doarme)` | Vitrina | The Shop Window |
-| `sowilo_wunjo (doarme) · efect` | La următoarea Piață apare sigur un Talisman Rar. | A Rare Talisman surely appears at the next Market. |
-| `thurisaz_wunjo (doarme)` | Sacrificiul | The Sacrifice |
-| `thurisaz_wunjo (doarme) · efect` | Distrugi un Talisman ales → ×{factor} Rezonanță tot restul Probei. | Destroy a Talisman you pick → ×{factor} Resonance for the rest of the Trial. |
-| `dagaz_wunjo (doarme)` | Ziua de târg | Market Day |
-| `dagaz_wunjo (doarme) · efect` | +{count} Talisman în oferta Pieței următoare. | +{count} Talisman in the next Market's offer. |
-| `kenaz_algiz (doarme)` | Fumul | Smoke |
-| `kenaz_algiz (doarme) · efect` | Regula Examinatorului nu se aplică acestei Rostiri. | The Examiner's rule does not apply to this Cast. |
-| `uruz_algiz (doarme)` | Revolta | Revolt |
-| `uruz_algiz (doarme) · efect` | Regula e anulată tot restul rundei, dar ținta crește cu 10%. | The rule is cancelled for the rest of the round, but the Target rises by 10%. |
-| `isaz_algiz (doarme)` | Înghețul | The Freeze |
-| `isaz_algiz (doarme) · efect` | Regula e anulată tot restul rundei. | The rule is cancelled for the rest of the round. |
-| `hagalaz_algiz (doarme)` | Asurzirea | Deafening |
-| `hagalaz_algiz (doarme) · efect` | Regula e anulată pentru următoarele {count} Rostiri. | The rule is cancelled for the next {count} Casts. |
-| `laguz_algiz (doarme)` | Schimbul | The Trade |
-| `laguz_algiz (doarme) · efect` | Schimbi regula cu una din {count} reguli ale altor Examinatori, la alegere. | Swap the rule for one of {count} other Examiners' rules, your choice. |
-| `sowilo_algiz (doarme)` | Iscoada | The Scout |
-| `sowilo_algiz (doarme) · efect` | Vezi Examinatorii și regulile lor din următoarele {count} Probe. | See the Examiners and their rules for the next {count} Trials. |
-| `thurisaz_algiz (doarme)` | Înțepătura | The Sting |
-| `thurisaz_algiz (doarme) · efect` | Ținta Examinatorului scade cu {percent}%; regula rămâne. | The Examiner's Target drops by {percent}%; the rule stays. |
-| `dagaz_algiz (doarme)` | Amânarea | Extension |
-| `dagaz_algiz (doarme) · efect` | +{count} Rostire în runda asta. | +{count} Cast this round. |
+| `kenaz_wunjo` | Scânteia | Spark |
+| `kenaz_wunjo · efect` | Talismanul din stânga se declanșează de două ori la Rostirea asta. | The leftmost Talisman triggers twice on this Cast. |
+| `uruz_wunjo` | Fanfara | Fanfare |
+| `uruz_wunjo · efect` | +{amount} Putere pentru fiecare Talisman. | +{amount} Power for every Talisman. |
+| `isaz_wunjo` | Conserva | Preserves |
+| `isaz_wunjo · efect` | Talismanele care se consumă nu scad în runda asta. | Talismans that wear out don't wear this round. |
+| `hagalaz_wunjo` | Lichidarea | Clearance |
+| `hagalaz_wunjo · efect` | Vinzi un Talisman ales pe prețul întreg. | Sell a Talisman you pick for its full price. |
+| `laguz_wunjo` | Metamorfoza | Metamorphosis |
+| `laguz_wunjo · efect` | Un Talisman ales devine altul, aleatoriu, de aceeași raritate. | A Talisman you pick becomes another random one of the same rarity. |
+| `sowilo_wunjo` | Vitrina | The Shop Window |
+| `sowilo_wunjo · efect` | La următoarea Piață apare sigur un Talisman Rar. | A Rare Talisman surely appears at the next Market. |
+| `thurisaz_wunjo` | Sacrificiul | The Sacrifice |
+| `thurisaz_wunjo · efect` | Distrugi un Talisman ales → ×{factor} Rezonanță tot restul Probei. | Destroy a Talisman you pick → ×{factor} Resonance for the rest of the Trial. |
+| `dagaz_wunjo` | Ziua de târg | Market Day |
+| `dagaz_wunjo · efect` | +{count} Talisman în oferta Pieței următoare. | +{count} Talisman in the next Market's offer. |
+| `kenaz_algiz` | Fumul | Smoke |
+| `kenaz_algiz · efect` | Regula Examinatorului nu se aplică acestei Rostiri. | The Examiner's rule does not apply to this Cast. |
+| `uruz_algiz` | Revolta | Revolt |
+| `uruz_algiz · efect` | Regula e anulată tot restul rundei, dar ținta crește cu 10%. | The rule is cancelled for the rest of the round, but the Target rises by 10%. |
+| `isaz_algiz` | Înghețul | The Freeze |
+| `isaz_algiz · efect` | Regula e anulată tot restul rundei. | The rule is cancelled for the rest of the round. |
+| `hagalaz_algiz` | Asurzirea | Deafening |
+| `hagalaz_algiz · efect` | Regula e anulată pentru următoarele {count} Rostiri. | The rule is cancelled for the next {count} Casts. |
+| `laguz_algiz` | Schimbul | The Trade |
+| `laguz_algiz · efect` | Schimbi regula cu una din {count} reguli ale altor Examinatori, la alegere. | Swap the rule for one of {count} other Examiners' rules, your choice. |
+| `sowilo_algiz` | Iscoada | The Scout |
+| `sowilo_algiz · efect` | Vezi Examinatorii și regulile lor din următoarele {count} Probe. | See the Examiners and their rules for the next {count} Trials. |
+| `thurisaz_algiz` | Înțepătura | The Sting |
+| `thurisaz_algiz · efect` | Ținta Examinatorului scade cu {percent}%; regula rămâne. | The Examiner's Target drops by {percent}%; the rule stays. |
+| `dagaz_algiz` | Amânarea | Extension |
+| `dagaz_algiz · efect` | +{count} Rostire în runda asta. | +{count} Cast this round. |
 
 ### Cele 8 Acțiuni
 
@@ -273,6 +273,160 @@
 | `naudiz` | Alegi pe loc: pierzi 1 Rostire sau 4 Monede; efect ×2,5. | Choose on the spot: lose 1 Cast or 4 Coins; effect ×2.5. |
 | `gebo` | Vraja nu se aplică acum: primești un Pergament cu ea și îl folosești când vrei. | The spell doesn't happen now: you get a Scroll with it and use it whenever you want. |
 
+## Examenul (`data/examiners.json`, `talismans.json`, `lessons.json`, `engravings.json`, `dialogs.json`)
+
+### Examinatorii
+
+| Examinator | Română | English |
+|---|---|---|
+| `kaldor · title` | Garda sus! | Guard up! |
+| `kaldor · text` | Trebuie să rostești exact 5 pietre. | You must cast exactly 5 stones. |
+| `kaldor · intro` | Mănușile pe mâini. Cinci pietre, nu patru. Garda sus! | Gloves on. Five stones, not four. Guard up! |
+| `kaldor · defeated` | Bun croșeu. Treci. | Nice hook. You pass. |
+| `kaldor · won` | Ai lăsat garda jos. | You dropped your guard. |
+| `selvia · title` | Fluxul | The Tide |
+| `selvia · text` | După fiecare Rostire, pietrele din mână se întorc în săculeț și tragi altele. | After every Cast, the stones in your hand go back into the bag and you draw new ones. |
+| `selvia · intro` | Apa nu stă pe loc. Nici mâna ta. | Water never stands still. Neither does your hand. |
+| `selvia · defeated` | Ai înotat bine. Ieși la mal. | You swam well. Come ashore. |
+| `selvia · won` | Te-a luat valul. | The wave took you. |
+| `varr · title` | Fulgerul | Lightning |
+| `varr · text` | La fiecare Rostire, o piatră aleatorie din Cuvânt nu punctează. | Every Cast, a random stone of the Word doesn't score. |
+| `varr · intro` | Urcă, urcă, că plecăm! Și ține-te bine, trăsnește. | Get on, we're leaving! And hold tight, there's lightning. |
+| `varr · defeated` | Stația ta. Coboară, campionule. | Your stop. Off you get, champ. |
+| `varr · won` | Ai pierdut troleibuzul. | You missed the trolleybus. |
+| `ignar · title` | Taxa | The Fee |
+| `ignar · text` | Fiecare Schimbare costă 1 Monedă. | Every Swap costs 1 Coin. |
+| `ignar · intro` | La mine nimic nu e gratis. Nici măcar o Schimbare. | Nothing's free at my place. Not even a Swap. |
+| `ignar · defeated` | Ai plătit cinstit. Ia o shaorma din partea casei. | You paid fair. Have a shawarma on the house. |
+| `ignar · won` | Fără bani, fără shaorma. | No money, no shawarma. |
+| `lunet · title` | Visul | The Dream |
+| `lunet · text` | Primele 3 pietre trase de fiecare dată vin cu fața în jos. | The first 3 stones drawn each time come face down. |
+| `lunet · intro` | Închide ochii. Pietrele vorbesc și în vis. | Close your eyes. Stones speak in dreams too. |
+| `lunet · defeated` | Te-ai trezit la timp. Rar. | You woke up in time. Rare. |
+| `lunet · won` | Ai adormit pe examen. | You fell asleep on the exam. |
+| `gronn · title` | Greutatea | The Weight |
+| `gronn · text` | Runele cu Poziția 1–3 nu punctează. | Runes with Position 1–3 don't score. |
+| `gronn · intro` | Pe șantierul meu, pietrele ușoare nu contează. | On my site, light stones don't count. |
+| `gronn · defeated` | Ai construit ceva solid. Treci. | You built something solid. Pass. |
+| `gronn · won` | S-a dărâmat tot. | It all came down. |
+| `morrah · title` | Ține minte | Remember |
+| `morrah · text` | Un tip de Cuvânt deja rostit în runda asta nu mai punctează. | A Word already cast this round no longer scores. |
+| `morrah · intro` | Liniște. Aici nimic nu se spune de două ori. | Quiet. Nothing is said twice in here. |
+| `morrah · defeated` | Îmi voi aminti de tine. | I will remember you. |
+| `morrah · won` | Te-ai repetat. | You repeated yourself. |
+| `ilinca · title` | Corectura | The Correction |
+| `ilinca · text` | Rună singură și Pereche dau scor 0. | Single Rune and Pair score 0. |
+| `ilinca · intro` | Azi corectez cu pixul roșu. Nimic ușor nu trece. | Today I grade with the red pen. Nothing easy passes. |
+| `ilinca · defeated` | Notă de trecere. Sunt mândră de tine. | A passing grade. I'm proud of you. |
+| `ilinca · won` | Mai citește lecțiile. | Read your lessons again. |
+| `dara · title` | Competiția | The Competition |
+| `dara · text` | Ținta crește cu 10% după fiecare Rostire. | The Target grows by 10% after every Cast. |
+| `dara · intro` | Hai să vedem cine e mai bun. Eu, evident. | Let's see who's better. Me, obviously. |
+| `dara · defeated` | …Data viitoare nu mai ai noroc. | …Next time you won't be so lucky. |
+| `dara · won` | Ți-am spus. | Told you. |
+| `nix · title` | Păcăleala | The Trick |
+| `nix · text` | Talismanul din stânga e dezactivat în runda asta. | The leftmost Talisman is switched off this round. |
+| `nix · intro` | Ups. Unde ți-e Talismanul? Nu, nu l-am luat eu. | Oops. Where's your Talisman? No, I didn't take it. |
+| `nix · defeated` | Bine, bine. Ți-l dau înapoi. | Fine, fine. Here, have it back. |
+| `nix · won` | Ha! Te-am păcălit. | Ha! Got you. |
+| `aeva · title` | Clepsidra | The Hourglass |
+| `aeva · text` | O singură Rostire, dar Schimbări nelimitate. După a treia, fiecare Schimbare costă 1 Monedă. | A single Cast, but unlimited Swaps. After the third, every Swap costs 1 Coin. |
+| `aeva · intro` | Am văzut dimineața asta de o mie de ori. Arată-mi una nouă. | I've seen this morning a thousand times. Show me a new one. |
+| `aeva · defeated` | Timpul îți aparține. Moștenirea e a ta. | Time is yours. The inheritance is yours. |
+| `aeva · won` | Din nou. Ne vedem dimineață. | Again. See you in the morning. |
+
+### Talismanele
+
+| Talisman | Română | English |
+|---|---|---|
+| `ilinca_chalk` | Creta Maestrei Ilinca | Master Ilinca's Chalk |
+| `ilinca_chalk · efect` | +{value} Rezonanță la fiecare Rostire. | +{value} Resonance on every Cast. |
+| `gronn_helmet` | Casca de șantier a lui Gronn | Gronn's Hard Hat |
+| `gronn_helmet · efect` | +{value} Putere la fiecare Rostire. | +{value} Power on every Cast. |
+| `varr_umbrella` | Umbrela lui Varr | Varr's Umbrella |
+| `varr_umbrella · efect` | Pietrele din Neamul lui Hagalaz dau +{value} Rezonanță când punctează. | Stones of Hagalaz's Kin give +{value} Resonance when they score. |
+| `selvia_shell` | Scoica Selviei | Selvia's Shell |
+| `selvia_shell · efect` | +{value} Schimbare în fiecare rundă. | +{value} Swap every round. |
+| `lunet_coffee` | Cafeaua de noapte a lui Lunet | Lunet's Night Coffee |
+| `lunet_coffee · efect` | +{value} piatră în mână. | +{value} stone in hand. |
+| `ignar_shawarma` | Shaorma lui Ignar | Ignar's Shawarma |
+| `ignar_shawarma · efect` | +{value} Rezonanță; scade cu 1 după fiecare Rostire și dispare la 0. | +{value} Resonance; drops by 1 after every Cast and is gone at 0. |
+| `trolley_ticket` | Biletul pe troleibuzul 22 | Ticket for Trolleybus 22 |
+| `trolley_ticket · efect` | +{value} Monedă de fiecare dată când rostești un Șir. | +{value} Coin every time you cast a Row. |
+| `market_granny` | Bunica din piață | The Market Granny |
+| `market_granny · efect` | Totul în Piață costă cu {value} Monedă mai puțin. | Everything at the Market costs {value} Coin less. |
+| `kaldor_gloves` | Mănușile lui Kaldor | Kaldor's Gloves |
+| `kaldor_gloves · efect` | ×{value} Rezonanță dacă în Cuvânt punctează exact 5 pietre. | ×{value} Resonance if exactly 5 stones score in the Word. |
+| `ignar_lighter` | Bricheta lui Ignar | Ignar's Lighter |
+| `ignar_lighter · efect` | Prima piatră care punctează în fiecare Rostire punctează de două ori. | The first stone that scores in each Cast scores twice. |
+| `morrah_bookmark` | Semnul de carte al Morrei | Morrah's Bookmark |
+| `morrah_bookmark · efect` | +{value} Rezonanță, permanent, pentru fiecare tip de Cuvânt nou rostit în examen (acum: +{now}). | +{value} Resonance, for good, for every new kind of Word cast in the exam (now: +{now}). |
+| `toma` | Toma, fiul lui Gronn | Toma, Gronn's Son |
+| `toma · efect` | +{value} Putere pentru fiecare piatră rămasă în săculeț. | +{value} Power for every stone left in the bag. |
+| `nix` | Nix, copilul lui Lunet | Nix, Lunet's Child |
+| `nix · efect` | Copiază efectul Talismanului din dreapta lui. | Copies the effect of the Talisman to its right. |
+| `dara` | Dara, fiica lui Kaldor | Dara, Kaldor's Daughter |
+| `dara · efect` | ×{value} Rezonanță; crește cu +{step} după fiecare Examinator învins. | ×{value} Resonance; grows by +{step} after every Examiner beaten. |
+| `aeva_hourglass` | Clepsidra Aevei | Aeva's Hourglass |
+| `aeva_hourglass · efect` | O dată pe examen: dacă pici o rundă, o iei de la capăt. Apoi Clepsidra se sparge. | Once per exam: if you fail a round, you play it again. Then the Hourglass breaks. |
+
+### Lecțiile și Gravurile
+
+| Consumabil | Română | English |
+|---|---|---|
+| `lesson_single` | Lecția despre Runa singură | The Lesson on the Single Rune |
+| `lesson_single · text` | Cea mai scurtă lecție din școală. Ilinca a ținut-o în trei secunde. | The shortest lesson in the school. Ilinca gave it in three seconds. |
+| `lesson_pair` | Lecția despre Perechi | The Lesson on Pairs |
+| `lesson_pair · text` | Kaldor a picat-o de două ori. Ironic. | Kaldor failed it twice. Ironic. |
+| `lesson_two_pairs` | Lecția despre Două perechi | The Lesson on Two Pairs |
+| `lesson_two_pairs · text` | Varr a venit cu doi prieteni. Nu se pune. | Varr came with two friends. Doesn't count. |
+| `lesson_triad` | Lecția despre Treimi | The Lesson on Triads |
+| `lesson_triad · text` | Trei pietre, trei pagini, trei cafele. | Three stones, three pages, three coffees. |
+| `lesson_kin` | Lecția despre Neamuri | The Lesson on Kins |
+| `lesson_kin · text` | Toată familia la masă, fiecare cu culoarea lui. | The whole family at the table, each in their colour. |
+| `lesson_family` | Lecția despre Familie | The Lesson on the Family |
+| `lesson_family · text` | Gronn a adus poze cu Toma. Multe poze. | Gronn brought photos of Toma. Lots of photos. |
+| `lesson_row` | Lecția despre Șiruri | The Lesson on Rows |
+| `lesson_row · text` | Ca stațiile troleibuzului 22: una după alta, fără sărituri. | Like the stops of trolleybus 22: one after another, no skipping. |
+| `lesson_four` | Lecția despre Patru | The Lesson on Four |
+| `lesson_four · text` | Patru pietre la fel. Selvia zice că e noroc de pescar. | Four of the same. Selvia calls it fisherman's luck. |
+| `lesson_chant` | Lecția despre Descântec | The Lesson on the Chant |
+| `lesson_chant · text` | Lunet a cântat-o la radio la trei noaptea. Nimeni n-a dormit. | Lunet sang it on the radio at 3 a.m. Nobody slept. |
+| `lesson_ancient_word` | Lecția despre Cuvântul Vechi | The Lesson on the Old Word |
+| `lesson_ancient_word · text` | Pagina e ruptă. Morrah zice că așa a găsit-o. | The page is torn. Morrah says she found it that way. |
+| `bone` | Gravura de Os | Bone Engraving |
+| `bone · text` | O piatră din mână devine de os: +{value} Putere când punctează. | A stone in your hand becomes bone: +{value} Power when it scores. |
+| `amber` | Gravura de Chihlimbar | Amber Engraving |
+| `amber · text` | O piatră din mână devine de chihlimbar: +{value} Rezonanță când punctează. | A stone in your hand becomes amber: +{value} Resonance when it scores. |
+| `gold` | Gravura de Aur | Gold Engraving |
+| `gold · text` | O piatră din mână devine de aur: +{value} Monede dacă rămâne în mână la finalul rundei. | A stone in your hand becomes gold: +{value} Coins if it stays in hand at the end of the round. |
+| `iron` | Gravura de Fier | Iron Engraving |
+| `iron · text` | O piatră din mână devine de fier: ×{value} Rezonanță cât timp rămâne în mână când rostești. | A stone in your hand becomes iron: ×{value} Resonance while it stays in hand when you cast. |
+| `glass` | Gravura de Sticlă | Glass Engraving |
+| `glass · text` | O piatră din mână devine de sticlă: ×{value} Rezonanță când punctează, dar se poate sparge (1 din 4). | A stone in your hand becomes glass: ×{value} Resonance when it scores, but it may break (1 in 4). |
+| `binding` | Legătura | The Binding |
+| `binding · text` | Leagă 2 pietre din mână într-o legătură runică: contează ca oricare dintre cele două rune, iar când punctează se aud ambele Glasuri. | Binds 2 stones in your hand into a bind-rune: it counts as either rune, and when it scores both Voices are heard. |
+| `reshaping` | Prefacerea | The Reshaping |
+| `reshaping · text` | Schimbă runa unei pietre din mână într-o rună la alegere din același Neam. | Changes the rune of a stone in your hand into a rune of your choice from the same Kin. |
+| `double` | Dublura | The Double |
+| `double · text` | Adaugă în săculeț o copie a unei pietre din mână. | Adds a copy of a stone in your hand to the bag. |
+| `shatter` | Sfărâmarea | The Shattering |
+| `shatter · text` | Scoate definitiv din săculeț până la {count} pietre din mână. | Removes up to {count} stones in your hand from the bag for good. |
+| `relocation` | Strămutarea | The Relocation |
+| `relocation · text` | Mută până la {count} pietre din mână în alt Neam (runa rămâne). | Moves up to {count} stones in your hand to another Kin (the rune stays). |
+
+### Replicile Tantei Vera
+
+| Replică | Română | English |
+|---|---|---|
+| `vera_market 1` | Bună seara, puiule. Ce-ți trebuie azi? | Good evening, dear. What do you need tonight? |
+| `vera_market 2` | Runele astea le vând de patruzeci de ani. Nu s-au plâns niciodată. | I've sold these runes for forty years. They never complained. |
+| `vera_market 3` | Ia și tu ceva, că mă uit la tine de un sfert de oră. | Buy something, I've been watching you for a quarter of an hour. |
+| `vera_market 4` | Kaldor a cumpărat de aici mănușile. Și le-a pierdut de trei ori. | Kaldor bought his gloves here. Lost them three times. |
+| `vera_market 5` | Shaorma e de la Ignar, nu de la mine. Eu doar o vând. | The shawarma is Ignar's, not mine. I just sell it. |
+| `vera_market 6` | Prețurile nu se negociază. Bine, puțin. Nu. | Prices aren't negotiable. Well, a little. No. |
+| `vera_market 7` | Ai față de om care trece examenul. Sau de om care n-a dormit. | You look like someone who'll pass. Or someone who hasn't slept. |
+
 ## Indiciile (`data/hints.json`)
 
 | Indiciu | Română | English |
@@ -282,15 +436,16 @@
 | `first_wrong_order` | Elementul vine primul, Ținta la urmă. Așa vorbesc runele. | The Element comes first, the Target last. That's how runes speak. |
 | `first_scroll` | Ai păstrat vraja pe pergament. Folosește-o când ai nevoie. | You kept the spell on a scroll. Use it when you need it. |
 | `first_two_actions` | Două Acțiuni. Te dai mare. Îmi place. | Two Actions. Showing off. I like it. |
-| `first_shop_1 (oprit)` | Bună seara, puiule. Aici cumperi ce te ține în viață la examen. | Good evening, dear. Here you buy what keeps you alive in the exam. |
-| `first_shop_2 (oprit)` | Talismanele lucrează singure, de la stânga la dreapta. Ai cinci locuri. | Talismans work on their own, from left to right. You have five slots. |
-| `first_shop_3 (oprit)` | Lecțiile cresc un Cuvânt. Gravurile schimbă pietrele. Săculețele… surpriză. | Lessons raise a Word. Engravings change stones. Bags… a surprise. |
-| `first_reroll (oprit)` | Nu-ți place marfa? Rearanjez taraba, dar nu gratis. | Don't like the goods? I'll rearrange the stall, but not for free. |
-| `first_talisman (oprit)` | Trage Talismanele ca să le schimbi ordinea. Ordinea contează. | Drag the Talismans to change their order. Order matters. |
-| `first_examiner (oprit)` | Eu sunt Kaldor. Regula mea e scrisă acolo. N-o repet. | I am Kaldor. My rule is written there. I won't say it twice. |
-| `first_lesson (oprit)` | O Lecție crește nivelul unui Cuvânt pentru tot examenul. | A Lesson raises a Word's level for the whole exam. |
-| `first_engraving (oprit)` | O Gravură schimbă o piatră. Alege piatra din mână, apoi folosește Gravura. | An Engraving changes a stone. Pick the stone in your hand, then use the Engraving. |
-| `first_bindrune (oprit)` | O legătură e o piatră cu două rune. Contează ca oricare dintre ele, iar Glasurile se aud amândouă. | A bind-rune is a stone with two runes. It counts as either of them, and both Voices are heard. |
+| `first_shop_1` | Bună seara, puiule. Aici cumperi ce te ține în viață la examen. | Good evening, dear. Here you buy what keeps you alive in the exam. |
+| `first_shop_2` | Talismanele lucrează singure, de la stânga la dreapta. Ai cinci locuri. | Talismans work on their own, from left to right. You have five slots. |
+| `first_shop_3` | Lecțiile cresc un Cuvânt. Gravurile schimbă pietrele. Săculețele… surpriză. | Lessons raise a Word. Engravings change stones. Bags… a surprise. |
+| `first_reroll` | Nu-ți place marfa? Rearanjez taraba, dar nu gratis. | Don't like the goods? I'll rearrange the stall, but not for free. |
+| `first_talisman` | Trage Talismanele ca să le schimbi ordinea. Ordinea contează. | Drag the Talismans to change their order. Order matters. |
+| `first_examiner` | Eu sunt Kaldor. Regula mea e scrisă acolo. N-o repet. | I am Kaldor. My rule is written there. I won't say it twice. |
+| `first_rule` | Al treilea vine Examinatorul. Are o regulă, scrisă pe fișa lui. Citește-o înainte să rostești. | Third comes the Examiner. They have a rule, written on their card. Read it before you cast. |
+| `first_lesson` | O Lecție crește nivelul unui Cuvânt pentru tot examenul. | A Lesson raises a Word's level for the whole exam. |
+| `first_engraving` | O Gravură schimbă o piatră. În rundă, apasă pe Gravură, apoi alege piatra din mână. | An Engraving changes a stone. In a round, click the Engraving, then pick the stone in your hand. |
+| `first_bindrune` | O legătură e o piatră cu două rune. Contează ca oricare dintre ele, iar Glasurile se aud amândouă. | A bind-rune is a stone with two runes. It counts as either of them, and both Voices are heard. |
 | `first_loss_1 (oprit)` | Ai picat. Se întâmplă. Ție ți se întâmplă des. | You failed. It happens. It happens to you a lot. |
 | `first_loss_2 (oprit)` | Te întorc în dimineața examenului. Tu ții minte tot, ceilalți nu. Nu mă întreba de ce. | I'm sending you back to the morning of the exam. You remember everything, the others don't. Don't ask me why. |
 | `first_loss_3 (oprit)` | Ce ai adunat se numește Amintiri. Cheltuiește-le cu cap. | What you gathered is called Memories. Spend them wisely. |
@@ -457,3 +612,87 @@
 | `rune_book_table_corner` | Elementul sus, Ținta în stânga | Element on top, Target on the left |
 | `rune_book_actions` | Acțiunile | The Actions |
 | `rune_book_action_unknown` | Încă n-ai folosit-o. Pune-o între Element și Țintă. | Not used yet. Put it between an Element and a Target. |
+| `exam_trial` | Proba {n} din {total} | Trial {n} of {total} |
+| `exam_round_small` | Întrebarea mică | The Small Question |
+| `exam_round_big` | Întrebarea mare | The Big Question |
+| `exam_round_examiner` | Examinatorul | The Examiner |
+| `exam_title_small` | Proba {n} · Întrebarea mică | Trial {n} · The Small Question |
+| `exam_title_big` | Proba {n} · Întrebarea mare | Trial {n} · The Big Question |
+| `exam_title_examiner` | Proba {n} · Examinatorul | Trial {n} · The Examiner |
+| `exam_rule` | Regula · {title}: {text} | The rule · {title}: {text} |
+| `exam_no_rule` | Fără regulă. Examinatorul doar se uită. | No rule. The examiner just watches. |
+| `exam_money` | Monede: {n} | Coins: {n} |
+| `exam_start_round` | Începe | Begin |
+| `exam_peek` | Iscoada îți șoptește cine urmează: {list} | The Scout whispers who comes next: {list} |
+| `exam_round_won` | Ai răspuns! | Answered! |
+| `exam_defeated` | L-ai învins pe Examinator: {name} | You beat the Examiner: {name} |
+| `exam_reward_small` | Întrebarea mică: +{n} Monede | The Small Question: +{n} Coins |
+| `exam_reward_big` | Întrebarea mare: +{n} Monede | The Big Question: +{n} Coins |
+| `exam_reward_examiner` | Examinatorul: +{n} Monede | The Examiner: +{n} Coins |
+| `exam_reward_casts` | Rostiri rămase: +{n} Monede | Casts left: +{n} Coins |
+| `exam_reward_interest` | Dobândă pentru economii: +{n} Monede | Interest on savings: +{n} Coins |
+| `exam_reward_total` | Total: +{n} · acum ai {money} Monede | Total: +{n} · you now have {money} Coins |
+| `exam_continue` | Mai departe | Onwards |
+| `exam_passed_title` | Ai trecut Examenul de Moștenire! | You passed the Inheritance Exam! |
+| `exam_failed_title` | Ai picat | You failed |
+| `exam_stats` | Ai ajuns la Proba {trial} din {total} · Examinatori învinși: {defeated} · runde câștigate: {rounds} | You reached Trial {trial} of {total} · Examiners beaten: {defeated} · rounds won: {rounds} |
+| `exam_again` | Încă un examen | Another exam |
+| `card_face_down` | Piatră cu fața în jos | Face-down stone |
+| `card_face_down_text` | Visul lui Lunet: afli ce rună e abia când o rostești. | Lunet's Dream: you find out which rune it is only when you cast it. |
+| `circle_face_down` | o piatră doarme cu fața în jos | a stone sleeps face down |
+| `round_swaps_endless` | Schimbări: fără sfârșit | Swaps: endless |
+| `round_swap_button_cost` | Schimbă · {n} Mon. | Swap · {n} Coin |
+| `float_rule_blocked` | nu punctează | doesn't score |
+| `float_rule_zero` | Regula: scor 0 | The rule: score 0 |
+| `choice_swap_rule` | Apa schimbă regula. Alege una dintre regulile altor Examinatori. | Water changes the rule. Pick one of the other Examiners' rules. |
+| `rarity_common` | Comun | Common |
+| `rarity_rare` | Rar | Rare |
+| `rarity_legendary` | Legendar | Legendary |
+| `talisman_disabled` | Nix l-a ascuns: nu lucrează în runda asta. | Nix hid it: it doesn't work this round. |
+| `talisman_drag_hint` | Lucrează de la stânga la dreapta. Trage-l ca să schimbi ordinea. | They work left to right. Drag it to change the order. |
+| `talisman_gone` | {name} s-a terminat. | {name} is used up. |
+| `choice_sell_talisman_full` | Grindina vinde un Talisman pe prețul întreg. Care? | Hail sells a Talisman for its full price. Which one? |
+| `choice_transform_talisman` | Apa schimbă un Talisman în altul de aceeași raritate. Care? | Water turns a Talisman into another of the same rarity. Which one? |
+| `choice_destroy_talisman_res` | Spinul distruge un Talisman: ×{factor} Rezonanță tot restul Probei. Care? | The Thorn destroys a Talisman: ×{factor} Resonance for the rest of the Trial. Which one? |
+| `exam_second_chance_title` | Clepsidra s-a spart | The Hourglass broke |
+| `exam_second_chance_text` | Nisipul curge înapoi. Ai încă o încercare la aceeași întrebare. | The sand flows back. You get one more try at the same question. |
+| `exam_retry` | Încă o dată | Once more |
+| `consumable_lesson` | Lecție | Lesson |
+| `consumable_engraving` | Gravură | Engraving |
+| `consumable_use_hint` | Apasă ca s-o folosești. | Click to use it. |
+| `consumable_cannot` | Nu se poate folosi acum. | It can't be used now. |
+| `lesson_effect` | Cuvântul {word} crește cu 1 nivel pentru tot examenul. | The Word {word} goes up 1 level for the whole exam. |
+| `lesson_learned` | {word} a urcat la nivelul {n}. | {word} rose to level {n}. |
+| `choice_engrave_material` | Alege piatra din mână pe care o gravezi. | Pick the stone in your hand to engrave. |
+| `choice_bind_chosen` | Alege 2 pietre din mână, cu rune diferite: devin o singură piatră cu ambele rune. | Pick 2 stones in your hand with different runes: they become one stone with both runes. |
+| `choice_change_rune_chosen` | Alege piatra din mână, apoi runa în care se preface (din același Neam). | Pick the stone in your hand, then the rune it turns into (same Kin). |
+| `card_bound` | Legată cu {rune}: {voice} | Bound with {rune}: {voice} |
+| `material_bone` | Os: +{value} Putere când punctează | Bone: +{value} Power when it scores |
+| `material_amber` | Chihlimbar: +{value} Rezonanță când punctează | Amber: +{value} Resonance when it scores |
+| `material_gold` | Aur: +{value} Monede dacă rămâne în mână la final | Gold: +{value} Coins if it stays in hand at the end |
+| `material_iron` | Fier: ×{value} Rezonanță cât stă în mână | Iron: ×{value} Resonance while held |
+| `material_glass` | Sticlă: ×{value} Rezonanță, se poate sparge | Glass: ×{value} Resonance, may break |
+| `float_glass_break` | s-a spart! | shattered! |
+| `shop_title` | Piața de noapte | The Night Market |
+| `shop_leave` | Pleacă din Piață | Leave the Market |
+| `shop_money` | Monede: {n} | Coins: {n} |
+| `shop_reroll` | Rearanjează taraba · {n} | Rearrange the stall · {n} |
+| `shop_sold` | Vândut | Sold |
+| `shop_buy` | Cumpără · {n} | Buy · {n} |
+| `shop_no_slot` | Nu mai ai loc. Vinde ceva întâi. | No room left. Sell something first. |
+| `shop_your_talismans` | Talismanele tale ({n} din {max}) | Your Talismans ({n} of {max}) |
+| `shop_your_consumables` | Lecții și Gravuri ({n} din {max}) | Lessons and Engravings ({n} of {max}) |
+| `shop_sell` | Vinde · {n} | Sell · {n} |
+| `shop_learn` | Învață | Learn |
+| `shop_kind_talisman` | Talisman | Talisman |
+| `shop_kind_pack` | Săculeț · alegi 1 din 3 | Bag · pick 1 of 3 |
+| `shop_kind_pack_big` | Săculeț mare · alegi 2 din 5 | Big Bag · pick 2 of 5 |
+| `pack_talismans` | Săculeț cu Talismane | Bag of Talismans |
+| `pack_lessons` | Săculeț cu Lecții | Bag of Lessons |
+| `pack_engravings` | Săculeț cu Gravuri | Bag of Engravings |
+| `pack_stones` | Săculeț cu pietre | Bag of Stones |
+| `pack_text` | Îl deschizi și alegi un lucru din trei. Lecțiile se învață pe loc. | Open it and pick one thing out of three. Lessons are learned on the spot. |
+| `pack_text_big` | Îl deschizi și alegi două lucruri din cinci. Lecțiile se învață pe loc. | Open it and pick two things out of five. Lessons are learned on the spot. |
+| `pack_pick` | Mai poți lua: {n} | You can still take: {n} |
+| `pack_skip` | Gata | Done |
+| `pack_take` | Ia | Take |

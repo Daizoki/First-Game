@@ -74,6 +74,32 @@ def spells_section():
     return out
 
 
+def exam_section():
+    out = ["## Examenul (`data/examiners.json`, `talismans.json`, `lessons.json`, `engravings.json`, `dialogs.json`)", ""]
+    rows = []
+    for ex in load("examiners.json"):
+        for field in ["title", "text", "intro", "defeated", "won"]:
+            rows.append((ex["id"] + " · " + field, ex[field]["ro"], ex[field]["en"]))
+    out += ["### Examinatorii", ""] + table(rows, "Examinator") + [""]
+    rows = []
+    for t in load("talismans.json"):
+        rows.append((t["id"], t["name"]["ro"], t["name"]["en"]))
+        rows.append((t["id"] + " · efect", t["description"]["ro"], t["description"]["en"]))
+    out += ["### Talismanele", ""] + table(rows, "Talisman") + [""]
+    rows = []
+    for name in ["lessons.json", "engravings.json"]:
+        for item in load(name):
+            rows.append((item["id"], item["name"]["ro"], item["name"]["en"]))
+            rows.append((item["id"] + " · text", item["text"]["ro"], item["text"]["en"]))
+    out += ["### Lecțiile și Gravurile", ""] + table(rows, "Consumabil") + [""]
+    rows = []
+    for dialog in load("dialogs.json"):
+        for i, line in enumerate(dialog["lines"]):
+            rows.append((f"{dialog['id']} {i + 1}", line["text"]["ro"], line["text"]["en"]))
+    out += ["### Replicile Tantei Vera", ""] + table(rows, "Replică") + [""]
+    return out
+
+
 def hints_section():
     rows = [(hint["id"] + ("" if hint["enabled"] else " (oprit)"), hint["text"]["ro"], hint["text"]["en"])
             for hint in load("hints.json")]
@@ -93,7 +119,7 @@ def main():
         "> textul în JSON și rulează din nou scriptul. `{name}`, `{n}` … sunt locuri pe care jocul le completează.",
         "",
     ]
-    lines += tutorial_section() + spells_section() + hints_section() + ui_section()
+    lines += tutorial_section() + spells_section() + exam_section() + hints_section() + ui_section()
     with open(OUT, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
     print(f"wrote {OUT}")
