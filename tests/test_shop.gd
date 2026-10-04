@@ -29,10 +29,7 @@ func test_the_stall() -> void:
 	check_eq(_count(shop, "lesson") + _count(shop, "engraving"), 2, "two Lessons or Engravings:")
 	check_eq(_count(shop, "pack"), 2, "two Bags:")
 	var lessons: Dictionary = Fixtures.data()["lessons"]
-	for seed_value: int in range(1, 30):
-		for item: Dictionary in _shop(seed_value).offer:
-			check(not (str(item["type"]) == "lesson" and str(lessons[item["id"]]["word"]) == "ancient_word"),
-				"the Old Word's Lesson waits until the Word is discovered")
+	check_eq(lessons.size(), 8, "one Lesson per Element:")
 
 
 func test_buying_a_talisman() -> void:
@@ -87,9 +84,9 @@ func test_bags() -> void:
 	check_eq((big["items"] as Array).size(), 5, "a big Bag: five:")
 	check_eq(big["pick"], 2, "pick two:")
 	var lessons: Dictionary = shop.open_pack("lessons")
-	var word: String = str(Fixtures.data()["lessons"][lessons["items"][0]["id"]]["word"])
+	var element: String = str(Fixtures.data()["lessons"][lessons["items"][0]["id"]]["element"])
 	check(shop.take_from_pack(lessons["items"][0]), "a Lesson from a Bag")
-	check_eq(int(shop.exam.word_levels[word]), 2, "is learned at once:")
+	check_eq(shop.exam.element_level(element), 2, "is learned at once:")
 
 
 func test_torn_pages() -> void:
@@ -104,7 +101,7 @@ func test_torn_pages() -> void:
 		exam.setup(data, seed_value)
 		exam.money = 50
 		var shop: ShopLogic = ShopLogic.new()
-		shop.setup(exam, data, [], known)
+		shop.setup(exam, data, known)
 		for i: int in shop.offer.size():
 			if str(shop.offer[i]["type"]) != "page":
 				continue
@@ -124,7 +121,7 @@ func test_torn_pages() -> void:
 		var exam: ExamState = ExamState.new()
 		exam.setup(data, seed_value)
 		var shop: ShopLogic = ShopLogic.new()
-		shop.setup(exam, data, [], known)
+		shop.setup(exam, data, known)
 		for item: Dictionary in shop.offer:
 			check(str(item["type"]) != "page", "no page when every spell is known")
 

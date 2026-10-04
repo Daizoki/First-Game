@@ -1,10 +1,10 @@
 [
-	{"id": "raidho", "kind": "spread", "factor": 1.5, "single_factor": 0.5, "effect": {"ro": "Dacă vraja atinge o singură piatră sau un singur Talisman, le atinge pe toate, la jumătate de putere; altfel, valorile ×1,5.", "en": "If the spell touches a single stone or Talisman, it touches all of them at half strength; otherwise its values ×1.5."}},
-	{"id": "ehwaz", "kind": "twice", "count": 2, "effect": {"ro": "Efectul se aplică de 2 ori.", "en": "The effect happens twice."}},
-	{"id": "eihwaz", "kind": "lasts", "count": 2, "factor": 0.5, "effect": {"ro": "Efectul se aplică din nou la începutul următoarelor 2 runde, la jumătate de putere.", "en": "The effect happens again at the start of the next 2 rounds, at half strength."}},
-	{"id": "berkanan", "kind": "grows", "percent": 50, "effect": {"ro": "+50% pentru fiecare dată când ai mai rostit aceeași vrajă în acest examen.", "en": "+50% for every time you have already cast this spell in this exam."}},
-	{"id": "jera", "kind": "ripens", "factor": 2, "effect": {"ro": "Efectul vine abia la finalul rundei, dar dublu.", "en": "The effect only comes at the end of the round, but doubled."}},
-	{"id": "perthro", "kind": "gambles", "chance": 0.5, "factor": 3, "effect": {"ro": "50%: efect ×3; 50%: nimic.", "en": "50%: effect ×3; 50%: nothing."}},
-	{"id": "naudiz", "kind": "price", "factor": 2.5, "cost_casts": 1, "cost_money": 4, "effect": {"ro": "Alegi pe loc: pierzi 1 Rostire sau 4 Monede; efect ×2,5.", "en": "Choose on the spot: lose 1 Cast or 4 Coins; effect ×2.5."}},
-	{"id": "gebo", "kind": "gift", "effect": {"ro": "Vraja nu se aplică acum: primești un Pergament cu ea și îl folosești când vrei.", "en": "The spell doesn't happen now: you get a Scroll with it and use it whenever you want."}}
+	{"id": "raidho", "kind": "overflow", "effect": {"ro": "Ce depășește viața monstrului trece la monstrul următor.", "en": "Whatever goes past the monster's life carries on to the next monster."}},
+	{"id": "ehwaz", "kind": "twice", "count": 2, "effect": {"ro": "Vraja lovește de 2 ori.", "en": "The spell strikes twice."}},
+	{"id": "eihwaz", "kind": "lasts", "count": 2, "factor": 0.5, "effect": {"ro": "Vraja lovește din nou la începutul următoarelor 2 Rostiri, cu jumătate din daună.", "en": "The spell strikes again at the start of the next 2 Casts, for half the damage."}},
+	{"id": "berkanan", "kind": "grows", "percent": 50, "effect": {"ro": "+50% pentru fiecare dată când ai mai rostit aceeași vrajă în Drumul ăsta.", "en": "+50% for every time you have already cast this spell on this Journey."}},
+	{"id": "jera", "kind": "ripens", "factor": 2, "effect": {"ro": "Dauna vine după următoarea Rostire, dar dublă.", "en": "The damage comes after the next Cast, but doubled."}},
+	{"id": "perthro", "kind": "gambles", "chance": 0.5, "factor": 3, "effect": {"ro": "50%: ×3; 50%: nimic.", "en": "50%: ×3; 50%: nothing."}},
+	{"id": "naudiz", "kind": "price", "cost_swaps": 1, "cost_money": 3, "factor": 2.5, "effect": {"ro": "Alegi pe loc: pierzi 1 Schimbare sau 3 Monede; vraja face ×2,5.", "en": "Choose on the spot: lose 1 Swap or 3 Coins; the spell does ×2.5."}},
+	{"id": "gebo", "kind": "gift", "effect": {"ro": "Vraja nu se aplică acum: devine Pergament și o folosești când vrei.", "en": "The spell does not happen now: it becomes a Scroll you use whenever you like."}}
 ]

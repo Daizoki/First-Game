@@ -1,14 +1,8 @@
 extends RefCounted
 ## The Talismans (DESIGN 3.6): an owned Talisman is a small Dictionary
-## {"id", "value" (for those that change: the Shawarma, Dara), "seen" (Morrah's Bookmark)}.
-## Its "kind" in data/talismans.json says what it does; this file turns the owned list into
-## the effects that act on a Cast (the scorer applies them, step 4) and on a round.
-
-## Kinds that change the Cast's score after the stones (scorer step 4), left to right.
-const CAST_KINDS: Array[String] = [
-	"add_res", "add_power", "wearing_res", "new_word_res", "power_per_bag_stone", "mul_res_five",
-	"growing_mul", "word_money",
-]
+## {"id", "value" (for those that change: the Shawarma, Dara), "seen" (Morrah's Bookmark: the
+## spells cast this Journey)}. Its "kind" in data/talismans.json says what it does; this file
+## turns the owned list into the effects that act on a spell (Damage applies them) and a fight.
 
 
 ## A new owned Talisman.
@@ -18,12 +12,12 @@ static func make(id: String, table: Dictionary) -> Dictionary:
 	match str(entry.get("kind", "")):
 		"wearing_res", "growing_mul":
 			owned["value"] = float(entry.get("value", 0))
-		"new_word_res":
+		"new_spell_res":
 			owned["seen"] = [] as Array[String]
 	return owned
 
 
-## The effects that act now, left to right: [{"slot", "id", "kind", "value", "kin", "word"}].
+## The effects that act now, left to right: [{"slot", "id", "kind", "value"}].
 ## Nix copies the Talisman on its right; `disabled_slot` (Nix's Trick, the examiner) is skipped.
 static func active(owned: Array, table: Dictionary, disabled_slot: int = -1) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
@@ -39,8 +33,7 @@ static func active(owned: Array, table: Dictionary, disabled_slot: int = -1) -> 
 		var entry: Dictionary = _entry(owned[source], table)
 		result.append({
 			"slot": slot, "id": str((owned[slot] as Dictionary)["id"]), "kind": str(entry.get("kind", "")),
-			"value": current_value(owned[source], table), "kin": str(entry.get("kin", "")),
-			"word": str(entry.get("word", "")),
+			"value": current_value(owned[source], table),
 		})
 	return result
 
@@ -49,7 +42,7 @@ static func active(owned: Array, table: Dictionary, disabled_slot: int = -1) -> 
 static func current_value(owned: Dictionary, table: Dictionary) -> float:
 	var entry: Dictionary = _entry(owned, table)
 	match str(entry.get("kind", "")):
-		"new_word_res":
+		"new_spell_res":
 			return float(entry.get("value", 1)) * float((owned.get("seen", []) as Array).size())
 		"wearing_res", "growing_mul":
 			return float(owned.get("value", entry.get("value", 0)))
@@ -74,9 +67,9 @@ static func text_values(owned: Dictionary, table: Dictionary) -> Dictionary:
 	}
 
 
-## After a Cast: the Shawarma wears down (unless `no_wear`), the Bookmark notes a new Word.
+## After a Cast: the Shawarma wears down (unless `no_wear`), the Bookmark notes new spells.
 ## Returns the ids of the Talismans used up.
-static func after_cast(owned: Array, table: Dictionary, word_id: String, no_wear: bool) -> Array[String]:
+static func after_cast(owned: Array, table: Dictionary, spell_ids: Array, no_wear: bool) -> Array[String]:
 	var gone: Array[String] = []
 	for item: Dictionary in owned.duplicate():
 		match str(_entry(item, table).get("kind", "")):
@@ -86,14 +79,15 @@ static func after_cast(owned: Array, table: Dictionary, word_id: String, no_wear
 					if float(item["value"]) <= 0.0:
 						owned.erase(item)
 						gone.append(str(item["id"]))
-			"new_word_res":
+			"new_spell_res":
 				var seen: Array = item["seen"]
-				if not seen.has(word_id):
-					seen.append(word_id)
+				for spell_id: Variant in spell_ids:
+					if not seen.has(str(spell_id)):
+						seen.append(str(spell_id))
 	return gone
 
 
-## After an examiner is beaten: Dara grows.
+## After a Lord is beaten: Dara grows.
 static func after_examiner(owned: Array, table: Dictionary) -> void:
 	for item: Dictionary in owned:
 		var entry: Dictionary = _entry(item, table)

@@ -7,7 +7,7 @@ extends RefCounted
 const ExamState = preload("res://scripts/core/exam_state.gd")
 
 ## Collection categories (save["collection"]).
-const COLLECTION: Array[String] = ["talismans", "engravings", "examiners"]
+const COLLECTION: Array[String] = ["talismans", "engravings", "monsters"]
 
 
 # --- Memories at the end of an exam ---------------------------------------------------------
@@ -61,21 +61,21 @@ static func memories(save: Dictionary) -> int:
 
 # --- Records -------------------------------------------------------------------------------
 
-## After a round: the best single Cast and the highest level of every Word.
-static func record_round(save: Dictionary, best_cast: float, word_levels: Dictionary) -> void:
+## After a fight: the best single Cast and the highest level of every Element.
+static func record_round(save: Dictionary, best_cast: float, element_levels: Dictionary) -> void:
 	var stats: Dictionary = _dict(save, "stats")
 	stats["best_cast_score"] = maxf(float(stats.get("best_cast_score", 0.0)), best_cast)
-	if not (stats.get("word_levels") is Dictionary):
-		stats["word_levels"] = {}
-	var best_levels: Dictionary = stats["word_levels"]
-	for word_id: Variant in word_levels:
-		best_levels[str(word_id)] = maxi(int(best_levels.get(str(word_id), 1)), int(word_levels[word_id]))
+	if not (stats.get("element_levels") is Dictionary):
+		stats["element_levels"] = {}
+	var best_levels: Dictionary = stats["element_levels"]
+	for element_id: Variant in element_levels:
+		best_levels[str(element_id)] = maxi(int(best_levels.get(str(element_id), 1)), int(element_levels[element_id]))
 
 
-## The highest level a Word ever reached (1 if never raised).
-static func best_word_level(save: Dictionary, word_id: String) -> int:
-	var levels: Variant = _dict(save, "stats").get("word_levels", {})
-	return int((levels as Dictionary).get(word_id, 1)) if levels is Dictionary else 1
+## The highest level an Element ever reached (1 if never raised).
+static func best_element_level(save: Dictionary, element_id: String) -> int:
+	var levels: Variant = _dict(save, "stats").get("element_levels", {})
+	return int((levels as Dictionary).get(element_id, 1)) if levels is Dictionary else 1
 
 
 # --- Parents -------------------------------------------------------------------------------

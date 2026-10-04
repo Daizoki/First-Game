@@ -1,0 +1,10 @@
+[
+	{"id": "realm_1", "number": 1, "name": {"ro": "Marginea Orașului", "en": "The Edge of the City"}, "base_hp": 100, "boss": "statu_palma"},
+	{"id": "realm_2", "number": 2, "name": {"ro": "Codrul", "en": "The Deep Forest"}, "base_hp": 160, "boss": "muma_padurii"},
+	{"id": "realm_3", "number": 3, "name": {"ro": "Mlaștina", "en": "The Marsh"}, "base_hp": 240, "boss": "stima_apelor"},
+	{"id": "realm_4", "number": 4, "name": {"ro": "Satul blestemat", "en": "The Cursed Village"}, "base_hp": 370, "boss": "baba_cloanta"},
+	{"id": "realm_5", "number": 5, "name": {"ro": "Munții", "en": "The Mountains"}, "base_hp": 580, "boss": "solomonarul"},
+	{"id": "realm_6", "number": 6, "name": {"ro": "Cetatea în ruină", "en": "The Ruined Citadel"}, "base_hp": 890, "boss": "scorpia"},
+	{"id": "realm_7", "number": 7, "name": {"ro": "Peștera Zmeului", "en": "The Zmeu's Cave"}, "base_hp": 1390, "boss": "zmeul"},
+	{"id": "realm_8", "number": 8, "name": {"ro": "Poarta", "en": "The Gate"}, "base_hp": 2150, "boss": "balaur", "pool_from": [5, 6, 7]}
+]

@@ -100,3 +100,26 @@ func test_stats_keep_float_scores() -> void:
 	check(merged["stats"]["best_cast_score"] is float, "best_cast_score should be float")
 	check_eq(merged["stats"]["best_cast_score"], 1250.0, "best_cast_score:")
 	check(merged["stats"]["best_trial"] is int, "best_trial should be int")
+
+
+func test_an_old_save_keeps_only_the_name_and_settings() -> void:
+	var old: Dictionary = {
+		"version": 1, "player_name": "Relax", "memories": 120, "tutorial_done": true,
+		"settings": {"language": "en", "volume": 0.3, "hints_enabled": false},
+		"discoveries": {"spells": ["isaz_tiwaz"]}, "stats": {"word_levels": {"pair": 4}},
+	}
+	var manager: SaveManagerScript = _make()
+	var file: FileAccess = FileAccess.open(TEST_PATH, FileAccess.WRITE)
+	file.store_string(JSON.stringify(old))
+	file.close()
+	check(manager.load_game(), "the old save loads")
+	check_eq(manager.data["player_name"], "Relax", "the name stays:")
+	check_eq(manager.data["settings"]["language"], "en", "the settings stay:")
+	check_eq(manager.data["memories"], 0, "Memories start over:")
+	check(not bool(manager.data["tutorial_done"]), "the new Exam waits")
+	check(not manager.has_discovery("spells", "isaz_tiwaz"), "discoveries start over")
+	check_eq(manager.data["version"], SaveManagerScript.SAVE_VERSION, "now the new version:")
+	check(FileAccess.file_exists(TEST_PATH + ".v1"), "a copy of the old save is kept")
+	manager.free()
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_PATH + ".v1"))
+	_cleanup()

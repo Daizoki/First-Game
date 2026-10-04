@@ -4,7 +4,8 @@ extends "res://tests/test_case.gd"
 
 const Fixtures = preload("res://tests/fixtures.gd")
 const ExamState = preload("res://scripts/core/exam_state.gd")
-const RoundState = preload("res://scripts/core/round_state.gd")
+const FightState = preload("res://scripts/core/fight_state.gd")
+const Monster = preload("res://scripts/core/monster.gd")
 const ShopLogic = preload("res://scripts/core/shop_logic.gd")
 const Progress = preload("res://scripts/core/progress.gd")
 const SaveManagerScript = preload("res://scripts/autoload/save_manager.gd")
@@ -20,11 +21,12 @@ func _exam(seed_value: int = 5) -> ExamState:
 	return exam
 
 
-func _win(exam: ExamState) -> void:
-	var state: RoundState = exam.new_round()
-	state.score = state.target
+func _win(exam: ExamState) -> Dictionary:
+	var state: FightState = exam.new_round()
+	while not state.monster.is_dead():
+		state.monster.take_hit(state.monster.max_hp * 2.0, true)
 	state.finish()
-	exam.finish_round(state)
+	return exam.finish_round(state)
 
 
 func _parent(id: String) -> Dictionary:
@@ -36,7 +38,7 @@ func test_memories_for_rounds_examiners_and_passing() -> void:
 	var exam: ExamState = _exam()
 	for i: int in 4:
 		_win(exam)
-	# 4 rounds won, 1 examiner beaten.
+	# 4 fights won, 1 Lord beaten.
 	var earned: Dictionary = Progress.exam_memories(exam, rules)
 	check_eq(earned["rounds"], 4 * int(rules["memories_per_round"]), "rounds:")
 	check_eq(earned["examiners"], int(rules["memories_per_examiner"]), "examiners:")
@@ -111,24 +113,24 @@ func test_the_market_offers_only_unlocked_talismans() -> void:
 
 func test_records_and_the_collection() -> void:
 	var save: Dictionary = _save()
-	Progress.record_round(save, 1200.0, {"pair": 3})
-	Progress.record_round(save, 800.0, {"pair": 2, "row": 4})
+	Progress.record_round(save, 1200.0, {"kenaz": 3})
+	Progress.record_round(save, 800.0, {"kenaz": 2, "isaz": 4})
 	check_eq(save["stats"]["best_cast_score"], 1200.0, "best Cast:")
-	check_eq(Progress.best_word_level(save, "pair"), 3, "Pair:")
-	check_eq(Progress.best_word_level(save, "row"), 4, "Row:")
-	check_eq(Progress.best_word_level(save, "triad"), 1, "never raised:")
-	check(Progress.record_seen(save, "examiners", "kaldor"), "new")
-	check(not Progress.record_seen(save, "examiners", "kaldor"), "only once")
-	check(Progress.has_seen(save, "examiners", "kaldor"), "seen")
+	check_eq(Progress.best_element_level(save, "kenaz"), 3, "Fire:")
+	check_eq(Progress.best_element_level(save, "isaz"), 4, "Ice:")
+	check_eq(Progress.best_element_level(save, "uruz"), 1, "never raised:")
+	check(Progress.record_seen(save, "monsters", "strigoi"), "new")
+	check(not Progress.record_seen(save, "monsters", "strigoi"), "only once")
+	check(Progress.has_seen(save, "monsters", "strigoi"), "seen")
 	check(not Progress.has_seen(save, "talismans", "nix"), "not seen")
 
 
-func test_a_round_keeps_its_best_cast() -> void:
-	var state: RoundState = RoundState.new()
-	state.setup(Fixtures.data(), Fixtures.rng(3), 1.0e9)
+func test_a_fight_keeps_its_best_cast() -> void:
+	var monster: Monster = Monster.new()
+	monster.setup(Fixtures.data()["monsters"]["dummy"], 1.0e9)
+	var state: FightState = FightState.new()
+	state.setup(Fixtures.data(), Fixtures.rng(3), monster, {"hand": ["kenaz", "tiwaz", "kenaz", "ehwaz", "tiwaz"]})
 	state.start()
-	var scores: Array[float] = []
-	for i: int in 3:
-		var result: Dictionary = state.cast([0])
-		scores.append(float(result["score"]))
-	check_eq(state.best_cast_score, scores.max(), "best Cast of the round:")
+	var first: float = float(state.cast([0, 1])["damage"])
+	var second: float = float(state.cast([0, 1, 2])["damage"])
+	check_eq(state.best_cast_damage, maxf(first, second), "best Cast of the fight:")

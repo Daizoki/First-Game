@@ -19,19 +19,15 @@ const RARITIES: Array[String] = ["common", "rare", "legendary"]
 var exam: ExamState
 var offer: Array[Dictionary] = []
 var rerolls: int = 0
-## Hidden Words the player knows (their Lessons may be sold).
-var known_hidden_words: Array[String] = []
 ## Spells the player knows already, or has a Torn Page of: no Torn Page for them.
 var known_spells: Array[String] = []
 
 var _data: Dictionary
 
 
-func setup(exam_state: ExamState, data: Dictionary, known_words: Array[String] = [],
-		spells_known: Array[String] = []) -> void:
+func setup(exam_state: ExamState, data: Dictionary, spells_known: Array[String] = []) -> void:
 	exam = exam_state
 	_data = data
-	known_hidden_words = known_words
 	known_spells = spells_known.duplicate()
 	rerolls = 0
 	_fill()
@@ -240,16 +236,9 @@ func _roll_rarity() -> String:
 	return RARITIES[0]
 
 
-## Lessons the stall may sell: hidden Words only once discovered.
+## Lessons the stall may sell: one for every Element.
 func _lesson_pool() -> Array:
-	var pool: Array = []
-	var lessons: Dictionary = _table("lessons")
-	var words: Dictionary = _data.get("words", {})
-	for id: String in lessons:
-		var word_id: String = str(lessons[id]["word"])
-		if not bool((words.get(word_id, {}) as Dictionary).get("hidden", false)) or known_hidden_words.has(word_id):
-			pool.append(id)
-	return pool
+	return _table("lessons").keys()
 
 
 ## Spells a Torn Page may show: awake, not known, not already torn out.

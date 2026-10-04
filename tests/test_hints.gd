@@ -7,7 +7,7 @@ const DataValidator = preload("res://scripts/core/data_validator.gd")
 
 ## Hints that are switched on now (the others wait for their stage).
 const ENABLED_NOW: Array[String] = [
-	"first_laguz", "idle_help", "first_wrong_order", "first_scroll", "first_two_actions", "first_shop_1",
+	"idle_help", "first_wrong_order", "first_scroll", "first_two_actions", "first_shop_1",
 	"first_shop_2", "first_shop_3", "first_reroll", "first_talisman", "first_examiner", "first_rule", "first_lesson",
 	"first_engraving", "first_bindrune", "first_loss_1", "first_loss_2", "first_loss_3", "first_evening_class",
 	"first_torn_page",
@@ -46,24 +46,21 @@ func test_the_table_is_in_the_data() -> void:
 	check_eq(enabled, ENABLED_NOW, "enabled hints:")
 
 
-func test_laguz_in_hand_shows_its_hint_once() -> void:
+func test_the_old_laguz_hint_sleeps() -> void:
+	# Laguz is no joker any more (Stage 5): its hint is switched off.
 	var rules: HintRules = _rules()
-	var hand: Array = ["fehu", "laguz", "isaz"]
-	check_eq(rules.on_event("rune_in_hand", {"runes": hand}, _context()), ["first_laguz"], "Laguz in hand:")
-	check_eq(rules.on_event("rune_in_hand", {"runes": hand}, _context(["first_laguz"])), [], "already seen:")
-	check_eq(rules.on_event("rune_in_hand", {"runes": ["fehu", "isaz"]}, _context()), [], "no Laguz:")
+	check_eq(rules.on_event("rune_in_hand", {"runes": ["fehu", "laguz"]}, _context()), [], "Laguz in hand:")
 
 
 func test_quiet_in_the_tutorial_and_when_switched_off() -> void:
 	var rules: HintRules = _rules()
-	var hand: Dictionary = {"runes": ["laguz"]}
 	var tutorial: Dictionary = _context()
 	tutorial["tutorial"] = true
-	check_eq(rules.on_event("rune_in_hand", hand, tutorial), [], "during the evening class:")
+	check_eq(rules.on_event("shop_opened", {}, tutorial), [], "during the evening class:")
 	check_eq(rules.idle_threshold(tutorial), INF, "idle during the evening class:")
 	var off: Dictionary = _context()
 	off["enabled"] = false
-	check_eq(rules.on_event("rune_in_hand", hand, off), [], "hints off:")
+	check_eq(rules.on_event("shop_opened", {}, off), [], "hints off:")
 	check_eq(rules.idle_threshold(off), INF, "idle with hints off:")
 
 

@@ -1,0 +1,42 @@
+[
+	{
+		"id": "kenaz", "power": 18, "res": 2, "level_power": 9, "level_res": 1, "color": "#ff6a2b",
+		"nature": "burn", "nature_value": 3, "nature_double": 6, "max_stacks": 3,
+		"nature_text": {"ro": "Arsură: monstrul pierde {value} la fiecare Rostire următoare pentru fiecare strat (cel mult {stacks} straturi).", "en": "Burn: the monster loses {value} on every later Cast for each stack (at most {stacks} stacks)."}
+	},
+	{
+		"id": "uruz", "power": 30, "res": 1, "level_power": 15, "level_res": 0.5, "color": "#c9a46a",
+		"nature": "crush", "nature_value": 1, "nature_double": 2,
+		"nature_text": {"ro": "Zdrobire: ignoră Scutul monstrului.", "en": "Crush: ignores the monster's Shield."}
+	},
+	{
+		"id": "thurisaz", "power": 10, "res": 2, "level_power": 5, "level_res": 1, "color": "#7fbf5a",
+		"nature": "thorn", "nature_value": 1, "nature_double": 2,
+		"nature_text": {"ro": "Spini: +{value} Rezonanță pentru fiecare Acțiune din vrajă.", "en": "Thorns: +{value} Resonance for every Action in the spell."}
+	},
+	{
+		"id": "isaz", "power": 14, "res": 2, "level_power": 7, "level_res": 1, "color": "#6cc6ff",
+		"nature": "freeze", "nature_value": 1, "nature_double": 2,
+		"nature_text": {"ro": "Îngheț: monstrul nu-și folosește trăsătura și regula la următoarea Rostire ({value}).", "en": "Freeze: the monster's trait and rule rest for the next Cast ({value})."}
+	},
+	{
+		"id": "hagalaz", "power": 8, "res": 2, "level_power": 4, "level_res": 1, "color": "#d8ecff",
+		"nature": "rain", "nature_value": 3, "nature_double": 6,
+		"nature_text": {"ro": "Ploaie: lovește de {value} ori.", "en": "Rain: strikes {value} times."}
+	},
+	{
+		"id": "sowilo", "power": 16, "res": 2, "level_power": 8, "level_res": 1, "color": "#ffc94a",
+		"nature": "light", "nature_value": 2, "nature_double": 3,
+		"nature_text": {"ro": "Lumină: ×{value} contra creaturilor nopții.", "en": "Light: ×{value} against creatures of the night."}
+	},
+	{
+		"id": "laguz", "power": 15, "res": 2, "level_power": 8, "level_res": 1, "color": "#2fc4c0",
+		"nature": "wave", "nature_value": 1, "nature_double": 2,
+		"nature_text": {"ro": "Val: ignoră rezistențele (nu și imunitățile).", "en": "Wave: ignores resistances (not immunities)."}
+	},
+	{
+		"id": "dagaz", "power": 12, "res": 2, "level_power": 6, "level_res": 1, "color": "#f3e6b8",
+		"nature": "time", "nature_value": 25, "nature_double": 50,
+		"nature_text": {"ro": "Timp: +{value}% daună pentru fiecare Rostire rămasă.", "en": "Time: +{value}% damage for every Cast left."}
+	}
+]

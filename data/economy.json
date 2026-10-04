@@ -1,14 +1,19 @@
 {
-	"spell_target_floor_pct": 40,
-	"spell_max_extra_casts_per_round": 2,
-	"scroll_slots": 1,
-	"examiner_spell_fallback_money": 3,
-	"start_money": 3,
-	"round_target_mults": [
+	"max_spells_per_cast": 2,
+	"chain_bonus_pct": 25,
+	"kin_bonus_res": 1.5,
+	"kin_min_stones": 3,
+	"boss_pct_cap": 50,
+	"ansuz_level_cap": 3,
+	"monster_hp_mults": [
 		1.0,
 		1.5,
-		2.0
+		2.5
 	],
+	"algiz_fallback_money": 3,
+	"spell_max_extra_casts_per_round": 2,
+	"scroll_slots": 1,
+	"start_money": 3,
 	"reward_small": 4,
 	"reward_big": 5,
 	"reward_examiner": 6,

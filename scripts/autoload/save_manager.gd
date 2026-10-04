@@ -3,7 +3,9 @@ extends Node
 ## (saved between rounds by the exam screen). The rules of Memories, unlocks, records and the
 ## Collection are in scripts/core/progress.gd.
 
-const SAVE_VERSION: int = 1
+## Version 2 (Stage 5): fights instead of Words; an older save keeps only the name and the
+## settings (a copy stays as save.json.v1).
+const SAVE_VERSION: int = 2
 const DEFAULT_PATH: String = "user://save.json"
 const DEFAULT_VOLUME: float = 0.8
 
@@ -30,13 +32,13 @@ static func default_data() -> Dictionary:
 		## Free keys, e.g. Talismans unlocked for the Night Market.
 		"unlocks": {},
 		## What the player has seen at least once.
-		"collection": {"talismans": [], "engravings": [], "examiners": []},
+		"collection": {"talismans": [], "engravings": [], "monsters": []},
 		## Permanent discoveries: spells, the Actions learned, hidden Words, old words (ALU, LAÞU, AUJA).
 		## torn_pages: spells whose cell of the Spell Table a Torn Page shows (bought in the Market).
 		"discoveries": {"spells": [], "actions": [], "words": [], "old_words": [], "torn_pages": []},
-		## Records; word_levels = the highest level each Word reached (free keys).
+		## Records; element_levels = the highest level each Element reached (free keys).
 		"stats": {
-			"best_cast_score": 0.0, "best_trial": 0, "exams_passed": 0, "exams_finished": 0, "word_levels": {},
+			"best_cast_score": 0.0, "best_trial": 0, "exams_passed": 0, "exams_finished": 0, "element_levels": {},
 		},
 		## Story memory across attempts.
 		"flags": {},
@@ -62,8 +64,24 @@ func load_game() -> bool:
 		push_warning("SaveManager: %s is damaged, starting fresh (copy kept as %s)" % [save_path, backup_path()])
 		_write_text(backup_path(), text)
 		return false
-	data = merge_with_defaults(json.data, default_data())
+	var loaded: Dictionary = json.data
+	if int(loaded.get("version", 1)) < SAVE_VERSION:
+		loaded = migrate(loaded)
+		_write_text(save_path + ".v1", text)
+	data = merge_with_defaults(loaded, default_data())
+	if int(json.data.get("version", 1)) < SAVE_VERSION:
+		save_game()
 	return true
+
+
+## An older save (version 1, Words and trials): keeps the player's name and settings, the rest
+## starts over.
+static func migrate(old: Dictionary) -> Dictionary:
+	var fresh: Dictionary = default_data()
+	fresh["player_name"] = old.get("player_name", "")
+	if old.get("settings") is Dictionary:
+		fresh["settings"] = old["settings"]
+	return fresh
 
 
 func save_game() -> bool:

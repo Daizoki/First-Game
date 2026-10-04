@@ -1,26 +1,24 @@
 extends RefCounted
-## One rune stone in the bag. Pure data: the rune it carries plus what happened to it
-## during the exam (permanent Power growth, later materials and bindings).
+## One rune stone in the bag. Pure data: the rune it carries plus what happened to it during
+## the Journey. A base stone gives no points by itself (Stage 5): it is a word of the spell.
+## Its permanent Power (tempered stones, materials) is added to the spell it is part of.
 
-## Unique number inside the exam, so the UI and the scorer can tell copies apart.
+## Unique number inside the exam, so the UI and the logic can tell copies apart.
 var uid: int = 0
 var rune_id: String = ""
 var kin: String = ""
-var position: int = 0
-var base_power: int = 0
-## Permanent extra Power gained during the exam (Eihwaz, Ingwaz, spells into the Bag...).
+## Permanent extra Power for the spells this stone is part of (Tempering, Apprenticeship...).
 var bonus_power: int = 0
-## Extra Power for the current round only (Encouragement); cleared when a round starts.
+## Extra Power for the current fight only (Encouragement); cleared when a fight starts.
 var round_power: int = 0
-## Stage 3: "bone", "amber", "gold", "iron", "glass" or "" for none.
+## "bone", "amber", "gold", "iron", "glass" or "" for none.
 var material: String = ""
-## Lunet's rule (Stage 3): drawn face down.
+## Drawn face down (the Scorpia's rule, the Flyer's trait).
 var face_down: bool = false
-## A bind-rune (the Binding): the second rune on the stone, with its Kin and Position.
-## The Word may read the stone as either rune; both Voices are heard when it scores.
+## Two runes on one stone (the Binding, the ancient bindings): in a sentence it counts as its
+## rune followed by the bound rune.
 var bound_rune: String = ""
 var bound_kin: String = ""
-var bound_position: int = 0
 
 
 static func from_rune(rune: Dictionary, stone_uid: int) -> RefCounted:
@@ -28,41 +26,39 @@ static func from_rune(rune: Dictionary, stone_uid: int) -> RefCounted:
 	stone.uid = stone_uid
 	stone.rune_id = str(rune.get("id", ""))
 	stone.kin = str(rune.get("kin", ""))
-	stone.position = int(rune.get("position", 0))
-	stone.base_power = int(rune.get("base_power", 0))
 	return stone
 
 
-## A copy with a new uid (Berkanan, Dublura).
+## A copy with a new uid (the Double, the Echo).
 func duplicate_stone(new_uid: int) -> RefCounted:
 	var copy: RefCounted = load("res://scripts/core/stone.gd").new()
 	copy.uid = new_uid
 	copy.rune_id = rune_id
 	copy.kin = kin
-	copy.position = position
-	copy.base_power = base_power
 	copy.bonus_power = bonus_power
 	copy.material = material
 	copy.bound_rune = bound_rune
 	copy.bound_kin = bound_kin
-	copy.bound_position = bound_position
 	return copy
 
 
-## The stone read as its second rune (a bind-rune; the Word picks the better reading).
-func as_bound() -> RefCounted:
-	var other: RefCounted = duplicate_stone(uid)
-	other.rune_id = bound_rune
-	other.kin = bound_kin
-	other.position = bound_position
-	return other
+## The rune ids this stone stands for in a sentence, in order (one, or two when bound).
+func runes() -> Array[String]:
+	var ids: Array[String] = [rune_id]
+	if not bound_rune.is_empty():
+		ids.append(bound_rune)
+	return ids
+
+
+## Power this stone adds to the spell it is part of.
+func power() -> int:
+	return bonus_power + round_power
 
 
 func to_dict() -> Dictionary:
 	return {
-		"uid": uid, "rune": rune_id, "kin": kin, "position": position,
-		"base_power": base_power, "bonus_power": bonus_power, "material": material, "bound_rune": bound_rune,
-		"bound_kin": bound_kin, "bound_position": bound_position,
+		"uid": uid, "rune": rune_id, "kin": kin, "bonus_power": bonus_power, "material": material,
+		"bound_rune": bound_rune, "bound_kin": bound_kin,
 	}
 
 
@@ -72,11 +68,8 @@ static func from_dict(saved: Dictionary) -> RefCounted:
 	stone.uid = int(saved.get("uid", 0))
 	stone.rune_id = str(saved.get("rune", ""))
 	stone.kin = str(saved.get("kin", ""))
-	stone.position = int(saved.get("position", 0))
-	stone.base_power = int(saved.get("base_power", 0))
 	stone.bonus_power = int(saved.get("bonus_power", 0))
 	stone.material = str(saved.get("material", ""))
 	stone.bound_rune = str(saved.get("bound_rune", ""))
 	stone.bound_kin = str(saved.get("bound_kin", ""))
-	stone.bound_position = int(saved.get("bound_position", 0))
 	return stone

@@ -7,19 +7,19 @@ const Stone = preload("res://scripts/core/stone.gd")
 static var _data: Dictionary = {}
 
 
-## {"runes", "words", "spells", "spell_actions", "rules", "economy", "tutorial", "hints", "characters",
-## "trials", "examiners", "talismans", "lessons", "engravings", "parents"}
+## {"runes", "elements", "targets", "spells", "spell_actions", "rules", "economy", "tutorial", "hints",
+## "characters", "realms", "monsters", "talismans", "lessons", "engravings", "parents"}
 ## from data/, loaded once per test run.
 static func data() -> Dictionary:
 	if _data.is_empty():
 		var game_data: GameDataScript = GameDataScript.new()
 		game_data.load_all("res://data/")
 		_data = {
-			"runes": game_data.runes, "words": game_data.words,
+			"runes": game_data.runes, "elements": game_data.elements, "targets": game_data.targets,
 			"spells": game_data.spells, "spell_actions": game_data.spell_actions, "rules": game_data.rules,
 			"economy": game_data.economy, "tutorial": game_data.tutorial,
-			"hints": game_data.hints, "characters": game_data.characters, "trials": game_data.trials,
-			"examiners": game_data.examiners, "talismans": game_data.talismans,
+			"hints": game_data.hints, "characters": game_data.characters, "realms": game_data.realms,
+			"monsters": game_data.monsters, "talismans": game_data.talismans,
 			"lessons": game_data.lessons, "engravings": game_data.engravings, "parents": game_data.parents,
 		}
 		game_data.free()

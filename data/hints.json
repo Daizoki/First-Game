@@ -1,156 +1,24 @@
 [
-	{
-		"id": "first_laguz",
-		"enabled": true,
-		"speaker": "ilinca",
-		"trigger": {"event": "rune_in_hand", "rune": "laguz"},
-		"text": {"ro": "Laguz e apă: curge. Contează ca piatră din orice Neam.", "en": "Laguz is water: it flows. It counts as a stone of any Kin."}
-	},
-	{
-		"id": "idle_help",
-		"enabled": true,
-		"speaker": "ilinca",
-		"trigger": {"event": "idle", "seconds": 40, "max_exams": 3},
-		"text": {"ro": "Nu știi ce să faci? Ține mouse-ul pe pietre sau deschide Cartea Cuvintelor.", "en": "Not sure what to do? Hover over the stones or open the Book of Words."}
-	},
-	{
-		"id": "first_wrong_order",
-		"enabled": true,
-		"speaker": "ilinca",
-		"trigger": {"event": "wrong_order"},
-		"text": {"ro": "Elementul vine primul, Ținta la urmă. Așa vorbesc runele.", "en": "The Element comes first, the Target last. That's how runes speak."}
-	},
-	{
-		"id": "first_scroll",
-		"enabled": true,
-		"speaker": "ilinca",
-		"trigger": {"event": "scroll_gained"},
-		"text": {"ro": "Ai păstrat vraja pe pergament. Folosește-o când ai nevoie.", "en": "You kept the spell on a scroll. Use it when you need it."}
-	},
-	{
-		"id": "first_two_actions",
-		"enabled": true,
-		"speaker": "ilinca",
-		"trigger": {"event": "two_actions"},
-		"text": {"ro": "Două Acțiuni. Te dai mare. Îmi place.", "en": "Two Actions. Showing off. I like it."}
-	},
-	{
-		"id": "first_shop_1",
-		"enabled": true,
-		"speaker": "vera",
-		"trigger": {"event": "shop_opened"},
-		"text": {"ro": "Bună seara, puiule. Aici cumperi ce te ține în viață la examen.", "en": "Good evening, dear. Here you buy what keeps you alive in the exam."}
-	},
-	{
-		"id": "first_shop_2",
-		"enabled": true,
-		"speaker": "vera",
-		"follows": "first_shop_1",
-		"text": {"ro": "Talismanele lucrează singure, de la stânga la dreapta. Ai cinci locuri.", "en": "Talismans work on their own, from left to right. You have five slots."}
-	},
-	{
-		"id": "first_shop_3",
-		"enabled": true,
-		"speaker": "vera",
-		"follows": "first_shop_2",
-		"text": {"ro": "Lecțiile cresc un Cuvânt. Gravurile schimbă pietrele. Săculețele… surpriză.", "en": "Lessons raise a Word. Engravings change stones. Bags… a surprise."}
-	},
-	{
-		"id": "first_reroll",
-		"enabled": true,
-		"speaker": "vera",
-		"trigger": {"event": "reroll_available"},
-		"text": {"ro": "Nu-ți place marfa? Rearanjez taraba, dar nu gratis.", "en": "Don't like the goods? I'll rearrange the stall, but not for free."}
-	},
-	{
-		"id": "first_talisman",
-		"enabled": true,
-		"speaker": "vera",
-		"trigger": {"event": "talisman_bought"},
-		"text": {"ro": "Trage Talismanele ca să le schimbi ordinea. Ordinea contează.", "en": "Drag the Talismans to change their order. Order matters."}
-	},
-	{
-		"id": "first_examiner",
-		"enabled": true,
-		"speaker": "kaldor",
-		"trigger": {"event": "examiner_met", "examiner": "kaldor"},
-		"text": {"ro": "Eu sunt Kaldor. Regula mea e scrisă acolo. N-o repet.", "en": "I am Kaldor. My rule is written there. I won't say it twice."}
-	},
-	{
-		"id": "first_rule",
-		"enabled": true,
-		"speaker": "ilinca",
-		"trigger": {"event": "examiner_met"},
-		"text": {"ro": "Al treilea vine Examinatorul. Are o regulă, scrisă pe fișa lui. Citește-o înainte să rostești.", "en": "Third comes the Examiner. They have a rule, written on their card. Read it before you cast."}
-	},
-	{
-		"id": "first_lesson",
-		"enabled": true,
-		"speaker": "ilinca",
-		"trigger": {"event": "lesson_gained"},
-		"text": {"ro": "O Lecție crește nivelul unui Cuvânt pentru tot examenul.", "en": "A Lesson raises a Word's level for the whole exam."}
-	},
-	{
-		"id": "first_engraving",
-		"enabled": true,
-		"speaker": "ilinca",
-		"trigger": {"event": "engraving_gained"},
-		"text": {"ro": "O Gravură schimbă o piatră. În rundă, apasă pe Gravură, apoi alege piatra din mână.", "en": "An Engraving changes a stone. In a round, click the Engraving, then pick the stone in your hand."}
-	},
-	{
-		"id": "first_bindrune",
-		"enabled": true,
-		"speaker": "ilinca",
-		"trigger": {"event": "bindrune_gained"},
-		"text": {"ro": "O legătură e o piatră cu două rune. Contează ca oricare dintre ele, iar Glasurile se aud amândouă.", "en": "A bind-rune is a stone with two runes. It counts as either of them, and both Voices are heard."}
-	},
-	{
-		"id": "first_loss_1",
-		"enabled": true,
-		"speaker": "aeva",
-		"trigger": {"event": "exam_failed"},
-		"text": {"ro": "Ai picat. Se întâmplă. Ție ți se întâmplă des.", "en": "You failed. It happens. It happens to you a lot."}
-	},
-	{
-		"id": "first_loss_2",
-		"enabled": true,
-		"speaker": "aeva",
-		"follows": "first_loss_1",
-		"text": {"ro": "Te întorc în dimineața examenului. Tu ții minte tot, ceilalți nu. Nu mă întreba de ce.", "en": "I'm sending you back to the morning of the exam. You remember everything, the others don't. Don't ask me why."}
-	},
-	{
-		"id": "first_loss_3",
-		"enabled": true,
-		"speaker": "aeva",
-		"follows": "first_loss_2",
-		"text": {"ro": "Ce ai adunat se numește Amintiri. Cheltuiește-le cu cap.", "en": "What you gathered is called Memories. Spend them wisely."}
-	},
-	{
-		"id": "first_evening_class",
-		"enabled": true,
-		"speaker": "ilinca",
-		"trigger": {"event": "evening_class"},
-		"text": {"ro": "În ultima bancă stau Kaldor și Varr. Repetă cursul. Nu fi ca ei.", "en": "Kaldor and Varr sit in the back row. They're repeating the class. Don't be like them."}
-	},
-	{
-		"id": "first_torn_page",
-		"enabled": true,
-		"speaker": "vera",
-		"trigger": {"event": "torn_page_found"},
-		"text": {"ro": "Am găsit-o într-o carte veche. Spune ce rune trebuie. Restul e treaba ta.", "en": "I found it in an old book. It says which runes you need. The rest is up to you."}
-	},
-	{
-		"id": "first_curse",
-		"enabled": false,
-		"speaker": "ilinca",
-		"trigger": {"event": "curse_discovered"},
-		"text": {"ro": "Nu toate Vrăjile sunt prietenoase. Ai învățat ceva azi.", "en": "Not every Spell is friendly. You learned something today."}
-	},
-	{
-		"id": "first_old_word",
-		"enabled": false,
-		"speaker": "ilinca",
-		"trigger": {"event": "old_word_discovered"},
-		"text": {"ro": "Cuvântul ăsta e scris pe pietre mai vechi decât orice zeu. De unde îl știi?", "en": "This Word is carved on stones older than any god. How do you know it?"}
-	}
+	{"id": "first_laguz", "enabled": false, "speaker": "ilinca", "trigger": {"event": "rune_in_hand", "rune": "laguz"}, "text": {"ro": "Laguz e apă: curge. Contează ca piatră din orice Neam.", "en": "Laguz is water: it flows. It counts as a stone of any Kin."}},
+	{"id": "idle_help", "enabled": true, "speaker": "ilinca", "trigger": {"event": "idle", "seconds": 40, "max_exams": 3}, "text": {"ro": "Nu știi ce să faci? Pune un Element, apoi o Țintă. Cercul îți arată cât lovește.", "en": "Not sure what to do? Put an Element, then a Target. The circle shows how hard it hits."}},
+	{"id": "first_wrong_order", "enabled": true, "speaker": "ilinca", "trigger": {"event": "wrong_order"}, "text": {"ro": "Elementul vine primul, Ținta la urmă. Așa vorbesc runele.", "en": "The Element comes first, the Target last. That's how runes speak."}},
+	{"id": "first_scroll", "enabled": true, "speaker": "ilinca", "trigger": {"event": "scroll_gained"}, "text": {"ro": "Ai păstrat vraja pe pergament. Folosește-o când ai nevoie.", "en": "You kept the spell on a scroll. Use it when you need it."}},
+	{"id": "first_two_actions", "enabled": true, "speaker": "ilinca", "trigger": {"event": "two_actions"}, "text": {"ro": "Două Acțiuni. Te dai mare. Îmi place.", "en": "Two Actions. Showing off. I like it."}},
+	{"id": "first_shop_1", "enabled": true, "speaker": "vera", "trigger": {"event": "shop_opened"}, "text": {"ro": "Bună seara, puiule. Aici cumperi ce te ține în viață la examen.", "en": "Good evening, dear. Here you buy what keeps you alive in the exam."}},
+	{"id": "first_shop_2", "enabled": true, "speaker": "vera", "follows": "first_shop_1", "text": {"ro": "Talismanele lucrează singure, de la stânga la dreapta. Ai cinci locuri.", "en": "Talismans work on their own, from left to right. You have five slots."}},
+	{"id": "first_shop_3", "enabled": true, "speaker": "vera", "follows": "first_shop_2", "text": {"ro": "Lecțiile cresc un Cuvânt. Gravurile schimbă pietrele. Săculețele… surpriză.", "en": "Lessons raise a Word. Engravings change stones. Bags… a surprise."}},
+	{"id": "first_reroll", "enabled": true, "speaker": "vera", "trigger": {"event": "reroll_available"}, "text": {"ro": "Nu-ți place marfa? Rearanjez taraba, dar nu gratis.", "en": "Don't like the goods? I'll rearrange the stall, but not for free."}},
+	{"id": "first_talisman", "enabled": true, "speaker": "vera", "trigger": {"event": "talisman_bought"}, "text": {"ro": "Trage Talismanele ca să le schimbi ordinea. Ordinea contează.", "en": "Drag the Talismans to change their order. Order matters."}},
+	{"id": "first_examiner", "enabled": true, "speaker": "kaldor", "trigger": {"event": "examiner_met", "examiner": "kaldor"}, "text": {"ro": "Eu sunt Kaldor. Regula mea e scrisă acolo. N-o repet.", "en": "I am Kaldor. My rule is written there. I won't say it twice."}},
+	{"id": "first_rule", "enabled": true, "speaker": "ilinca", "trigger": {"event": "examiner_met"}, "text": {"ro": "Al treilea vine Examinatorul. Are o regulă, scrisă pe fișa lui. Citește-o înainte să rostești.", "en": "Third comes the Examiner. They have a rule, written on their card. Read it before you cast."}},
+	{"id": "first_lesson", "enabled": true, "speaker": "ilinca", "trigger": {"event": "lesson_gained"}, "text": {"ro": "O Lecție crește nivelul unui Cuvânt pentru tot examenul.", "en": "A Lesson raises a Word's level for the whole exam."}},
+	{"id": "first_engraving", "enabled": true, "speaker": "ilinca", "trigger": {"event": "engraving_gained"}, "text": {"ro": "O Gravură schimbă o piatră. În rundă, apasă pe Gravură, apoi alege piatra din mână.", "en": "An Engraving changes a stone. In a round, click the Engraving, then pick the stone in your hand."}},
+	{"id": "first_bindrune", "enabled": true, "speaker": "ilinca", "trigger": {"event": "bindrune_gained"}, "text": {"ro": "O legătură e o piatră cu două rune. Contează ca oricare dintre ele, iar Glasurile se aud amândouă.", "en": "A bind-rune is a stone with two runes. It counts as either of them, and both Voices are heard."}},
+	{"id": "first_loss_1", "enabled": true, "speaker": "aeva", "trigger": {"event": "exam_failed"}, "text": {"ro": "Ai picat. Se întâmplă. Ție ți se întâmplă des.", "en": "You failed. It happens. It happens to you a lot."}},
+	{"id": "first_loss_2", "enabled": true, "speaker": "aeva", "follows": "first_loss_1", "text": {"ro": "Te întorc în dimineața examenului. Tu ții minte tot, ceilalți nu. Nu mă întreba de ce.", "en": "I'm sending you back to the morning of the exam. You remember everything, the others don't. Don't ask me why."}},
+	{"id": "first_loss_3", "enabled": true, "speaker": "aeva", "follows": "first_loss_2", "text": {"ro": "Ce ai adunat se numește Amintiri. Cheltuiește-le cu cap.", "en": "What you gathered is called Memories. Spend them wisely."}},
+	{"id": "first_evening_class", "enabled": true, "speaker": "ilinca", "trigger": {"event": "evening_class"}, "text": {"ro": "În ultima bancă stau Kaldor și Varr. Repetă cursul. Nu fi ca ei.", "en": "Kaldor and Varr sit in the back row. They're repeating the class. Don't be like them."}},
+	{"id": "first_torn_page", "enabled": true, "speaker": "vera", "trigger": {"event": "torn_page_found"}, "text": {"ro": "Am găsit-o într-o carte veche. Spune ce rune trebuie. Restul e treaba ta.", "en": "I found it in an old book. It says which runes you need. The rest is up to you."}},
+	{"id": "first_curse", "enabled": false, "speaker": "ilinca", "trigger": {"event": "curse_discovered"}, "text": {"ro": "Nu toate Vrăjile sunt prietenoase. Ai învățat ceva azi.", "en": "Not every Spell is friendly. You learned something today."}},
+	{"id": "first_old_word", "enabled": false, "speaker": "ilinca", "trigger": {"event": "old_word_discovered"}, "text": {"ro": "Cuvântul ăsta e scris pe pietre mai vechi decât orice zeu. De unde îl știi?", "en": "This Word is carved on stones older than any god. How do you know it?"}}
 ]

@@ -18,14 +18,15 @@ const RUNE_ART_PATH: String = "res://art/runes/%s.png"
 const COLLECTIONS: Dictionary = {
 	"kins": ["kins.json", "kin"],
 	"runes": ["runes.json", "rune"],
-	"words": ["words.json", "word"],
 	"spells": ["spells_base.json", "spell"],
 	"spell_actions": ["spell_actions.json", "spell_action"],
 	"characters": ["characters.json", "character"],
 	"dialogs": ["dialogs.json", "dialog"],
 	"hints": ["hints.json", "hint"],
-	"trials": ["trials.json", "trial"],
-	"examiners": ["examiners.json", "examiner"],
+	"elements": ["elements.json", "element"],
+	"targets": ["targets.json", "target"],
+	"realms": ["realms.json", "realm"],
+	"monsters": ["monsters.json", "monster"],
 	"talismans": ["talismans.json", "talisman"],
 	"lessons": ["lessons.json", "lesson"],
 	"engravings": ["engravings.json", "engraving"],
@@ -39,8 +40,6 @@ var errors: Array[String] = []
 var kins: Dictionary = {}
 ## The 24 runes.
 var runes: Dictionary = {}
-## Word types (Pereche, Șir, ...).
-var words: Dictionary = {}
 ## The base spells: one per Element -> Target pair (DESIGN 3.15, the rune grammar).
 var spells: Dictionary = {}
 ## The 8 Actions that can stand between Element and Target, by rune id.
@@ -50,10 +49,14 @@ var characters: Dictionary = {}
 var dialogs: Dictionary = {}
 ## Contextual hints shown once (data/hints.json).
 var hints: Dictionary = {}
-## The 8 trials of the exam, in order (data/trials.json).
-var trials: Dictionary = {}
-## The examiners and their rules, by character id (data/examiners.json).
-var examiners: Dictionary = {}
+## The 8 Elements: Power, Resonance, levels and nature, by rune id (data/elements.json).
+var elements: Dictionary = {}
+## The 8 Targets: how much of the damage gets through, by rune id (data/targets.json).
+var targets: Dictionary = {}
+## The 8 Realms of the Journey, in order (data/realms.json).
+var realms: Dictionary = {}
+## Monsters, the Lords of the Realms and the exam's opponents (data/monsters.json).
+var monsters: Dictionary = {}
 ## The Talismans (data/talismans.json).
 var talismans: Dictionary = {}
 ## The Lessons (one per Word) and the Engravings (data/lessons.json, data/engravings.json).
@@ -103,19 +106,22 @@ func load_all(data_dir: String) -> bool:
 	validator.check_runes(COLLECTIONS["runes"][0], loaded["runes"], loaded["kins"])
 	validator.check_spells(COLLECTIONS["spells"][0], loaded["spells"], loaded["runes"])
 	validator.check_spell_actions(COLLECTIONS["spell_actions"][0], loaded["spell_actions"], loaded["runes"])
-	validator.check_exam(COLLECTIONS["trials"][0], loaded["trials"], COLLECTIONS["examiners"][0], loaded["examiners"],
-		economy.get("round_target_mults"))
+	validator.check_roles(COLLECTIONS["elements"][0], loaded["elements"], COLLECTIONS["targets"][0], loaded["targets"],
+		loaded["runes"])
+	validator.check_world(COLLECTIONS["realms"][0], loaded["realms"], COLLECTIONS["monsters"][0], loaded["monsters"],
+		economy.get("monster_hp_mults"))
 
 	kins = loaded["kins"]
 	runes = loaded["runes"]
-	words = loaded["words"]
 	spells = loaded["spells"]
 	spell_actions = loaded["spell_actions"]
 	characters = loaded["characters"]
 	dialogs = loaded["dialogs"]
 	hints = loaded["hints"]
-	trials = loaded["trials"]
-	examiners = loaded["examiners"]
+	elements = loaded["elements"]
+	targets = loaded["targets"]
+	realms = loaded["realms"]
+	monsters = loaded["monsters"]
 	talismans = loaded["talismans"]
 	lessons = loaded["lessons"]
 	engravings = loaded["engravings"]
@@ -140,10 +146,6 @@ func get_rune(id: String) -> Dictionary:
 	return _get_entry(runes, "runes", id)
 
 
-func get_word(id: String) -> Dictionary:
-	return _get_entry(words, "words", id)
-
-
 func get_spell(id: String) -> Dictionary:
 	return _get_entry(spells, "spells", id)
 
@@ -156,15 +158,19 @@ func get_dialog(id: String) -> Dictionary:
 	return _get_entry(dialogs, "dialogs", id)
 
 
-## The runes of one kin, ordered by position (1..8).
+## The runes of one kin, in file order (the order of the Elder Futhark).
 func runes_in_kin(kin_id: String) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for id: String in runes:
 		var rune: Dictionary = runes[id]
 		if str(rune.get("kin", "")) == kin_id:
 			result.append(rune)
-	result.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a.get("position", 0)) < int(b.get("position", 0)))
 	return result
+
+
+## The colour of an Element (its spells, its damage numbers); white for other runes.
+func element_color(rune_id: String) -> Color:
+	return Color.html(str((elements.get(rune_id, {}) as Dictionary).get("color", "#e9e3d2")))
 
 
 ## Glow color of a kin (grey if unknown).

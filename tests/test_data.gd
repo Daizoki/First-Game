@@ -11,12 +11,9 @@ func _valid_rune() -> Dictionary:
 		"name": {"ro": "Fehu", "en": "Fehu"},
 		"glyph": "ᚠ",
 		"kin": "fehu",
-		"position": 1,
-		"base_power": 3,
 		"role": "target",
 		"phrase": {"ro": "în Monede", "en": "into Coins"},
 		"meaning": {"ro": "vite, avere", "en": "cattle, wealth"},
-		"voice": {"ro": "+1 Monedă când punctează.", "en": "+1 Coin when it scores."},
 		"segments": [[0.35, 0.05, 0.35, 0.95], [0.35, 0.3, 0.7, 0.08]],
 	}
 
@@ -27,11 +24,14 @@ func test_real_data_loads_without_errors() -> void:
 	check(ok, "data/ has errors:\n" + "\n".join(PackedStringArray(game_data.errors)))
 	check_eq(game_data.kins.size(), 3, "kins:")
 	check_eq(game_data.runes.size(), 24, "runes:")
-	check_eq(game_data.words.size(), 10, "words:")
+	check_eq(game_data.elements.size(), 8, "Elements:")
+	check_eq(game_data.targets.size(), 8, "Targets:")
+	check_eq(game_data.realms.size(), 8, "Realms:")
+	check(game_data.monsters.size() >= 16 + 8, "at least 16 monsters and 8 Lords")
 	check_eq(game_data.spells.size(), 64, "spells (8 Elements × 8 Targets):")
 	check(game_data.spells.has("isaz_tiwaz"), "spells_base.json should contain isaz_tiwaz (Iarna)")
 	check_eq(game_data.spell_actions.size(), 8, "Actions:")
-	check_eq(game_data.economy.get("spell_target_floor_pct"), 40, "target floor:")
+	check_eq(game_data.economy.get("max_spells_per_cast"), 2, "two spells per Cast:")
 	check(game_data.characters.has("ilinca"), "characters.json should contain ilinca")
 	check(game_data.characters.has("vera"), "characters.json should contain vera")
 	check_eq(game_data.rule("hand_size"), 8, "hand size:")
@@ -42,11 +42,13 @@ func test_real_data_loads_without_errors() -> void:
 func test_each_kin_has_eight_runes_in_order() -> void:
 	var game_data: GameDataScript = GameDataScript.new()
 	game_data.load_all("res://data/")
+	var roles: Dictionary = {}
 	for kin_id: String in game_data.kins:
-		var runes: Array[Dictionary] = game_data.runes_in_kin(kin_id)
-		check_eq(runes.size(), 8, "%s runes:" % kin_id)
-		for i: int in runes.size():
-			check_eq(runes[i]["position"], i + 1, "%s position:" % kin_id)
+		check_eq(game_data.runes_in_kin(kin_id).size(), 8, "%s runes:" % kin_id)
+	for id: String in game_data.runes:
+		var role: String = str(game_data.runes[id]["role"])
+		roles[role] = int(roles.get(role, 0)) + 1
+	check_eq(roles, {"target": 8, "element": 8, "action": 8}, "8 of each role:")
 	var fehu_row: Array[Dictionary] = game_data.runes_in_kin("fehu")
 	var first_five: String = ""
 	for i: int in 5:
@@ -58,8 +60,7 @@ func test_each_kin_has_eight_runes_in_order() -> void:
 func test_numbers_become_ints() -> void:
 	var game_data: GameDataScript = GameDataScript.new()
 	game_data.load_all("res://data/")
-	var fehu: Dictionary = game_data.runes["fehu"]
-	check(fehu["position"] is int, "position should be an int after loading")
+	check(game_data.elements["kenaz"]["power"] is int, "power should be an int after loading")
 	game_data.free()
 
 
@@ -71,19 +72,19 @@ func test_valid_rune_has_no_errors() -> void:
 
 func test_missing_field_is_reported() -> void:
 	var rune: Dictionary = _valid_rune()
-	rune.erase("base_power")
+	rune.erase("role")
 	var validator: DataValidator = DataValidator.new()
 	validator.validate_collection("runes.json", [rune], "rune")
-	check(has_error(validator.errors, ["data/runes.json", "[fehu]", "missing field \"base_power\""]),
-		"missing base_power not reported: %s" % [validator.errors])
+	check(has_error(validator.errors, ["data/runes.json", "[fehu]", "missing field \"role\""]),
+		"missing role not reported: %s" % [validator.errors])
 
 
 func test_missing_language_is_reported() -> void:
 	var rune: Dictionary = _valid_rune()
-	rune["voice"] = {"ro": "+1 Monedă"}
+	rune["meaning"] = {"ro": "vite"}
 	var validator: DataValidator = DataValidator.new()
 	validator.validate_collection("runes.json", [rune], "rune")
-	check(has_error(validator.errors, ["[fehu]", "\"voice\"", "\"en\""]),
+	check(has_error(validator.errors, ["[fehu]", "\"meaning\"", "\"en\""]),
 		"missing en text not reported: %s" % [validator.errors])
 
 
@@ -106,13 +107,11 @@ func test_bad_segments_are_reported() -> void:
 	check(has_error(validator.errors, ["segments[1]", "between 0 and 1"]), "out-of-range line not reported")
 
 
-func test_position_out_of_range_and_unknown_field() -> void:
+func test_unknown_field_is_reported() -> void:
 	var rune: Dictionary = _valid_rune()
-	rune["position"] = 9
 	rune["powr"] = 3
 	var validator: DataValidator = DataValidator.new()
 	validator.validate_collection("runes.json", [rune], "rune")
-	check(has_error(validator.errors, ["\"position\" must be between 1 and 8"]), "position 9 not reported")
 	check(has_error(validator.errors, ["unknown field \"powr\""]), "typo field not reported")
 
 
@@ -126,14 +125,24 @@ func test_broken_reference_is_reported() -> void:
 		"broken kin reference not reported: %s" % [validator.errors])
 
 
-func test_kin_gaps_and_clashes_are_reported() -> void:
-	var second: Dictionary = _valid_rune()
-	second["id"] = "copy"
+func test_every_element_and_target_has_an_entry() -> void:
 	var validator: DataValidator = DataValidator.new()
-	var runes: Dictionary = validator.validate_collection("runes.json", [_valid_rune(), second], "rune")
-	validator.check_runes("runes.json", runes, {"fehu": {}})
-	check(has_error(validator.errors, ["[copy]", "already has a rune on position 1"]), "position clash not reported")
-	check(has_error(validator.errors, ["no rune on position 2"]), "missing position not reported")
+	validator.check_roles("elements.json", {"fehu": {}}, "targets.json", {}, _roles())
+	check(has_error(validator.errors, ["elements.json", "uruz", "has no entry"]), "a missing Element not reported")
+	check(has_error(validator.errors, ["elements.json", "[fehu]", "not an Element"]), "a Target as Element not reported")
+	check(has_error(validator.errors, ["targets.json", "fehu", "has no entry"]), "a missing Target not reported")
+
+
+func test_the_world_is_checked() -> void:
+	var validator: DataValidator = DataValidator.new()
+	var realms: Dictionary = {"realm_1": {"number": 2, "boss": "rat"}}
+	var monsters: Dictionary = {"rat": {"kind": "small", "realms": [1], "hp_mult": 1}}
+	validator.check_world("realms.json", realms, "monsters.json", monsters, [1, 2])
+	check(has_error(validator.errors, ["[realm_1]", "numbered"]), "wrong numbering not reported")
+	check(has_error(validator.errors, ["[realm_1]", "kind \"boss\""]), "a small monster as Lord not reported")
+	check(has_error(validator.errors, ["[realm_1]", "no big monster"]), "a Realm without big monsters not reported")
+	check(has_error(validator.errors, ["\"final\""]), "no final Lord not reported")
+	check(has_error(validator.errors, ["monster_hp_mults"]), "a bad multiplier list not reported")
 
 
 func test_rules_file_is_checked() -> void:

@@ -1,0 +1,18 @@
+[
+	{"id": "tiwaz", "share": 1.0, "double_nature": true,
+		"text": {"ro": "100% din daună; natura Elementului e dublă.", "en": "100% of the damage; the Element's nature is doubled."}},
+	{"id": "fehu", "share": 0.5,
+		"text": {"ro": "50% din daună, plus Monede.", "en": "50% of the damage, plus Coins."}},
+	{"id": "othala", "share": 0.5,
+		"text": {"ro": "50% din daună, plus pietre mai bune în săculeț.", "en": "50% of the damage, plus better stones in the Bag."}},
+	{"id": "mannaz", "share": 0.5,
+		"text": {"ro": "50% din daună, plus ajutor pentru tine și mâna ta.", "en": "50% of the damage, plus help for you and your hand."}},
+	{"id": "ansuz", "share": 0.5, "level_up": 1,
+		"text": {"ro": "50% din daună; Elementul crește cu 1 nivel tot Drumul.", "en": "50% of the damage; the Element gains 1 level for the whole Journey."}},
+	{"id": "ingwaz", "share": 0.0, "future_share": 2.0,
+		"text": {"ro": "Nimic acum; 200% din daună la Rostirea următoare.", "en": "Nothing now; 200% of the damage on the next Cast."}},
+	{"id": "wunjo", "share": 0.5,
+		"text": {"ro": "50% din daună, plus ajutor pentru Talismane.", "en": "50% of the damage, plus help for the Talismans."}},
+	{"id": "algiz", "share": 0.5,
+		"text": {"ro": "50% din daună; oprește trăsătura sau regula monstrului.", "en": "50% of the damage; stops the monster's trait or rule."}}
+]
