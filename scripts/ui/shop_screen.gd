@@ -1,6 +1,6 @@
 extends Control
 ## The Night Market screen (DESIGN 3.9): Tanti Vera behind her stall, two Talismans, two
-## Lessons or Engravings and two Bags for sale; on the right your Coins, your Talismans (to
+## Lessons or Engravings, two Bags and sometimes a Torn Page for sale; on the right your Coins, your Talismans (to
 ## sell) and your Lessons / Engravings (a Lesson can be learned here), rearranging the stall
 ## and leaving. A bought Bag opens over the stall: take one (or two) of what is inside.
 ## The logic is scripts/core/shop_logic.gd.
@@ -17,7 +17,10 @@ const MONEY_COLOR: Color = Color("#ebaa3c")
 const CARD_SIZE: Vector2 = Vector2(330, 330)
 const KIND_COLORS: Dictionary = {
 	"talisman": Color("#c9c2ad"), "lesson": Color("#63c6f2"), "engraving": Color("#ffb347"), "pack": Color("#b59be0"),
+	"page": Color("#e9d3a0"),
 }
+## A stall of more than 6 things (a Torn Page) gets a fourth column of narrower cards.
+const NARROW_CARD_WIDTH: float = 310.0
 
 var shop: ShopLogic
 
@@ -107,8 +110,12 @@ func _refresh() -> void:
 	for child: Node in _stall.get_children():
 		_stall.remove_child(child)
 		child.queue_free()
+	_stall.columns = 3 if shop.offer.size() <= 6 else 4
 	for i: int in shop.offer.size():
-		_stall.add_child(_offer_card(i))
+		var card: Control = _offer_card(i)
+		if _stall.columns == 4:
+			card.custom_minimum_size.x = NARROW_CARD_WIDTH
+		_stall.add_child(card)
 		_record_seen(shop.offer[i])
 	_refresh_owned()
 
@@ -203,6 +210,8 @@ func _describe(type: String, id: String, owned: Dictionary = {}) -> Dictionary:
 			var kind: String = id.trim_suffix("_big")
 			return {"kind": Loc.t("shop_kind_pack_big") if big else Loc.t("shop_kind_pack"),
 				"name": Loc.t("pack_" + kind), "text": Loc.t("pack_text_big" if big else "pack_text")}
+		"page":
+			return {"kind": Loc.t("shop_kind_page"), "name": Loc.t("page_name"), "text": Loc.t("page_text")}
 	return {"kind": "", "name": id, "text": ""}
 
 
@@ -221,6 +230,8 @@ func _on_buy(index: int) -> void:
 	_refresh()
 	if result.has("pack"):
 		_open_pack(result["pack"])
+	elif result.has("page"):
+		_show_page(str(result["page"]))
 
 
 func _on_sell(slot: int) -> void:
@@ -345,6 +356,51 @@ func _on_take(index: int) -> void:
 		_close_pack()
 	else:
 		_show_pack()
+
+
+## A Torn Page: which runes the spell needs (Element → Target) and a verse as a hint. It stays
+## in the Book of Runes, on the Spell Table.
+func _show_page(spell_id: String) -> void:
+	SaveManager.add_discovery("torn_pages", spell_id)
+	EventBus.torn_page_found.emit(spell_id)
+	var spell: Dictionary = GameData.spells.get(spell_id, {})
+	_pack = {}
+	_pack_layer.visible = true
+	for child: Node in _pack_box.get_children():
+		_pack_box.remove_child(child)
+		child.queue_free()
+	var title: Label = _label(_pack_box, Loc.t("page_name"), 52, &"TitleLabel")
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var row: HBoxContainer = HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 24)
+	_pack_box.add_child(row)
+	for n: int in 2:
+		var rune_id: String = str(spell.get("element" if n == 0 else "target", ""))
+		var rune: Dictionary = GameData.runes.get(rune_id, {})
+		var column: VBoxContainer = VBoxContainer.new()
+		column.alignment = BoxContainer.ALIGNMENT_CENTER
+		row.add_child(column)
+		var mini: MiniStone = MiniStone.new()
+		mini.rune_id = rune_id
+		mini.show_role = true
+		mini.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		column.add_child(mini)
+		_label(column, Loc.text(rune.get("name", {})), 30, &"TitleLabel").horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_label(column, Loc.text(rune.get("phrase", {})), 22, &"SecondaryLabel").horizontal_alignment = \
+			HORIZONTAL_ALIGNMENT_CENTER
+		if n == 0:
+			_label(row, "→", 48, &"TitleLabel")
+	var verse: Label = _label(_pack_box, "„%s”" % Loc.text(spell.get("verse", {})), 30, &"")
+	verse.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	verse.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	verse.custom_minimum_size = Vector2(760, 0)
+	var where: Label = _label(_pack_box, Loc.t("page_where"), 22, &"SecondaryLabel")
+	where.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var done: Button = _button(_pack_box, Loc.t("pack_skip"), _close_pack)
+	done.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	done.custom_minimum_size = Vector2(300, 64)
+	done.grab_focus()
 
 
 func _close_pack() -> void:

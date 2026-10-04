@@ -222,8 +222,13 @@ func _open_shop() -> void:
 	var known: Array[String] = []
 	for word_id: Variant in (SaveManager.data.get("discoveries", {}) as Dictionary).get("words", []):
 		known.append(str(word_id))
+	var spells_known: Array[String] = []
+	var discoveries: Dictionary = SaveManager.data.get("discoveries", {})
+	for category: String in ["spells", "torn_pages"]:
+		for spell_id: Variant in discoveries.get(category, []):
+			spells_known.append(str(spell_id))
 	var logic: ShopLogic = ShopLogic.new()
-	logic.setup(exam, tables(), known)
+	logic.setup(exam, tables(), known, spells_known)
 	var screen: ShopScreen = ShopScreen.new()
 	_round_slot.add_child(screen)
 	screen.open(logic)

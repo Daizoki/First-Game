@@ -101,7 +101,7 @@
 	"word_card_values": {"ro": "Putere {power} × Rezonanță {res}", "en": "Power {power} × Resonance {res}"},
 	"pause_rune_book": {"ro": "Cartea de rune", "en": "Book of Runes"},
 	"rune_book_title": {"ro": "Cartea de rune", "en": "Book of Runes"},
-	"rune_book_hint": {"ro": "Cele 24 de rune, cu sensul, rolul și Glasul lor · Tabla Vrăjilor", "en": "The 24 runes with their meaning, role and Voice · the Table of Spells"},
+	"rune_book_hint": {"ro": "Cele 24 de rune, cu sensul, rolul și Glasul lor · Tabla Vrăjilor · Cuvintele", "en": "The 24 runes with their meaning, role and Voice · the Table of Spells · the Words"},
 	"rune_book_position": {"ro": "Poziția {n} · Putere {power}", "en": "Position {n} · Power {power}"},
 	"rune_book_spells": {"ro": "Vrăjile · {n} din {total} descoperite", "en": "Spells · {n} of {total} discovered"},
 	"rune_book_close": {"ro": "Închide", "en": "Close"},
@@ -287,5 +287,14 @@
 	"collection_unknown": {"ro": "???", "en": "???"},
 	"collection_unknown_talismans": {"ro": "Încă nu l-ai văzut în Piață.", "en": "Not seen in the Market yet."},
 	"collection_unknown_engravings": {"ro": "Încă n-ai văzut Gravura asta.", "en": "Not seen this Engraving yet."},
-	"collection_unknown_examiners": {"ro": "Încă nu te-a examinat.", "en": "Hasn't examined you yet."}
+	"collection_unknown_examiners": {"ro": "Încă nu te-a examinat.", "en": "Hasn't examined you yet."},
+	"shop_kind_page": {"ro": "Pagină ruptă", "en": "Torn Page"},
+	"page_name": {"ro": "Pagina ruptă", "en": "The Torn Page"},
+	"page_text": {"ro": "O căsuță nedescoperită din Tabla Vrăjilor: ce rune trebuie și un vers ca indiciu.", "en": "An undiscovered cell of the Spell Table: which runes it needs and a verse as a hint."},
+	"page_where": {"ro": "Pagina rămâne în Cartea de rune, pe Tabla Vrăjilor. Restul e treaba ta.", "en": "The page stays in the Book of Runes, on the Spell Table. The rest is up to you."},
+	"rune_book_torn": {"ro": "? · pagină", "en": "? · page"},
+	"rune_book_tab_words": {"ro": "Cuvintele", "en": "Words"},
+	"rune_book_word_best": {"ro": "Cel mai mare nivel: {n}", "en": "Highest level: {n}"},
+	"rune_book_word_values": {"ro": "Putere {power} × Rezonanță {res} (la nivelul 1)", "en": "Power {power} × Resonance {res} (at level 1)"},
+	"rune_book_word_hidden": {"ro": "Încă nu l-ai rostit. Poate că nici nu există.", "en": "You haven't cast it yet. Maybe it doesn't even exist."}
 }

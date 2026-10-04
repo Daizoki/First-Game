@@ -3,8 +3,9 @@ extends RefCounted
 ## (packs) on the stall, rearranging the stall for a growing price, buying, selling.
 ## Pure logic on top of ExamState; every random choice uses the exam RNG.
 ##
-## An offer item: {"type": "talisman" | "lesson" | "engraving" | "pack", "id", "price", "sold"}
-## (a pack's id is "<kind>" or "<kind>_big", kind = talismans / lessons / engravings / stones).
+## An offer item: {"type": "talisman" | "lesson" | "engraving" | "pack" | "page", "id", "price", "sold"}
+## (a pack's id is "<kind>" or "<kind>_big", kind = talismans / lessons / engravings / stones;
+## a Torn Page's id is the spell whose cell of the Spell Table it shows).
 ## Opening a pack gives choices: {"pick": how many to take, "items": [...]}; a stone item
 ## carries a new Stone.
 
@@ -20,14 +21,18 @@ var offer: Array[Dictionary] = []
 var rerolls: int = 0
 ## Hidden Words the player knows (their Lessons may be sold).
 var known_hidden_words: Array[String] = []
+## Spells the player knows already, or has a Torn Page of: no Torn Page for them.
+var known_spells: Array[String] = []
 
 var _data: Dictionary
 
 
-func setup(exam_state: ExamState, data: Dictionary, known_words: Array[String] = []) -> void:
+func setup(exam_state: ExamState, data: Dictionary, known_words: Array[String] = [],
+		spells_known: Array[String] = []) -> void:
 	exam = exam_state
 	_data = data
 	known_hidden_words = known_words
+	known_spells = spells_known.duplicate()
 	rerolls = 0
 	_fill()
 
@@ -50,6 +55,8 @@ func price_of(type: String, id: String) -> int:
 			base = int(_economy("price_engraving", 4))
 		"pack":
 			base = int(_economy("price_pack_big" if id.ends_with("_big") else "price_pack", 4))
+		"page":
+			base = int(_economy("price_page", 3))
 	return maxi(1, base - discount())
 
 
@@ -75,7 +82,8 @@ func can_buy(index: int) -> bool:
 
 
 ## Buys an offer item. Talismans and consumables go to their slots; a pack returns what is
-## inside (see open_pack), otherwise {}. Returns {"ok": bool, "pack": {...}}.
+## inside (see open_pack); a Torn Page returns its spell (the screen keeps it in the save).
+## Returns {"ok": bool, "pack": {...}, "page": spell id}.
 func buy(index: int) -> Dictionary:
 	if not can_buy(index):
 		return {"ok": false}
@@ -89,6 +97,9 @@ func buy(index: int) -> Dictionary:
 			exam.add_consumable(str(item["type"]), str(item["id"]))
 		"pack":
 			return {"ok": true, "pack": open_pack(str(item["id"]))}
+		"page":
+			known_spells.append(str(item["id"]))
+			return {"ok": true, "page": str(item["id"])}
 	return {"ok": true}
 
 
@@ -170,6 +181,11 @@ func _fill() -> void:
 		var kind: String = PACK_KINDS[exam.rng.randi_range(0, PACK_KINDS.size() - 1)]
 		var big: bool = exam.rng.randf() < 0.3
 		offer.append(_item("pack", kind + ("_big" if big else "")))
+	# Sometimes Tanti Vera has a Torn Page: a spell the player does not know yet.
+	if exam.rng.randf() * 100.0 < float(_economy("page_chance_pct", 50)):
+		var pages: Array[String] = _pick_ids(_page_pool(), 1)
+		if not pages.is_empty():
+			offer.append(_item("page", pages[0]))
 
 
 func _item(type: String, id: String) -> Dictionary:
@@ -232,6 +248,16 @@ func _lesson_pool() -> Array:
 	for id: String in lessons:
 		var word_id: String = str(lessons[id]["word"])
 		if not bool((words.get(word_id, {}) as Dictionary).get("hidden", false)) or known_hidden_words.has(word_id):
+			pool.append(id)
+	return pool
+
+
+## Spells a Torn Page may show: awake, not known, not already torn out.
+func _page_pool() -> Array:
+	var pool: Array = []
+	var spells: Dictionary = _table("spells")
+	for id: String in spells:
+		if bool((spells[id] as Dictionary).get("enabled", false)) and not known_spells.has(id):
 			pool.append(id)
 	return pool
 

@@ -90,3 +90,46 @@ func test_bags() -> void:
 	var word: String = str(Fixtures.data()["lessons"][lessons["items"][0]["id"]]["word"])
 	check(shop.take_from_pack(lessons["items"][0]), "a Lesson from a Bag")
 	check_eq(int(shop.exam.word_levels[word]), 2, "is learned at once:")
+
+
+func test_torn_pages() -> void:
+	var data: Dictionary = Fixtures.data()
+	var known: Array[String] = []
+	for id: String in data["spells"]:
+		if id != "isaz_tiwaz":
+			known.append(id)
+	var found: bool = false
+	for seed_value: int in range(1, 40):
+		var exam: ExamState = ExamState.new()
+		exam.setup(data, seed_value)
+		exam.money = 50
+		var shop: ShopLogic = ShopLogic.new()
+		shop.setup(exam, data, [], known)
+		for i: int in shop.offer.size():
+			if str(shop.offer[i]["type"]) != "page":
+				continue
+			found = true
+			check_eq(str(shop.offer[i]["id"]), "isaz_tiwaz", "the only spell not known:")
+			check_eq(int(shop.offer[i]["price"]), int(data["economy"]["price_page"]), "price:")
+			var bought: Dictionary = shop.buy(i)
+			check_eq(str(bought.get("page", "")), "isaz_tiwaz", "the page shows its spell:")
+			check(shop.known_spells.has("isaz_tiwaz"), "not offered again")
+			shop.reroll()
+			for item: Dictionary in shop.offer:
+				check(str(item["type"]) != "page", "no page left to offer")
+	check(found, "a Torn Page shows up on some stalls")
+	# Every spell known: never a page.
+	known.append("isaz_tiwaz")
+	for seed_value: int in range(1, 20):
+		var exam: ExamState = ExamState.new()
+		exam.setup(data, seed_value)
+		var shop: ShopLogic = ShopLogic.new()
+		shop.setup(exam, data, [], known)
+		for item: Dictionary in shop.offer:
+			check(str(item["type"]) != "page", "no page when every spell is known")
+
+
+func test_every_spell_has_a_verse() -> void:
+	for id: String in Fixtures.data()["spells"]:
+		var verse: Dictionary = Fixtures.data()["spells"][id].get("verse", {})
+		check(not str(verse.get("ro", "")).is_empty() and not str(verse.get("en", "")).is_empty(), "%s has a verse" % id)

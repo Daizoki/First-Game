@@ -127,7 +127,7 @@ const SCHEMAS: Dictionary = {
 	## A base spell: Element -> Target (data/spells_base.json).
 	"spell": {
 		"required": {
-			"id": "id", "element": "ref:runes", "target": "ref:runes", "name": "loc", "effect": "loc",
+			"id": "id", "element": "ref:runes", "target": "ref:runes", "name": "loc", "effect": "loc", "verse": "loc",
 			"timing": "enum:spell_timing", "enabled": "bool", "color": "color", "ops": "array:spell_op",
 			"scalable": "scalable_list",
 		},
@@ -158,6 +158,7 @@ const SCHEMAS: Dictionary = {
 			"price_lesson": "int", "price_engraving": "int", "shop_talismans": "int", "shop_consumables": "int",
 			"shop_packs": "int", "rarity_weights_pct": "number_list", "price_pack": "int", "price_pack_big": "int",
 			"reroll_base": "int", "reroll_step": "int", "pack_stone_material_pct": "int", "spell_max_extra_draw": "int",
+			"price_page": "int", "page_chance_pct": "int",
 		},
 		"optional": {},
 	},

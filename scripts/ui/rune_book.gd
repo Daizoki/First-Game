@@ -4,20 +4,24 @@ extends Control
 ##          Position, Power and Voice;
 ##   Table of Spells (docs/GRAMATICA.md 5): an 8 × 8 grid, Elements in columns and Targets
 ##          in rows; discovered spells show their name (the mouse card tells the effect),
-##          the others "?"; under it the 8 Actions, learned or not.
+##          the others "?" (a Torn Page from the Market adds its verse); under it the 8
+##          Actions, learned or not;
+##   Words: every Word with the highest level it ever reached; hidden ones stay "???".
 
 signal closed
 
 const MiniStone = preload("res://scripts/ui/mini_stone.gd")
 const RuneGlyphScript = preload("res://scripts/ui/rune_glyph.gd")
 const SpellText = preload("res://scripts/ui/spell_text.gd")
+const Progress = preload("res://scripts/core/progress.gd")
 
 const PANEL_SIZE: Vector2 = Vector2(1680, 980)
 const RUNE_COLUMNS: int = 4
 const ENTRY_WIDTH: float = 390.0
 const CELL_SIZE: Vector2 = Vector2(170, 58)
 const HEADER_WIDTH: float = 210.0
-const PAGES: Array[String] = ["runes", "spells"]
+const PAGES: Array[String] = ["runes", "spells", "words"]
+const TORN_COLOR: Color = Color("#e9d3a0")
 
 var _title: Label
 var _hint: Label
@@ -115,10 +119,13 @@ func _build() -> void:
 	for child: Node in _content.get_children():
 		_content.remove_child(child)
 		child.queue_free()
-	if _page == "spells":
-		_build_table()
-	else:
-		_build_runes()
+	match _page:
+		"spells":
+			_build_table()
+		"words":
+			_build_words()
+		_:
+			_build_runes()
 
 
 func _build_runes() -> void:
@@ -221,10 +228,57 @@ func _cell(spell_id: String) -> Control:
 		label.text = Loc.text(spell["name"])
 		label.add_theme_color_override("font_color", Color.html(str(spell.get("color", "#e9e3d2"))))
 		cell.tooltip_text = "%s\n%s: %s" % [sentence, Loc.text(spell["name"]), SpellText.effect(spell)]
+	elif SaveManager.has_discovery("torn_pages", spell_id):
+		label.text = Loc.t("rune_book_torn")
+		label.add_theme_color_override("font_color", TORN_COLOR)
+		cell.tooltip_text = "%s\n„%s”" % [sentence, Loc.text(spell.get("verse", {}))]
 	else:
 		label.add_theme_color_override("font_color", Color(1, 1, 1, 0.45))
 		cell.tooltip_text = "%s\n%s" % [sentence, Loc.t("sentence_unknown")]
 	return cell
+
+
+## The Words from the strongest down, each with the highest level it reached in any exam.
+func _build_words() -> void:
+	var ids: Array = GameData.words.keys()
+	ids.sort_custom(func(a: Variant, b: Variant) -> bool:
+		return int(GameData.words[a].get("rank", 0)) > int(GameData.words[b].get("rank", 0)))
+	var grid: GridContainer = GridContainer.new()
+	grid.columns = 3
+	grid.add_theme_constant_override("h_separation", 10)
+	grid.add_theme_constant_override("v_separation", 10)
+	_content.add_child(grid)
+	for id: Variant in ids:
+		grid.add_child(_word_entry(str(id)))
+
+
+func _word_entry(word_id: String) -> Control:
+	var word: Dictionary = GameData.words[word_id]
+	var entry: PanelContainer = PanelContainer.new()
+	entry.theme_type_variation = &"TooltipPanel"
+	entry.custom_minimum_size = Vector2(ENTRY_WIDTH * 4.0 / 3.0, 0)
+	var box: VBoxContainer = VBoxContainer.new()
+	box.add_theme_constant_override("separation", 2)
+	entry.add_child(box)
+	if bool(word.get("hidden", false)) and not SaveManager.has_discovery("words", word_id):
+		_label(box, "???", 30, &"TitleLabel")
+		_wrapped(box, Loc.t("rune_book_word_hidden"), 20, &"SecondaryLabel")
+		return entry
+	_label(box, Loc.text(word["name"]), 30, &"TitleLabel")
+	_wrapped(box, Loc.text(word["description"]), 19, &"")
+	var example: HBoxContainer = HBoxContainer.new()
+	example.add_theme_constant_override("separation", 4)
+	box.add_child(example)
+	for rune_id: Variant in word.get("example", []):
+		var mini: MiniStone = MiniStone.new()
+		mini.rune_id = str(rune_id)
+		example.add_child(mini)
+	_label(box, Loc.t("rune_book_word_values", {"power": word["base_power"], "res": Loc.number(float(word["base_res"]))}),
+		19, &"SecondaryLabel")
+	var best: Label = _label(box, Loc.t("rune_book_word_best", {"n": Progress.best_word_level(SaveManager.data, word_id)}),
+		22, &"")
+	best.add_theme_color_override("font_color", TORN_COLOR)
+	return entry
 
 
 func _action_entry(action_id: String) -> Control:

@@ -157,6 +157,7 @@ func _spell(id: String, element: String, target: String) -> Dictionary:
 		"id": id, "element": element, "target": target,
 		"name": {"ro": id, "en": id},
 		"effect": {"ro": "+{amount} Monede.", "en": "+{amount} Coins."},
+		"verse": {"ro": "Un vers.", "en": "A verse."},
 		"timing": "after", "enabled": true, "color": "#ffffff",
 		"ops": [{"op": "add_money", "amount": 4}], "scalable": ["amount"],
 	}
