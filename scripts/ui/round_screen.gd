@@ -141,7 +141,7 @@ func _ready() -> void:
 		var target: float = float(config.get("target", GameData.rule("test_round_target", 1500)))
 		_round.setup({"runes": GameData.runes, "words": GameData.words, "spells": GameData.spells,
 			"spell_actions": GameData.spell_actions, "rules": GameData.rules, "economy": GameData.economy,
-			"examiners": GameData.examiners}, rng, target, config)
+			"examiners": GameData.examiners, "talismans": GameData.talismans}, rng, target, config)
 		_round.start()
 	_casts_total = _round.casts_left
 	_swaps_total = _round.swaps_left
@@ -155,6 +155,8 @@ func _ready() -> void:
 	_player.word_label = _word_name
 	_player.level_label = _word_level
 	_player.total_label = _preview_value
+	_player.talisman_string = _talismans
+	_talismans.moved.connect(_on_talisman_moved)
 
 	_hand.max_selection = _round.max_selection()
 	_hand.can_select = func(stone: Stone) -> bool:
@@ -286,6 +288,8 @@ func _refresh_state() -> void:
 	_menu_button.disabled = not EventBus.is_allowed("menu")
 	_word_book_button.disabled = not EventBus.is_allowed("word_book")
 	_hand.enabled = not _busy or (_picking and _choice_panel.uses_hand())
+	_talismans.set_owned(_round.talismans, 0 if _round.active_rule() == "trick" else -1)
+	_talismans.enabled = not _busy
 	_scroll_slot.spell_id = _round.scroll_spell()
 	_scroll_slot.armed = _round.scroll_armed()
 	_scroll_slot.enabled = not _busy and EventBus.is_allowed("cast")
@@ -497,6 +501,15 @@ func _word_display_name(word_id: String) -> String:
 	return Loc.text(word["name"])
 
 
+## Talismans act left to right: dragging one changes the exam's order.
+func _on_talisman_moved(from: int, to: int) -> void:
+	if _busy:
+		return
+	var item: Dictionary = _round.talismans.pop_at(from)
+	_round.talismans.insert(clampi(to, 0, _round.talismans.size()), item)
+	_refresh_state()
+
+
 func _on_stone_moved(from: int, to: int) -> void:
 	_round.move_stone(from, to)
 	_on_selection_changed()
@@ -577,6 +590,8 @@ func _resolve_picks() -> void:
 		_hand.max_selection = maxi(1, _choice_panel_max(limits))
 		var stones: Array = []
 		match str(limits["source"]):
+			"talisman":
+				stones = _round.talismans
 			"bag_top":
 				stones = _round.bag.peek(int(limits["count"]))
 			"offer":
@@ -635,6 +650,8 @@ func _announce(result: Dictionary) -> void:
 		await _show_toast(Loc.t("word_discovered", {"name": Loc.text(word["name"])}))
 	if word_id == "chant" and _spells_out(result["cast_stones"]) == FUTHARK:
 		await _show_toast(Loc.t("futhark_message"))
+	for gone: String in result.get("talismans_gone", []):
+		await _show_toast(Loc.t("talisman_gone", {"name": Loc.text((GameData.talismans.get(gone, {}) as Dictionary).get("name", {}))}))
 	var plans: Array = result["plans"]
 	for n: int in plans.size():
 		var plan: Dictionary = plans[n]

@@ -10,6 +10,7 @@ extends RefCounted
 
 const RoundState = preload("res://scripts/core/round_state.gd")
 const Bag = preload("res://scripts/core/bag.gd")
+const TalismanRules = preload("res://scripts/core/talisman_rules.gd")
 
 const ROUND_KINDS: Array[String] = ["small", "big", "examiner"]
 
@@ -28,6 +29,8 @@ var defeated: Array[String] = []
 var rounds_won: int = 0
 var finished: bool = false
 var passed: bool = false
+## Owned Talismans, left to right (TalismanRules entries); the rounds share this list.
+var talismans: Array = []
 ## Spells on/off for the rounds (the simulator compares both).
 var spells_enabled: bool = true
 
@@ -46,6 +49,7 @@ func setup(data: Dictionary, seed_value: int) -> void:
 	carry = RoundState.new_carry()
 	money = int(_economy("start_money", 0))
 	word_levels = {}
+	talismans = []
 	trial_index = 0
 	round_index = 0
 	defeated.clear()
@@ -99,7 +103,7 @@ func target() -> float:
 func round_options() -> Dictionary:
 	return {
 		"bag": bag, "carry": carry, "money": money, "word_levels": word_levels, "rule": rule(),
-		"spells": spells_enabled,
+		"spells": spells_enabled, "talismans": talismans,
 	}
 
 
@@ -122,6 +126,12 @@ func finish_round(state: RoundState) -> Dictionary:
 		"exam_over": false, "exam_passed": false,
 	}
 	if not state.is_won():
+		# Aeva's Hourglass: the round starts over once, then the Hourglass breaks.
+		var hourglass: int = TalismanRules.find_kind(talismans, _talisman_table(), "second_chance")
+		if hourglass >= 0:
+			talismans.remove_at(hourglass)
+			summary["second_chance"] = true
+			return summary
 		finished = true
 		summary["exam_over"] = true
 		return summary
@@ -132,6 +142,7 @@ func finish_round(state: RoundState) -> Dictionary:
 	if round_kind() == "examiner":
 		defeated.append(examiner_id())
 		summary["defeated"] = examiner_id()
+		TalismanRules.after_examiner(talismans, _talisman_table())
 	_advance()
 	summary["exam_over"] = finished
 	summary["exam_passed"] = passed
@@ -151,6 +162,44 @@ func is_over() -> bool:
 	return finished
 
 
+## Adds a Talisman if a slot is free.
+func add_talisman(id: String) -> bool:
+	if talismans.size() >= talisman_slots() or not _talisman_table().has(id):
+		return false
+	talismans.append(TalismanRules.make(id, _talisman_table()))
+	return true
+
+
+## Sells the Talisman in this slot for a share of its price. Returns the Coins gained.
+func sell_talisman(slot: int) -> int:
+	if slot < 0 or slot >= talismans.size():
+		return 0
+	var gained: int = sell_price(str(talismans[slot]["id"]))
+	talismans.remove_at(slot)
+	money += gained
+	return gained
+
+
+func talisman_slots() -> int:
+	return int(_economy("talisman_slots", 5))
+
+
+func talisman_price(id: String) -> int:
+	var rarity: String = str(_talisman_table().get(id, {}).get("rarity", "common"))
+	return int(_economy("price_" + rarity, 5))
+
+
+func sell_price(id: String) -> int:
+	return talisman_price(id) * int(_economy("sell_share_pct", 50)) / 100
+
+
+func move_talisman(from: int, to: int) -> void:
+	if from < 0 or from >= talismans.size():
+		return
+	var item: Dictionary = talismans.pop_at(from)
+	talismans.insert(clampi(to, 0, talismans.size()), item)
+
+
 ## Examiners of the next `count` trials after the current one (Sun against the Examiner).
 func upcoming_examiners(count: int) -> Array[String]:
 	return examiners.slice(trial_index + 1, mini(trial_index + 1 + count, examiners.size()))
@@ -163,6 +212,8 @@ func _advance() -> void:
 	round_index = 0
 	trial_index += 1
 	carry["peek_examiners"] = maxi(0, int(carry.get("peek_examiners", 0)) - 1)
+	# Thorn into the Talismans lasts until the end of its trial.
+	carry.erase("trial_res_mult")
 	if trial_index >= trial_count():
 		trial_index = trial_count() - 1
 		round_index = ROUND_KINDS.size() - 1
@@ -184,6 +235,10 @@ func _pick_examiners() -> void:
 	for i: int in trial_count() - 1:
 		examiners.append(pool.pop_at(rng.randi_range(0, pool.size() - 1)))
 	examiners.append(final_id)
+
+
+func _talisman_table() -> Dictionary:
+	return _data.get("talismans", {})
 
 
 func _economy(key: String, fallback: Variant) -> Variant:

@@ -51,7 +51,7 @@ static func tables() -> Dictionary:
 	return {
 		"runes": GameData.runes, "words": GameData.words, "spells": GameData.spells,
 		"spell_actions": GameData.spell_actions, "rules": GameData.rules, "economy": GameData.economy,
-		"trials": GameData.trials, "examiners": GameData.examiners,
+		"trials": GameData.trials, "examiners": GameData.examiners, "talismans": GameData.talismans,
 	}
 
 
@@ -136,6 +136,8 @@ func _on_round_over() -> void:
 	_round_screen = null
 	if bool(summary["exam_over"]):
 		_show_result(summary)
+	elif bool(summary.get("second_chance", false)):
+		_show_second_chance()
 	else:
 		_show_reward(summary)
 
@@ -160,6 +162,14 @@ func _show_reward(summary: Dictionary) -> void:
 	_label(Loc.t("exam_reward_total", {"n": reward["total"], "money": exam.money}), 34, &"").add_theme_color_override(
 		"font_color", MONEY_COLOR)
 	_button(Loc.t("exam_continue"), _show_intro, true)
+
+
+## Aeva's Hourglass broke: the same round once more.
+func _show_second_chance() -> void:
+	_clear_board()
+	_label(Loc.t("exam_second_chance_title"), 60, &"TitleLabel")
+	_label(Loc.t("exam_second_chance_text"), 28, &"")
+	_button(Loc.t("exam_retry"), _show_intro, true)
 
 
 func _show_result(summary: Dictionary) -> void:

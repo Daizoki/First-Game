@@ -185,5 +185,17 @@
 	"round_swap_button_cost": {"ro": "Schimbă · {n} Mon.", "en": "Swap · {n} Coin"},
 	"float_rule_blocked": {"ro": "nu punctează", "en": "doesn't score"},
 	"float_rule_zero": {"ro": "Regula: scor 0", "en": "The rule: score 0"},
-	"choice_swap_rule": {"ro": "Apa schimbă regula. Alege una dintre regulile altor Examinatori.", "en": "Water changes the rule. Pick one of the other Examiners' rules."}
+	"choice_swap_rule": {"ro": "Apa schimbă regula. Alege una dintre regulile altor Examinatori.", "en": "Water changes the rule. Pick one of the other Examiners' rules."},
+	"rarity_common": {"ro": "Comun", "en": "Common"},
+	"rarity_rare": {"ro": "Rar", "en": "Rare"},
+	"rarity_legendary": {"ro": "Legendar", "en": "Legendary"},
+	"talisman_disabled": {"ro": "Nix l-a ascuns: nu lucrează în runda asta.", "en": "Nix hid it: it doesn't work this round."},
+	"talisman_drag_hint": {"ro": "Lucrează de la stânga la dreapta. Trage-l ca să schimbi ordinea.", "en": "They work left to right. Drag it to change the order."},
+	"talisman_gone": {"ro": "{name} s-a terminat.", "en": "{name} is used up."},
+	"choice_sell_talisman_full": {"ro": "Grindina vinde un Talisman pe prețul întreg. Care?", "en": "Hail sells a Talisman for its full price. Which one?"},
+	"choice_transform_talisman": {"ro": "Apa schimbă un Talisman în altul de aceeași raritate. Care?", "en": "Water turns a Talisman into another of the same rarity. Which one?"},
+	"choice_destroy_talisman_res": {"ro": "Spinul distruge un Talisman: ×{factor} Rezonanță tot restul Probei. Care?", "en": "The Thorn destroys a Talisman: ×{factor} Resonance for the rest of the Trial. Which one?"},
+	"exam_second_chance_title": {"ro": "Clepsidra s-a spart", "en": "The Hourglass broke"},
+	"exam_second_chance_text": {"ro": "Nisipul curge înapoi. Ai încă o încercare la aceeași întrebare.", "en": "The sand flows back. You get one more try at the same question."},
+	"exam_retry": {"ro": "Încă o dată", "en": "Once more"}
 }

@@ -12,6 +12,7 @@ const WordDetector = preload("res://scripts/core/word_detector.gd")
 const Scorer = preload("res://scripts/core/scorer.gd")
 const SentenceParser = preload("res://scripts/core/sentence_parser.gd")
 const SpellResolver = preload("res://scripts/core/spell_resolver.gd")
+const TalismanRules = preload("res://scripts/core/talisman_rules.gd")
 
 var bag: Bag
 var hand: Array[Stone] = []
@@ -57,6 +58,10 @@ var rule_skip_casts: int = 0
 var swaps_used: int = 0
 ## Words cast this round, in order (Morrah remembers them).
 var words_cast: Array[String] = []
+## The exam's Talismans, left to right (shared with ExamState): TalismanRules owned entries.
+var talismans: Array = []
+## Ice into the Talismans: they do not wear down this round.
+var talismans_no_wear: bool = false
 
 var _data: Dictionary
 var _hand_size: int = 8
@@ -80,7 +85,8 @@ static func new_carry() -> Dictionary:
 ## (rune ids drawn first, in order), "bag_only" (the bag holds only those stones),
 ## "spells" (false: no spells this round), "carry" (the exam's carry, see new_carry()),
 ## "bag" (the exam's Bag, kept between rounds), "money", "word_levels" (the exam's, shared),
-## "rule" (the examiner's entry; its "casts" / "swaps" override the others).
+## "rule" (the examiner's entry; its "casts" / "swaps" override the others),
+## "talismans" (the exam's owned Talismans, shared).
 func setup(data: Dictionary, round_rng: RandomNumberGenerator, round_target: float, options: Dictionary = {}) -> void:
 	_data = data
 	rng = round_rng
@@ -95,6 +101,7 @@ func setup(data: Dictionary, round_rng: RandomNumberGenerator, round_target: flo
 	if options.has("word_levels"):
 		word_levels = options["word_levels"]
 	rule = options.get("rule", {})
+	talismans = options.get("talismans", [])
 	_hand_size = int(rules.get("hand_size", 8))
 	casts_left = int(rule.get("casts", options.get("casts", rules.get("casts_per_round", 4))))
 	swaps_left = int(rule.get("swaps", options.get("swaps", rules.get("swaps_per_round", 3))))
@@ -112,7 +119,6 @@ func setup(data: Dictionary, round_rng: RandomNumberGenerator, round_target: flo
 func start() -> void:
 	score = 0.0
 	casts_used = 0
-	hand_bonus = 0
 	extra_casts = 0
 	peek_bonus = 0
 	money_per_cast_left = 0
@@ -123,6 +129,11 @@ func start() -> void:
 	rule_skip_casts = 0
 	swaps_used = 0
 	words_cast.clear()
+	talismans_no_wear = false
+	talismans_owned = talismans.size()
+	var effects: Array[Dictionary] = talisman_effects()
+	hand_bonus = int(TalismanRules.total(effects, "hand_size"))
+	swaps_left += int(TalismanRules.total(effects, "round_swaps"))
 	pending.clear()
 	offer.clear()
 	round_end_plans.clear()
@@ -169,6 +180,17 @@ func can_swap(indices: Array[int]) -> bool:
 
 
 # --- The examiner's rule --------------------------------------------------------------------
+
+## The Talismans that act now, left to right (Nix's Trick switches the leftmost off).
+func talisman_effects() -> Array[Dictionary]:
+	return TalismanRules.active(talismans, _data.get("talismans", {}), 0 if active_rule() == "trick" else -1)
+
+
+## Full price of a Talisman (by rarity).
+func talisman_price(id: String) -> int:
+	var rarity: String = str((_data.get("talismans", {}) as Dictionary).get(id, {}).get("rarity", "common"))
+	return int(_economy("price_" + rarity, 5))
+
 
 ## The rule in force ("" when there is none or a spell cancelled it).
 func active_rule() -> String:
@@ -316,6 +338,8 @@ func cast(selection: Array[int]) -> Dictionary:
 	var mods: Dictionary = SpellResolver.score_mods(self, plans, {
 		"cast": cast_stones, "held": held, "first_cast": casts_used == 0})
 	_merge_mods(mods, _take_next_cast_mods())
+	if float(carry.get("trial_res_mult", 1.0)) != 1.0:
+		(mods["res_mults"] as Array).append(float(carry["trial_res_mult"]))
 	_lower_word_levels(plans, word["word"])
 	var rule_now: String = active_rule() if _rule_applies(cast_stones, mods) else ""
 	var blocked: Array[int] = []
@@ -336,7 +360,8 @@ func cast(selection: Array[int]) -> Dictionary:
 	for stone: Stone in cast_stones:
 		stone.face_down = false
 	var result: Dictionary = Scorer.score_cast({
-		"blocked": blocked, "zero_score": zero_score,
+		"blocked": blocked, "zero_score": zero_score, "talisman_effects": talisman_effects(),
+		"bag_left": bag.remaining(),
 		"cast": cast_stones, "held": held, "word": word, "words": _data["words"], "runes": _data["runes"],
 		"word_level": word_level(word["word"]), "cast_index": casts_used, "is_last_cast": casts_left == 1,
 		"voices_awake": bool(rules.get("rune_voices_start_awake", true)), "spell_mods": mods,
@@ -375,6 +400,8 @@ func cast(selection: Array[int]) -> Dictionary:
 		"power": result["power"], "score": result["score"]})
 	score += spell_score
 	refill()
+	var gone: Array[String] = TalismanRules.after_cast(talismans, _data.get("talismans", {}), word["word"],
+		talismans_no_wear)
 	result["word"] = word["word"]
 	result["cast_stones"] = cast_stones
 	result["scoring"] = word["scoring"]
@@ -384,6 +411,7 @@ func cast(selection: Array[int]) -> Dictionary:
 	result["scroll_used"] = scroll_used
 	result["spell_score"] = spell_score
 	result["rule"] = rule_now
+	result["talismans_gone"] = gone
 	result["blocked"] = blocked
 	result["score"] = float(result["score"]) + spell_score
 	result["won"] = is_won()
@@ -508,6 +536,9 @@ func ask(choice: Dictionary) -> void:
 	_next_choice_id += 1
 	if str(choice["kind"]) == "draw_keep":
 		offer = bag.draw(int(choice.get("count", 1)))
+	if str(choice["kind"]) in ["sell_talisman_full", "transform_talisman", "destroy_talisman_res"] \
+			and talismans.is_empty():
+		return
 	if str(choice["kind"]) == "swap_rule":
 		choice["rules"] = _other_rules(int(choice.get("count", 2)))
 		if (choice["rules"] as Array).is_empty():
@@ -554,6 +585,8 @@ func pick_limits(choice: Dictionary) -> Dictionary:
 			return {"source": "offer"}
 		"swap_rule":
 			return {"source": "rule"}
+		"sell_talisman_full", "transform_talisman", "destroy_talisman_res":
+			return {"source": "talisman"}
 	return {}
 
 
@@ -641,6 +674,11 @@ func answer(reply: Dictionary) -> bool:
 				bag.draw_pile.erase(stone)
 			for n: int in range(order.size() - 1, -1, -1):
 				bag.draw_pile.append(top[int(order[n])])
+		"sell_talisman_full", "transform_talisman", "destroy_talisman_res":
+			var slot: int = int(reply.get("talisman", -1))
+			if slot < 0 or slot >= talismans.size():
+				return false
+			talisman_spell(kind, slot, choice)
 		"swap_rule":
 			var picked_rule: String = str(reply.get("rule", ""))
 			if not (choice.get("rules", []) as Array).has(picked_rule) or not replace_rule(picked_rule):
@@ -695,6 +733,8 @@ func auto_answer() -> Dictionary:
 			return {"pick": best}
 		"swap_rule":
 			return {"rule": (choice.get("rules", [""]) as Array)[0]}
+		"sell_talisman_full", "transform_talisman", "destroy_talisman_res":
+			return {"talisman": 0}
 	return {}
 
 
@@ -799,6 +839,8 @@ func _merge_mods(into: Dictionary, extra: Dictionary) -> void:
 	into["retrigger_scoring"] = int(into["retrigger_scoring"]) + int(extra.get("retrigger_scoring", 0))
 	into["word_upgrade"] = int(into["word_upgrade"]) + int(extra.get("word_upgrade", 0))
 	into["ignore_rule"] = bool(into.get("ignore_rule", false)) or bool(extra.get("ignore_rule", false))
+	into["talisman_retrigger_left"] = int(into.get("talisman_retrigger_left", 0)) \
+		+ int(extra.get("talisman_retrigger_left", 0))
 
 
 ## The Stutter: the Word loses a level before it scores (never below 1).
@@ -829,6 +871,29 @@ func economy_value(key: String, fallback: Variant) -> Variant:
 
 func _economy(key: String, fallback: Variant) -> Variant:
 	return (_data.get("economy", {}) as Dictionary).get(key, fallback)
+
+
+## A spell into the Talismans on the one in this slot: sell it for its full price (or
+## `share` of it), change it into another of the same rarity, or destroy it for ×Resonance
+## for the rest of the trial.
+func talisman_spell(kind: String, slot: int, op: Dictionary, share: float = 1.0) -> void:
+	var owned: Dictionary = talismans[slot]
+	var table: Dictionary = _data.get("talismans", {})
+	match kind:
+		"sell_talisman_full":
+			money += roundi(float(talisman_price(str(owned["id"]))) * share)
+			talismans.remove_at(slot)
+		"transform_talisman":
+			var rarity: String = str(table.get(owned["id"], {}).get("rarity", ""))
+			var pool: Array[String] = []
+			for id: String in table:
+				if str(table[id].get("rarity", "")) == rarity and id != str(owned["id"]):
+					pool.append(id)
+			if not pool.is_empty():
+				talismans[slot] = TalismanRules.make(pool[rng.randi_range(0, pool.size() - 1)], table)
+		"destroy_talisman_res":
+			talismans.remove_at(slot)
+			carry["trial_res_mult"] = float(carry.get("trial_res_mult", 1.0)) * float(op.get("factor", 1.5))
 
 
 ## Up to `count` other examiners' ids (never the final one, never the rule in force).

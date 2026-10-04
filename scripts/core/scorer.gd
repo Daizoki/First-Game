@@ -20,6 +20,7 @@ const Stone = preload("res://scripts/core/stone.gd")
 ##   rng: RandomNumberGenerator
 ##   blocked: Array[int] cast indices the examiner's rule keeps from scoring (optional)
 ##   zero_score: bool, the examiner's rule makes this Cast score 0 (optional)
+##   talisman_effects: TalismanRules.active() (optional)   bag_left: stones left in the bag
 ## Output (Dictionary): events, power, res, score, money, money_at_round_end, swaps,
 ##   grow (Array of {stone, value}), copies (Array[Stone]), once_used, ignore_rule
 static func score_cast(ctx: Dictionary) -> Dictionary:
@@ -63,11 +64,20 @@ static func score_cast(ctx: Dictionary) -> Dictionary:
 	var extra: Dictionary = {}
 	var spell_retrigger: int = int(mods.get("retrigger_scoring", 0))
 	var blocked: Array = ctx.get("blocked", [])
+	var talismans: Array = ctx.get("talisman_effects", [])
+	var first_scored: bool = false
 	for n: int in scoring.size():
 		if blocked.has(scoring[n]):
 			_event(state, {"type": "rule", "kind": "blocked", "index": scoring[n]})
 			continue
 		var times: int = 1 + int(extra.get(n, 0)) + spell_retrigger
+		# Ignar's Lighter: the first stone that scores scores twice.
+		if not first_scored:
+			first_scored = true
+			for effect: Dictionary in talismans:
+				if effect["kind"] == "first_stone_twice":
+					times += 1
+					_event(state, {"type": "talisman", "slot": effect["slot"], "kind": "retrigger", "value": 1})
 		var t: int = 0
 		while t < times:
 			var retrigger: Dictionary = _score_stone(state, cast, scoring, n, voices, t == 0)
@@ -85,7 +95,15 @@ static func score_cast(ctx: Dictionary) -> Dictionary:
 				if _conditions_ok(state, effect, -1):
 					_apply_actions(state, effect, held[j], {"type": "held", "index": j})
 
-	# Steps 4-5: Talismans arrive in Stage 3; spell multipliers apply before the total.
+	# Step 4: Talismans, left to right (the leftmost again when a spell asks for it).
+	var order: Array = talismans.duplicate()
+	if not order.is_empty():
+		for r: int in int(mods.get("talisman_retrigger_left", 0)):
+			order.insert(1, order[0])
+	for effect: Dictionary in order:
+		_talisman(state, effect)
+
+	# Step 5: spell multipliers apply before the total.
 	for res_mult: Variant in mods.get("res_mults", []):
 		state["res"] = float(state["res"]) * float(res_mult)
 		_event(state, {"type": "bonus", "kind": "mul_res", "value": float(res_mult)})
@@ -101,6 +119,42 @@ static func score_cast(ctx: Dictionary) -> Dictionary:
 	return state
 
 
+## One Talisman's effect on the Cast (step 4).
+static func _talisman(state: Dictionary, effect: Dictionary) -> void:
+	var ctx: Dictionary = state["ctx"]
+	var value: float = float(effect["value"])
+	var kind: String = ""
+	match str(effect["kind"]):
+		"add_res", "wearing_res", "new_word_res":
+			if value == 0.0:
+				return
+			state["res"] = float(state["res"]) + value
+			kind = "add_res"
+		"add_power":
+			state["power"] = float(state["power"]) + value
+			kind = "add_power"
+		"power_per_bag_stone":
+			value *= float(ctx.get("bag_left", 0))
+			state["power"] = float(state["power"]) + value
+			kind = "add_power"
+		"mul_res_five":
+			if ((ctx["word"] as Dictionary)["scoring"] as Array).size() != 5:
+				return
+			state["res"] = float(state["res"]) * value
+			kind = "mul_res"
+		"growing_mul":
+			state["res"] = float(state["res"]) * value
+			kind = "mul_res"
+		"word_money":
+			if str((ctx["word"] as Dictionary)["word"]) != str(effect["word"]):
+				return
+			state["money"] = int(state["money"]) + int(value)
+			kind = "add_money"
+		_:
+			return
+	_event(state, {"type": "talisman", "slot": effect["slot"], "kind": kind, "value": value})
+
+
 ## One scoring trigger of one stone. Returns {"self": n, "next": n} retriggers it asked for.
 static func _score_stone(state: Dictionary, cast: Array[Stone], scoring: Array[int], n: int,
 		voices: bool, first_time: bool) -> Dictionary:
@@ -112,6 +166,12 @@ static func _score_stone(state: Dictionary, cast: Array[Stone], scoring: Array[i
 	state["power"] = float(state["power"]) + power
 	_event(state, {"type": "stone", "index": index, "power_add": power})
 	var retrigger: Dictionary = {}
+	# Varr's Umbrella and its kind: Resonance for stones of one Kin.
+	for effect: Dictionary in ctx.get("talisman_effects", []):
+		if effect["kind"] == "kin_res" and stone.kin == str(effect["kin"]):
+			state["res"] = float(state["res"]) + float(effect["value"])
+			_event(state, {"type": "talisman", "slot": effect["slot"], "kind": "add_res", "value": effect["value"],
+				"index": index})
 	if not voices:
 		return retrigger
 	var effects: Array[Dictionary] = _effects(ctx, stone, "on_score")

@@ -80,7 +80,7 @@ func ask(choice: Dictionary, limits: Dictionary, ctx: Dictionary) -> void:
 	var kind: String = str(choice.get("kind", ""))
 	var count: int = int(choice.get("count", choice.get("cost", 1)))
 	_text.text = Loc.t("choice_" + kind, {"n": count, "amount": choice.get("amount", 0),
-		"money": choice.get("money", 0)})
+		"money": choice.get("money", 0), "factor": Loc.number(float(choice.get("factor", 1.0)))})
 	_count.text = ""
 	_confirm = null
 	match str(limits.get("source", "")):
@@ -115,6 +115,16 @@ func ask(choice: Dictionary, limits: Dictionary, ctx: Dictionary) -> void:
 			_confirm.pressed.connect(func() -> void: answered.emit({"order": _order.duplicate()}))
 		"offer":
 			_show_stones(ctx.get("stones", []))
+		"talisman":
+			# A spell into the Talismans: which one (the stones list holds the owned Talismans).
+			var owned: Array = ctx.get("stones", [])
+			for slot: int in owned.size():
+				var entry: Dictionary = GameData.talismans.get(str(owned[slot]["id"]), {})
+				var talisman_button: Button = _button(Loc.text(entry.get("name", {})))
+				talisman_button.custom_minimum_size = Vector2(240, 64)
+				talisman_button.add_theme_font_size_override("font_size", 20)
+				talisman_button.tooltip_text = Loc.text(entry.get("description", {}))
+				talisman_button.pressed.connect(func() -> void: answered.emit({"talisman": slot}))
 		"rule":
 			# Water against the Examiner: one of two other examiners' rules.
 			for examiner_id: Variant in choice.get("rules", []):

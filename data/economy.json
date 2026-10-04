@@ -14,5 +14,10 @@
 	"reward_examiner": 6,
 	"reward_per_cast_left": 2,
 	"interest_per": 6,
-	"interest_max": 4
+	"interest_max": 4,
+	"talisman_slots": 5,
+	"price_common": 5,
+	"price_rare": 8,
+	"price_legendary": 13,
+	"sell_share_pct": 50
 }

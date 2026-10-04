@@ -48,6 +48,13 @@ const ENUMS: Dictionary = {
 	"effect_per": ["word_stone", "lesson_used", "talisman"],
 	"effect_target": ["self", "next"],
 	"effect_special": ["kenaz_peek", "gebo_copy_previous", "algiz_ignore_rule", "berkanan_copy", "laguz_wild"],
+	## What a Talisman does (scripts/core/talisman_rules.gd).
+	"talisman_kind": [
+		"add_res", "add_power", "kin_res", "round_swaps", "hand_size", "wearing_res", "word_money", "shop_discount",
+		"mul_res_five", "first_stone_twice", "new_word_res", "power_per_bag_stone", "copy_right", "growing_mul",
+		"second_chance",
+	],
+	"rarity": ["common", "rare", "legendary"],
 	## The examiners' rules (DESIGN 3.8, scripts/core/round_state.gd).
 	"examiner_rule": [
 		"exact_count", "flux", "lightning", "tax", "dream", "weight", "remember", "correction", "competition",
@@ -141,9 +148,17 @@ const SCHEMAS: Dictionary = {
 			"spell_target_floor_pct": "int", "spell_max_extra_casts_per_round": "int", "scroll_slots": "int",
 			"examiner_spell_fallback_money": "int", "start_money": "int", "round_target_mults": "number_list",
 			"reward_small": "int", "reward_big": "int", "reward_examiner": "int", "reward_per_cast_left": "int",
-			"interest_per": "int", "interest_max": "int",
+			"interest_per": "int", "interest_max": "int", "talisman_slots": "int", "price_common": "int",
+			"price_rare": "int", "price_legendary": "int", "sell_share_pct": "int",
 		},
 		"optional": {},
+	},
+	## A Talisman (data/talismans.json): its kind says what it does, the numbers how much.
+	"talisman": {
+		"required": {
+			"id": "id", "rarity": "enum:rarity", "kind": "enum:talisman_kind", "name": "loc", "description": "loc",
+		},
+		"optional": {"owner": "ref:characters", "value": "number", "kin": "ref:kins", "word": "ref:words", "step": "number"},
 	},
 	## One of the 8 trials of the exam (data/trials.json).
 	"trial": {
