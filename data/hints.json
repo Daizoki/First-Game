@@ -106,35 +106,35 @@
 	},
 	{
 		"id": "first_loss_1",
-		"enabled": false,
+		"enabled": true,
 		"speaker": "aeva",
 		"trigger": {"event": "exam_failed"},
 		"text": {"ro": "Ai picat. Se întâmplă. Ție ți se întâmplă des.", "en": "You failed. It happens. It happens to you a lot."}
 	},
 	{
 		"id": "first_loss_2",
-		"enabled": false,
+		"enabled": true,
 		"speaker": "aeva",
 		"follows": "first_loss_1",
 		"text": {"ro": "Te întorc în dimineața examenului. Tu ții minte tot, ceilalți nu. Nu mă întreba de ce.", "en": "I'm sending you back to the morning of the exam. You remember everything, the others don't. Don't ask me why."}
 	},
 	{
 		"id": "first_loss_3",
-		"enabled": false,
+		"enabled": true,
 		"speaker": "aeva",
 		"follows": "first_loss_2",
 		"text": {"ro": "Ce ai adunat se numește Amintiri. Cheltuiește-le cu cap.", "en": "What you gathered is called Memories. Spend them wisely."}
 	},
 	{
 		"id": "first_evening_class",
-		"enabled": false,
+		"enabled": true,
 		"speaker": "ilinca",
 		"trigger": {"event": "evening_class"},
 		"text": {"ro": "În ultima bancă stau Kaldor și Varr. Repetă cursul. Nu fi ca ei.", "en": "Kaldor and Varr sit in the back row. They're repeating the class. Don't be like them."}
 	},
 	{
 		"id": "first_torn_page",
-		"enabled": false,
+		"enabled": true,
 		"speaker": "vera",
 		"trigger": {"event": "torn_page_found"},
 		"text": {"ro": "Am găsit-o într-o carte veche. Spune ce rune trebuie. Restul e treaba ta.", "en": "I found it in an old book. It says which runes you need. The rest is up to you."}

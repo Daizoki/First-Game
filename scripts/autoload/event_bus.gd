@@ -49,6 +49,9 @@ signal round_lost
 signal examiner_met(examiner_id: String)
 ## The exam ended: passed all trials, or failed a round.
 signal exam_finished(passed: bool)
+## The Morning (Stage 4): back from a repeated evening class; a Torn Page bought in the Market.
+signal evening_class_finished
+signal torn_page_found(spell_id: String)
 signal book_opened(book_id: String)
 signal book_closed(book_id: String)
 signal pause_opened

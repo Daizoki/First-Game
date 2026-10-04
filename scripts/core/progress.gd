@@ -31,7 +31,24 @@ static func finish_exam(save: Dictionary, exam: ExamState, rules: Dictionary) ->
 	stats["best_trial"] = maxi(int(stats.get("best_trial", 0)), reached)
 	if exam.passed:
 		stats["exams_passed"] = int(stats.get("exams_passed", 0)) + 1
+	_dict(save, "flags")["last_exam"] = {"passed": exam.passed, "trial": reached}
 	return earned
+
+
+## Which of Aeva's Morning dialogs fits (data/dialogs.json), and the values for its text:
+## the very first morning, the one after a passed exam, after a failed one, or any other.
+## `in_progress`: an exam is saved (this morning is the one of that exam, not a new one).
+static func morning_dialog(save: Dictionary, in_progress: bool = false) -> Dictionary:
+	var morning: int = int(save.get("attempts", 0)) + (0 if in_progress else 1)
+	var args: Dictionary = {"name": str(save.get("player_name", "")), "n": maxi(1, morning)}
+	var last: Variant = _dict(save, "flags").get("last_exam")
+	if morning <= 1:
+		return {"id": "aeva_morning_first", "args": args}
+	if last is Dictionary:
+		args["trial"] = int((last as Dictionary).get("trial", 1))
+		return {"id": "aeva_morning_passed" if bool((last as Dictionary).get("passed", false)) else "aeva_morning_after_loss",
+			"args": args}
+	return {"id": "aeva_morning", "args": args}
 
 
 static func add_memories(save: Dictionary, amount: int) -> void:

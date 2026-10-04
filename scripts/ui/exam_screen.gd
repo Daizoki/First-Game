@@ -13,6 +13,9 @@ const Progress = preload("res://scripts/core/progress.gd")
 
 const ROUND_SCENE: PackedScene = preload("res://scenes/round.tscn")
 const MAIN_MENU_SCENE: String = "res://scenes/main_menu.tscn"
+const MORNING_SCENE: String = "res://scenes/morning.tscn"
+const TimeRewind = preload("res://scripts/ui/time_rewind.gd")
+const MEMORY_COLOR: Color = Color("#b59be0")
 ## Seconds the finished round stays on screen before the board comes back.
 const ROUND_END_PAUSE: float = 1.6
 const MONEY_COLOR: Color = Color("#ebaa3c")
@@ -103,7 +106,10 @@ func _show_intro() -> void:
 	var character: Dictionary = GameData.characters.get(exam.examiner_id(), {})
 	if Progress.record_seen(SaveManager.data, "examiners", exam.examiner_id()):
 		SaveManager.save_game()
-	_label(Loc.t("exam_trial", {"n": exam.trial_index + 1, "total": exam.trial_count()}), 30, &"SecondaryLabel")
+	var trial_line: String = Loc.t("exam_trial", {"n": exam.trial_index + 1, "total": exam.trial_count()})
+	if not exam.parent_id.is_empty():
+		trial_line += " · " + Loc.t("exam_parent", {"name": Loc.text((GameData.characters.get(exam.parent_id, {}) as Dictionary).get("name", {}))})
+	_label(trial_line, 30, &"SecondaryLabel")
 	_label(Loc.t("exam_round_" + exam.round_kind()), 64, &"TitleLabel")
 	var row: HBoxContainer = HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -238,6 +244,8 @@ func _show_second_chance() -> void:
 func _show_result(summary: Dictionary) -> void:
 	_clear_board()
 	var passed: bool = bool(summary["exam_passed"])
+	var earned: Dictionary = Progress.finish_exam(SaveManager.data, exam, GameData.rules)
+	SaveManager.save_game()
 	EventBus.exam_finished.emit(passed)
 	var aeva: Dictionary = GameData.examiners.get("aeva", {})
 	if passed:
@@ -252,12 +260,36 @@ func _show_result(summary: Dictionary) -> void:
 			Loc.text(aeva.get("won", {}))], 26, &"SecondaryLabel")
 	_label(Loc.t("exam_stats", {"trial": exam.trial_index + 1, "total": exam.trial_count(),
 		"defeated": exam.defeated.size(), "rounds": exam.rounds_won}), 26, &"")
+	_show_memories(earned)
 	var row: HBoxContainer = HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.add_theme_constant_override("separation", 20)
 	_box.add_child(row)
-	_button(Loc.t("exam_again"), func() -> void: start_exam(exam.parent_id), true, row)
+	_button(Loc.t("exam_to_morning"), _go_to_morning.bind(passed), true, row)
 	_button(Loc.t("result_menu"), _go_to_menu, false, row)
+
+
+## What the exam brought: Memories for the rounds, the examiners and passing.
+func _show_memories(earned: Dictionary) -> void:
+	_label(Loc.t("exam_memories_title", {"n": earned["total"]}), 40, &"TitleLabel").add_theme_color_override(
+		"font_color", MEMORY_COLOR)
+	var parts: PackedStringArray = []
+	for key: String in ["rounds", "examiners", "passed"]:
+		if int(earned[key]) > 0:
+			parts.append(Loc.t("exam_memories_" + key, {"n": earned[key]}))
+	if not parts.is_empty():
+		_label(" · ".join(parts), 24, &"SecondaryLabel")
+	_label(Loc.t("exam_memories_total", {"n": Progress.memories(SaveManager.data)}), 24, &"")
+
+
+## Back to the Morning; after a failed exam Aeva turns back time first.
+func _go_to_morning(passed: bool) -> void:
+	if not passed:
+		var rewind: TimeRewind = TimeRewind.new()
+		add_child(rewind)
+		await rewind.play()
+	EventBus.reset()
+	get_tree().change_scene_to_file(MORNING_SCENE)
 
 
 func _go_to_menu() -> void:

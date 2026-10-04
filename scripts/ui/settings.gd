@@ -1,9 +1,10 @@
 extends Control
-## Settings: language, volume, replaying the evening class, hints on / off.
+## Settings: language, volume, replaying the evening class, hints on / off, the player's name.
 ## Every change is saved in user://save.json.
 
 const MAIN_MENU_SCENE: String = "res://scenes/main_menu.tscn"
 const TUTORIAL_SCENE: String = "res://scenes/tutorial.tscn"
+const NAME_SCENE: String = "res://scenes/name_entry.tscn"
 
 @onready var _title: Label = %Title
 @onready var _language_label: Label = %LanguageLabel
@@ -15,6 +16,8 @@ const TUTORIAL_SCENE: String = "res://scenes/tutorial.tscn"
 @onready var _replay_button: Button = %ReplayTutorialButton
 @onready var _hints_label: Label = %HintsLabel
 @onready var _hints_button: CheckButton = %HintsButton
+@onready var _name_label: Label = %NameLabel
+@onready var _name_button: Button = %NameButton
 @onready var _back_button: Button = %BackButton
 
 var _volume_dirty: bool = false
@@ -34,6 +37,9 @@ func _ready() -> void:
 	_hints_button.toggled.connect(_on_hints_toggled)
 	_replay_button.pressed.connect(_on_replay_pressed)
 	_back_button.pressed.connect(_go_back)
+	_name_button.pressed.connect(func() -> void:
+		RunState.renaming = true
+		get_tree().change_scene_to_file(NAME_SCENE))
 	Loc.language_changed.connect(_on_language_changed)
 
 	_refresh_texts()
@@ -58,6 +64,8 @@ func _refresh_texts() -> void:
 	_tutorial_label.text = Loc.t("settings_tutorial")
 	_replay_button.text = Loc.t("settings_tutorial_replay")
 	_hints_label.text = Loc.t("settings_hints")
+	_name_label.text = Loc.t("settings_name", {"name": str(SaveManager.data.get("player_name", ""))})
+	_name_button.text = Loc.t("settings_change_name")
 	_hints_button.text = Loc.t("settings_on") if _hints_button.button_pressed else Loc.t("settings_off")
 	for i: int in Loc.LANGUAGES.size():
 		_language_option.set_item_text(i, Loc.t("language_" + str(Loc.LANGUAGES[i])))
@@ -103,7 +111,9 @@ func _save_volume_if_needed() -> void:
 
 func _go_back() -> void:
 	_save_volume_if_needed()
-	get_tree().change_scene_to_file(MAIN_MENU_SCENE)
+	var back: String = RunState.back_scene if not RunState.back_scene.is_empty() else MAIN_MENU_SCENE
+	RunState.back_scene = ""
+	get_tree().change_scene_to_file(back)
 
 
 func _on_language_changed(_language: String) -> void:

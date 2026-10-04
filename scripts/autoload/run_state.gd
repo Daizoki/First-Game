@@ -18,6 +18,12 @@ var money: int = 0
 ## exam, or start a new one with this parent.
 var resume_requested: bool = false
 var next_parent: String = ""
+## The evening class was opened from the Morning (it goes back there, and Ilinca has a word).
+var came_from_class: bool = false
+## Where the Settings go back to ("" = the main menu).
+var back_scene: String = ""
+## The name screen was opened from the Settings.
+var renaming: bool = false
 
 
 func reset() -> void:

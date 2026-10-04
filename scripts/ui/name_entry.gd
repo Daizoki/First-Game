@@ -1,10 +1,12 @@
 extends Control
 ## The player writes their name (used by the characters, e.g. Master Ilinca's first line).
-## Then the evening class starts if it was never finished or skipped.
+## Then the evening class starts if it was never finished or skipped. From the Settings
+## (RunState.renaming) it only changes the name and goes back there.
 
-const NAME_MAX_LENGTH: int = 20
+const NAME_MAX_LENGTH: int = 12
 const TUTORIAL_SCENE: String = "res://scenes/tutorial.tscn"
 const MAIN_MENU_SCENE: String = "res://scenes/main_menu.tscn"
+const SETTINGS_SCENE: String = "res://scenes/settings.tscn"
 
 @onready var _title: Label = %Title
 @onready var _hint: Label = %Hint
@@ -41,6 +43,10 @@ func _confirm() -> void:
 		return
 	SaveManager.data["player_name"] = player_name
 	SaveManager.save_game()
+	if RunState.renaming:
+		RunState.renaming = false
+		get_tree().change_scene_to_file(SETTINGS_SCENE)
+		return
 	var done: bool = bool(SaveManager.data.get("tutorial_done", false))
 	get_tree().change_scene_to_file(MAIN_MENU_SCENE if done else TUTORIAL_SCENE)
 

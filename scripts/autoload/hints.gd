@@ -70,6 +70,11 @@ func _ready() -> void:
 	EventBus.consumable_used.connect(func(_type: String, id: String) -> void:
 		if id == "binding":
 			fire("bindrune_gained"))
+	EventBus.exam_finished.connect(func(passed: bool) -> void:
+		if not passed:
+			fire("exam_failed"))
+	EventBus.evening_class_finished.connect(func() -> void: fire("evening_class"))
+	EventBus.torn_page_found.connect(func(_spell_id: String) -> void: fire("torn_page_found"))
 	EventBus.examiner_met.connect(func(examiner_id: String) -> void: fire("examiner_met", {"examiner": examiner_id}))
 	EventBus.overlay_opened.connect(func(_overlay: String) -> void: _cover(1))
 	EventBus.overlay_closed.connect(func(_overlay: String) -> void: _cover(-1))

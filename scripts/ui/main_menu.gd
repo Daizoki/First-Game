@@ -4,8 +4,8 @@ extends Control
 const SETTINGS_SCENE: String = "res://scenes/settings.tscn"
 const RUNE_CHECK_SCENE: String = "res://scenes/rune_check.tscn"
 const TUTORIAL_SCENE: String = "res://scenes/tutorial.tscn"
-## Play starts an exam (Stage 4 puts the morning hub and the choice of parent in between).
-const EXAM_SCENE: String = "res://scenes/exam.tscn"
+## Play goes to the Morning of the exam (the hub of Aeva's loop).
+const MORNING_SCENE: String = "res://scenes/morning.tscn"
 
 @onready var _title: Label = %Title
 @onready var _subtitle: Label = %Subtitle
@@ -61,7 +61,7 @@ func _refresh_texts() -> void:
 
 
 func _on_play_pressed() -> void:
-	get_tree().change_scene_to_file(EXAM_SCENE)
+	get_tree().change_scene_to_file(MORNING_SCENE)
 
 
 func _on_runes_pressed() -> void:

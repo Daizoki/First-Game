@@ -9,7 +9,8 @@ const DataValidator = preload("res://scripts/core/data_validator.gd")
 const ENABLED_NOW: Array[String] = [
 	"first_laguz", "idle_help", "first_wrong_order", "first_scroll", "first_two_actions", "first_shop_1",
 	"first_shop_2", "first_shop_3", "first_reroll", "first_talisman", "first_examiner", "first_rule", "first_lesson",
-	"first_engraving", "first_bindrune",
+	"first_engraving", "first_bindrune", "first_loss_1", "first_loss_2", "first_loss_3", "first_evening_class",
+	"first_torn_page",
 ]
 const MAX_TEXT: int = 120
 
@@ -78,8 +79,18 @@ func test_idle_help_after_40_seconds_in_the_first_three_exams() -> void:
 
 func test_hints_of_later_stages_stay_quiet() -> void:
 	var rules: HintRules = _rules()
-	for event: String in ["exam_failed", "evening_class", "torn_page_found", "curse_discovered", "old_word_discovered"]:
+	for event: String in ["curse_discovered", "old_word_discovered"]:
 		check_eq(rules.on_event(event, {}, _context()), [], "%s:" % event)
+
+
+func test_aevas_loop() -> void:
+	var rules: HintRules = _rules()
+	check_eq(rules.on_event("exam_failed", {}, _context()), ["first_loss_1", "first_loss_2", "first_loss_3"],
+		"the first failed exam:")
+	check_eq(rules.on_event("exam_failed", {}, _context(["first_loss_1", "first_loss_2", "first_loss_3"])), [],
+		"only once:")
+	check_eq(rules.on_event("evening_class", {}, _context()), ["first_evening_class"], "the evening class again:")
+	check_eq(rules.on_event("torn_page_found", {}, _context()), ["first_torn_page"], "the first Torn Page:")
 
 
 func test_a_hint_brings_the_ones_that_follow_it() -> void:
