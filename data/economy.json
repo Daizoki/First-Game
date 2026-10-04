@@ -35,5 +35,6 @@
 	"price_pack_big": 7,
 	"reroll_base": 2,
 	"reroll_step": 1,
-	"pack_stone_material_pct": 30
+	"pack_stone_material_pct": 30,
+	"spell_max_extra_draw": 8
 }

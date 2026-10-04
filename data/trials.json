@@ -1,10 +1,10 @@
 [
 	{"id": "trial_1", "number": 1, "base_target": 800},
-	{"id": "trial_2", "number": 2, "base_target": 1900},
-	{"id": "trial_3", "number": 3, "base_target": 3800},
-	{"id": "trial_4", "number": 4, "base_target": 6500},
-	{"id": "trial_5", "number": 5, "base_target": 11000},
-	{"id": "trial_6", "number": 6, "base_target": 18000},
-	{"id": "trial_7", "number": 7, "base_target": 30000},
-	{"id": "trial_8", "number": 8, "base_target": 48000}
+	{"id": "trial_2", "number": 2, "base_target": 2600},
+	{"id": "trial_3", "number": 3, "base_target": 6200},
+	{"id": "trial_4", "number": 4, "base_target": 10500},
+	{"id": "trial_5", "number": 5, "base_target": 16000},
+	{"id": "trial_6", "number": 6, "base_target": 25000},
+	{"id": "trial_7", "number": 7, "base_target": 40000},
+	{"id": "trial_8", "number": 8, "base_target": 62000}
 ]

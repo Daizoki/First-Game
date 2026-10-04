@@ -724,3 +724,21 @@ Un efect = **declanșator** + **condiții** + **acțiuni**.
     se învață oriunde. Lecțiile luate dintr-un Săculeț se învață pe loc; Gravurile din Săculeț merg în cele 2 locuri.
   - **Săculețul cu pietre:** 3 pietre noi cu rune aleatorii, 30% cu un material.
   - **Valorile economiei sunt ale noastre**, nu cele din Balatro (recompensele, Rostirile rămase, dobânda, prețurile).
+  - **Balansul examenului** (`tests/simulate.gd -- part=4 exams=120`): un jucător simplu joacă examene întregi.
+    Alege cel mai bun Cuvânt, vrăjile îi ies din întâmplare, schimbă pietrele la Cuvintele slabe, folosește Gravurile
+    la început de rundă și învață Lecțiile pe loc. În Piață cumpără întâi cel mai scump Talisman pe care și-l permite,
+    apoi Lecții, apoi Săculețe.
+    - Țintele de bază ale Probelor (`data/trials.json`): **800, 2 600, 6 200, 10 500, 16 000, 25 000, 40 000,
+      62 000**. Întrebarea mare e ×1,5, Examinatorul ×2. Aeva are ×0,4 din ×2, pentru că are o singură Rostire.
+
+      | Proba | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 (Aeva) |
+      |---|---|---|---|---|---|---|---|---|
+      | trecută | 98% | 95% | 79% | 63% | 43% | 31% | 18% | 7% |
+
+    - Examenul întreg e trecut în ~7% din încercări. La final rămân în medie ~15 Monede și ~4,7 Talismane.
+    - Un jucător nou e mai slab decât acest jucător simulat, deci ar trebui să fie aproape de ținta din 3.14 (Proba 1
+      aproape mereu, Proba 3 ~50%). Testul lui Relax spune dacă e așa.
+    - Examenele se termină cel mai des la Aeva, la Întrebările mari din Probele 3–7 și la Morrah, Ilinca și Varr.
+  - **O reparație găsită de simulator:** Mareea („tragi 12, păstrezi 8”), repetată de Acțiuni, putea aduna zeci de
+    pietre în plus la începutul rundei. Acum sunt cel mult 8 (`spell_max_extra_draw` în `economy.json`). Alegerea „pune
+    înapoi” de la începutul rundei apare pe ecran ca orice altă alegere.

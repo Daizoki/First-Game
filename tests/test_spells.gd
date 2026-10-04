@@ -266,3 +266,14 @@ func _put(state: RoundState, ids: Array) -> void:
 	var stones: Array[Stone] = Fixtures.stones(ids)
 	stones.append_array(state.hand.slice(0, maxi(0, state.hand.size() - stones.size())))
 	state.hand = stones
+
+
+func test_the_tide_draws_a_limited_number_of_extra_stones() -> void:
+	var carry: Dictionary = RoundState.new_carry()
+	carry["next_round"] = {"draw_extra": 40}
+	var state: RoundState = _round(1.0e9, carry)
+	var limit: int = int(Fixtures.data()["economy"]["spell_max_extra_draw"])
+	check_eq(state.hand.size(), state.hand_limit() + limit, "at most %d extra stones:" % limit)
+	check_eq(state.current_choice().get("kind"), "put_back", "then put the extra ones back:")
+	state.answer_all_automatically()
+	check_eq(state.hand.size(), state.hand_limit(), "back to a normal hand:")

@@ -101,6 +101,7 @@ func _full_exams(data: Dictionary, seed_value: int, exams: int) -> void:
 ## Plays a round of the exam greedily: the best Word (spells by chance), Swaps for weak ones,
 ## Engravings used at once, every pick answered automatically.
 func _play_exam_round(state: RoundState) -> void:
+	state.answer_all_automatically()
 	while not state.consumables.is_empty() and state.use_consumable(0):
 		state.answer_all_automatically()
 	var guard: int = 0

@@ -155,7 +155,7 @@ const SCHEMAS: Dictionary = {
 			"price_rare": "int", "price_legendary": "int", "sell_share_pct": "int", "consumable_slots": "int",
 			"price_lesson": "int", "price_engraving": "int", "shop_talismans": "int", "shop_consumables": "int",
 			"shop_packs": "int", "rarity_weights_pct": "number_list", "price_pack": "int", "price_pack_big": "int",
-			"reroll_base": "int", "reroll_step": "int", "pack_stone_material_pct": "int",
+			"reroll_base": "int", "reroll_step": "int", "pack_stone_material_pct": "int", "spell_max_extra_draw": "int",
 		},
 		"optional": {},
 	},

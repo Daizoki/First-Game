@@ -921,7 +921,8 @@ func _apply_next_round() -> int:
 	score = target * float(next_round.get("head_start_pct", 0.0)) / 100.0 + float(next_round.get("overflow", 0.0))
 	swaps_left = maxi(0, swaps_left + int(next_round.get("swaps", 0)))
 	peek_bonus = int(next_round.get("peek", 0))
-	var draw_extra: int = int(next_round.get("draw_extra", 0))
+	# The Tide draws extra stones to choose from, never more than economy.json allows.
+	var draw_extra: int = mini(int(next_round.get("draw_extra", 0)), int(_economy("spell_max_extra_draw", 8)))
 	var casts: int = int(next_round.get("casts", 0))
 	carry["next_round"] = {}
 	add_casts(casts)

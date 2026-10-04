@@ -212,6 +212,7 @@ func _ready() -> void:
 	_rune_book.visible = false
 	EventBus.round_started.emit()
 	call_deferred("_show_hand")
+	call_deferred("_resolve_start_picks")
 	_refresh_texts()
 
 
@@ -582,6 +583,18 @@ func _on_cast_pressed() -> void:
 	EventBus.cast_resolved.emit()
 	if _round.is_won() or _round.is_lost():
 		_finish_round()
+
+
+## Picks waiting when the round starts (The Tide: put the extra stones back).
+func _resolve_start_picks() -> void:
+	if _round.pending.is_empty():
+		return
+	_busy = true
+	_refresh_state()
+	await _resolve_picks()
+	_busy = false
+	_show_hand()
+	_on_selection_changed()
 
 
 ## The spells' picks, one after another. Stones are picked in the hand; where the player may
