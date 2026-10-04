@@ -1,0 +1,439 @@
+[
+	{
+		"id": "fehu",
+		"name": {"ro": "Fehu", "en": "Fehu"},
+		"glyph": "ᚠ",
+		"kin": "fehu",
+		"position": 1,
+		"base_power": 3,
+		"role": "target",
+		"phrase": {"ro": "în Monede", "en": "into Coins"},
+		"meaning": {"ro": "vite, avere", "en": "cattle, wealth"},
+		"voice": {"ro": "+1 Monedă când punctează.", "en": "+1 Coin when it scores."},
+		"effects": [{"trigger": "on_score", "actions": [{"type": "add_money", "value": 1}]}],
+		"segments": [
+			[0.35, 0.05, 0.35, 0.95],
+			[0.35, 0.30, 0.70, 0.08],
+			[0.35, 0.55, 0.70, 0.33]
+		]
+	},
+	{
+		"id": "uruz",
+		"name": {"ro": "Uruz", "en": "Uruz"},
+		"glyph": "ᚢ",
+		"kin": "fehu",
+		"position": 2,
+		"base_power": 4,
+		"role": "element",
+		"phrase": {"ro": "Forța", "en": "Strength"},
+		"meaning": {"ro": "bourul (taurul sălbatic dispărut)", "en": "the aurochs (the extinct wild ox)"},
+		"voice": {"ro": "Puterea ei de bază e dublă.", "en": "Its base Power is doubled."},
+		"effects": [{"trigger": "passive", "actions": [{"type": "base_power_mult", "value": 2}]}],
+		"segments": [
+			[0.30, 0.05, 0.30, 0.95],
+			[0.30, 0.05, 0.70, 0.35],
+			[0.70, 0.35, 0.70, 0.95]
+		]
+	},
+	{
+		"id": "thurisaz",
+		"name": {"ro": "Thurisaz", "en": "Thurisaz"},
+		"glyph": "ᚦ",
+		"kin": "fehu",
+		"position": 3,
+		"base_power": 5,
+		"role": "element",
+		"phrase": {"ro": "Spinul", "en": "Thorn"},
+		"meaning": {"ro": "uriaș, monstru; în poemul englez: spin", "en": "giant, monster; in the English poem: thorn"},
+		"voice": {"ro": "+4 Rezonanță.", "en": "+4 Resonance."},
+		"effects": [{"trigger": "on_score", "actions": [{"type": "add_res", "value": 4}]}],
+		"segments": [
+			[0.35, 0.05, 0.35, 0.95],
+			[0.35, 0.30, 0.68, 0.50],
+			[0.68, 0.50, 0.35, 0.70]
+		]
+	},
+	{
+		"id": "ansuz",
+		"name": {"ro": "Ansuz", "en": "Ansuz"},
+		"glyph": "ᚨ",
+		"kin": "fehu",
+		"position": 4,
+		"base_power": 6,
+		"role": "target",
+		"phrase": {"ro": "în Cuvânt", "en": "into the Word"},
+		"meaning": {"ro": "„un zeu”; în poemul englez: gura", "en": "\"a god\"; in the English poem: the mouth"},
+		"voice": {"ro": "Cuvântul rostit punctează ca și cum ar avea +1 nivel.", "en": "The Word scores as if it were 1 level higher."},
+		"effects": [{"trigger": "in_word", "actions": [{"type": "word_level_bonus", "value": 1}]}],
+		"segments": [
+			[0.35, 0.05, 0.35, 0.95],
+			[0.35, 0.08, 0.70, 0.30],
+			[0.35, 0.33, 0.70, 0.55]
+		]
+	},
+	{
+		"id": "raidho",
+		"name": {"ro": "Raidho", "en": "Raidho"},
+		"glyph": "ᚱ",
+		"kin": "fehu",
+		"position": 5,
+		"base_power": 7,
+		"role": "action",
+		"phrase": {"ro": "se întinde", "en": "spreads"},
+		"meaning": {"ro": "călărie, călătorie", "en": "riding, journey"},
+		"voice": {"ro": "+1 Schimbare în runda asta.", "en": "+1 Swap this round."},
+		"effects": [{"trigger": "on_score", "actions": [{"type": "add_swap", "value": 1}]}],
+		"segments": [
+			[0.30, 0.05, 0.30, 0.95],
+			[0.30, 0.05, 0.68, 0.27],
+			[0.68, 0.27, 0.30, 0.50],
+			[0.30, 0.50, 0.70, 0.95]
+		]
+	},
+	{
+		"id": "kenaz",
+		"name": {"ro": "Kenaz", "en": "Kenaz"},
+		"glyph": "ᚲ",
+		"kin": "fehu",
+		"position": 6,
+		"base_power": 8,
+		"role": "element",
+		"phrase": {"ro": "Focul", "en": "Fire"},
+		"meaning": {"ro": "în poemul englez: făclie; în cele nordice: bubă, rană", "en": "in the English poem: torch; in the Norse ones: ulcer, sore"},
+		"voice": {"ro": "Cât timp e în mână, vezi următoarele 3 pietre din săculeț.", "en": "While in hand, you see the next 3 stones in the bag."},
+		"effects": [{"trigger": "passive", "actions": [{"type": "special", "name": "kenaz_peek", "value": 3}]}],
+		"segments": [
+			[0.65, 0.25, 0.35, 0.50],
+			[0.35, 0.50, 0.65, 0.75]
+		]
+	},
+	{
+		"id": "gebo",
+		"name": {"ro": "Gebo", "en": "Gebo"},
+		"glyph": "ᚷ",
+		"kin": "fehu",
+		"position": 7,
+		"base_power": 9,
+		"role": "action",
+		"phrase": {"ro": "se dăruiește", "en": "is given away"},
+		"meaning": {"ro": "dar, cadou", "en": "gift"},
+		"voice": {"ro": "Copiază Glasul pietrei rostite înaintea ei.", "en": "Copies the Voice of the stone cast before it."},
+		"effects": [{"trigger": "on_score", "actions": [{"type": "special", "name": "gebo_copy_previous"}]}],
+		"segments": [
+			[0.25, 0.10, 0.75, 0.90],
+			[0.75, 0.10, 0.25, 0.90]
+		]
+	},
+	{
+		"id": "wunjo",
+		"name": {"ro": "Wunjo", "en": "Wunjo"},
+		"glyph": "ᚹ",
+		"kin": "fehu",
+		"position": 8,
+		"base_power": 10,
+		"role": "target",
+		"phrase": {"ro": "în Talismane", "en": "into the Talismans"},
+		"meaning": {"ro": "bucurie", "en": "joy"},
+		"voice": {"ro": "+1 Rezonanță pentru fiecare piatră din Cuvânt.", "en": "+1 Resonance for each stone in the Word."},
+		"effects": [{"trigger": "on_score", "actions": [{"type": "add_res", "value": 1, "per": "word_stone"}]}],
+		"segments": [
+			[0.35, 0.05, 0.35, 0.95],
+			[0.35, 0.05, 0.68, 0.27],
+			[0.68, 0.27, 0.35, 0.50]
+		]
+	},
+	{
+		"id": "hagalaz",
+		"name": {"ro": "Hagalaz", "en": "Hagalaz"},
+		"glyph": "ᚺ",
+		"kin": "hagalaz",
+		"position": 1,
+		"base_power": 3,
+		"role": "element",
+		"phrase": {"ro": "Grindina", "en": "Hail"},
+		"meaning": {"ro": "grindină", "en": "hail"},
+		"voice": {"ro": "Punctează de două ori.", "en": "Scores twice."},
+		"effects": [{"trigger": "on_score", "actions": [{"type": "retrigger", "target": "self", "value": 1}]}],
+		"segments": [
+			[0.30, 0.05, 0.30, 0.95],
+			[0.70, 0.05, 0.70, 0.95],
+			[0.30, 0.35, 0.70, 0.60]
+		]
+	},
+	{
+		"id": "naudiz",
+		"name": {"ro": "Naudiz", "en": "Naudiz"},
+		"glyph": "ᚾ",
+		"kin": "hagalaz",
+		"position": 2,
+		"base_power": 4,
+		"role": "action",
+		"phrase": {"ro": "cere un preț", "en": "asks a price"},
+		"meaning": {"ro": "nevoie, lipsă, suferință", "en": "need, want, hardship"},
+		"voice": {"ro": "×2 Rezonanță dacă e ultima Rostire a rundei.", "en": "×2 Resonance if it is the last Cast of the round."},
+		"effects": [{"trigger": "on_score", "conditions": [{"type": "last_cast"}], "actions": [{"type": "mul_res", "value": 2}]}],
+		"segments": [
+			[0.50, 0.05, 0.50, 0.95],
+			[0.32, 0.35, 0.68, 0.60]
+		]
+	},
+	{
+		"id": "isaz",
+		"name": {"ro": "Isaz", "en": "Isaz"},
+		"glyph": "ᛁ",
+		"kin": "hagalaz",
+		"position": 3,
+		"base_power": 5,
+		"role": "element",
+		"phrase": {"ro": "Gheața", "en": "Ice"},
+		"meaning": {"ro": "gheață", "en": "ice"},
+		"voice": {"ro": "Dacă rămâne în mână (nerostită), +3 Rezonanță la fiecare Rostire.", "en": "If it stays in hand (not cast), +3 Resonance on every Cast."},
+		"effects": [{"trigger": "on_held", "actions": [{"type": "add_res", "value": 3}]}],
+		"segments": [
+			[0.50, 0.05, 0.50, 0.95]
+		]
+	},
+	{
+		"id": "jera",
+		"name": {"ro": "Jera", "en": "Jera"},
+		"glyph": "ᛃ",
+		"kin": "hagalaz",
+		"position": 4,
+		"base_power": 6,
+		"role": "action",
+		"phrase": {"ro": "se coace", "en": "ripens"},
+		"meaning": {"ro": "an, an bun, recoltă", "en": "year, good year, harvest"},
+		"voice": {"ro": "La finalul rundei, +2 Monede pentru fiecare Jera rostită în rundă.", "en": "At the end of the round, +2 Coins for each Jera cast this round."},
+		"effects": [{"trigger": "on_score", "actions": [{"type": "add_money_at_round_end", "value": 2}]}],
+		"segments": [
+			[0.45, 0.15, 0.25, 0.35],
+			[0.25, 0.35, 0.45, 0.55],
+			[0.55, 0.45, 0.75, 0.65],
+			[0.75, 0.65, 0.55, 0.85]
+		]
+	},
+	{
+		"id": "eihwaz",
+		"name": {"ro": "Eihwaz", "en": "Eihwaz"},
+		"glyph": "ᛇ",
+		"kin": "hagalaz",
+		"position": 5,
+		"base_power": 7,
+		"role": "action",
+		"phrase": {"ro": "durează", "en": "endures"},
+		"meaning": {"ro": "tisa (copac care trăiește sute de ani)", "en": "yew (a tree that lives for centuries)"},
+		"voice": {"ro": "Crește: +3 Putere permanent de fiecare dată când punctează.", "en": "Grows: +3 Power permanently each time it scores."},
+		"effects": [{"trigger": "on_score", "actions": [{"type": "grow_power", "value": 3}]}],
+		"segments": [
+			[0.50, 0.05, 0.50, 0.95],
+			[0.50, 0.05, 0.70, 0.25],
+			[0.50, 0.95, 0.30, 0.75]
+		]
+	},
+	{
+		"id": "perthro",
+		"name": {"ro": "Perthro", "en": "Perthro"},
+		"glyph": "ᛈ",
+		"kin": "hagalaz",
+		"position": 6,
+		"base_power": 8,
+		"role": "action",
+		"phrase": {"ro": "riscă", "en": "gambles"},
+		"meaning": {"ro": "sens necunoscut; poemul englez vorbește de joc și distracție (poate o cupă de zaruri)", "en": "unknown meaning; the English poem speaks of play and fun (maybe a dice cup)"},
+		"voice": {"ro": "1 șansă din 4: ×3 Rezonanță.", "en": "1 chance in 4: ×3 Resonance."},
+		"effects": [{"trigger": "on_score", "conditions": [{"type": "chance", "value": 0.25}], "actions": [{"type": "mul_res", "value": 3}]}],
+		"segments": [
+			[0.32, 0.05, 0.32, 0.95],
+			[0.32, 0.05, 0.55, 0.28],
+			[0.55, 0.28, 0.72, 0.10],
+			[0.32, 0.95, 0.55, 0.72],
+			[0.55, 0.72, 0.72, 0.90]
+		]
+	},
+	{
+		"id": "algiz",
+		"name": {"ro": "Algiz", "en": "Algiz"},
+		"glyph": "ᛉ",
+		"kin": "hagalaz",
+		"position": 7,
+		"base_power": 9,
+		"role": "target",
+		"phrase": {"ro": "asupra Examinatorului", "en": "against the Examiner"},
+		"meaning": {"ro": "elan (numele original e nesigur)", "en": "elk (the original name is uncertain)"},
+		"voice": {"ro": "Regula Examinatorului nu se aplică acestei Rostiri.", "en": "The Examiner's rule does not apply to this Cast."},
+		"effects": [{"trigger": "on_cast", "actions": [{"type": "special", "name": "algiz_ignore_rule"}]}],
+		"segments": [
+			[0.50, 0.05, 0.50, 0.95],
+			[0.50, 0.45, 0.22, 0.12],
+			[0.50, 0.45, 0.78, 0.12]
+		]
+	},
+	{
+		"id": "sowilo",
+		"name": {"ro": "Sowilo", "en": "Sowilo"},
+		"glyph": "ᛊ",
+		"kin": "hagalaz",
+		"position": 8,
+		"base_power": 10,
+		"role": "element",
+		"phrase": {"ro": "Soarele", "en": "Sun"},
+		"meaning": {"ro": "soare", "en": "sun"},
+		"voice": {"ro": "×1,5 Rezonanță.", "en": "×1.5 Resonance."},
+		"effects": [{"trigger": "on_score", "actions": [{"type": "mul_res", "value": 1.5}]}],
+		"segments": [
+			[0.65, 0.08, 0.30, 0.42],
+			[0.30, 0.42, 0.70, 0.58],
+			[0.70, 0.58, 0.35, 0.92]
+		]
+	},
+	{
+		"id": "tiwaz",
+		"name": {"ro": "Tiwaz", "en": "Tiwaz"},
+		"glyph": "ᛏ",
+		"kin": "tiwaz",
+		"position": 1,
+		"base_power": 3,
+		"role": "target",
+		"phrase": {"ro": "peste Țintă", "en": "on the Target"},
+		"meaning": {"ro": "numele unui zeu al cerului și al dreptății; în poemul englez: o stea călăuzitoare", "en": "the name of a god of the sky and of justice; in the English poem: a guiding star"},
+		"voice": {"ro": "×2 Rezonanță dacă e rostită prima.", "en": "×2 Resonance if it is cast first."},
+		"effects": [{"trigger": "on_score", "conditions": [{"type": "cast_first"}], "actions": [{"type": "mul_res", "value": 2}]}],
+		"segments": [
+			[0.50, 0.05, 0.50, 0.95],
+			[0.25, 0.32, 0.50, 0.05],
+			[0.50, 0.05, 0.75, 0.32]
+		]
+	},
+	{
+		"id": "berkanan",
+		"name": {"ro": "Berkanan", "en": "Berkanan"},
+		"glyph": "ᛒ",
+		"kin": "tiwaz",
+		"position": 2,
+		"base_power": 4,
+		"role": "action",
+		"phrase": {"ro": "crește", "en": "grows"},
+		"meaning": {"ro": "mesteacăn", "en": "birch"},
+		"voice": {"ro": "O dată pe rundă, după ce punctează, adaugă în săculeț o copie a unei pietre din Cuvânt.", "en": "Once per round, after it scores, adds a copy of a stone from the Word to the bag."},
+		"effects": [{"trigger": "on_score", "conditions": [{"type": "once_per_round"}], "actions": [{"type": "special", "name": "berkanan_copy"}]}],
+		"segments": [
+			[0.32, 0.05, 0.32, 0.95],
+			[0.32, 0.05, 0.68, 0.27],
+			[0.68, 0.27, 0.32, 0.50],
+			[0.32, 0.50, 0.68, 0.73],
+			[0.68, 0.73, 0.32, 0.95]
+		]
+	},
+	{
+		"id": "ehwaz",
+		"name": {"ro": "Ehwaz", "en": "Ehwaz"},
+		"glyph": "ᛖ",
+		"kin": "tiwaz",
+		"position": 3,
+		"base_power": 5,
+		"role": "action",
+		"phrase": {"ro": "aleargă de două ori", "en": "runs twice"},
+		"meaning": {"ro": "cal", "en": "horse"},
+		"voice": {"ro": "Piatra rostită după ea punctează încă o dată.", "en": "The stone cast after it scores once more."},
+		"effects": [{"trigger": "on_score", "actions": [{"type": "retrigger", "target": "next", "value": 1}]}],
+		"segments": [
+			[0.28, 0.05, 0.28, 0.95],
+			[0.72, 0.05, 0.72, 0.95],
+			[0.28, 0.05, 0.50, 0.30],
+			[0.50, 0.30, 0.72, 0.05]
+		]
+	},
+	{
+		"id": "mannaz",
+		"name": {"ro": "Mannaz", "en": "Mannaz"},
+		"glyph": "ᛗ",
+		"kin": "tiwaz",
+		"position": 4,
+		"base_power": 6,
+		"role": "target",
+		"phrase": {"ro": "în Mână", "en": "into the Hand"},
+		"meaning": {"ro": "om, ființă umană", "en": "man, human being"},
+		"voice": {"ro": "Runa oamenilor: +2 Rezonanță pentru fiecare Lecție folosită în acest examen.", "en": "The rune of humans: +2 Resonance for each Lesson used in this exam."},
+		"effects": [{"trigger": "on_score", "actions": [{"type": "add_res", "value": 2, "per": "lesson_used"}]}],
+		"segments": [
+			[0.28, 0.05, 0.28, 0.95],
+			[0.72, 0.05, 0.72, 0.95],
+			[0.28, 0.05, 0.72, 0.40],
+			[0.72, 0.05, 0.28, 0.40]
+		]
+	},
+	{
+		"id": "laguz",
+		"name": {"ro": "Laguz", "en": "Laguz"},
+		"glyph": "ᛚ",
+		"kin": "tiwaz",
+		"position": 5,
+		"base_power": 7,
+		"role": "element",
+		"phrase": {"ro": "Apa", "en": "Water"},
+		"meaning": {"ro": "apă, lac, mare", "en": "water, lake, sea"},
+		"voice": {"ro": "Curge: contează ca piatră din orice Neam.", "en": "Flows: counts as a stone of any Kin."},
+		"effects": [{"trigger": "passive", "actions": [{"type": "special", "name": "laguz_wild"}]}],
+		"segments": [
+			[0.38, 0.05, 0.38, 0.95],
+			[0.38, 0.05, 0.68, 0.30]
+		]
+	},
+	{
+		"id": "ingwaz",
+		"name": {"ro": "Ingwaz", "en": "Ingwaz"},
+		"glyph": "ᛜ",
+		"kin": "tiwaz",
+		"position": 6,
+		"base_power": 8,
+		"role": "target",
+		"phrase": {"ro": "în Viitor", "en": "into the Future"},
+		"meaning": {"ro": "Ing, numele unui zeu sau erou", "en": "Ing, the name of a god or hero"},
+		"voice": {"ro": "Sămânța: dacă rămâne în mână la finalul rundei, primește +10 Putere permanent.", "en": "The Seed: if it stays in hand at the end of the round, it gains +10 Power permanently."},
+		"effects": [{"trigger": "on_round_end_held", "actions": [{"type": "grow_power", "value": 10}]}],
+		"segments": [
+			[0.50, 0.25, 0.72, 0.50],
+			[0.72, 0.50, 0.50, 0.75],
+			[0.50, 0.75, 0.28, 0.50],
+			[0.28, 0.50, 0.50, 0.25]
+		]
+	},
+	{
+		"id": "dagaz",
+		"name": {"ro": "Dagaz", "en": "Dagaz"},
+		"glyph": "ᛞ",
+		"kin": "tiwaz",
+		"position": 7,
+		"base_power": 9,
+		"role": "element",
+		"phrase": {"ro": "Ziua", "en": "Day"},
+		"meaning": {"ro": "zi", "en": "day"},
+		"voice": {"ro": "×2 Rezonanță dacă e prima Rostire a rundei.", "en": "×2 Resonance if it is the first Cast of the round."},
+		"effects": [{"trigger": "on_score", "conditions": [{"type": "first_cast"}], "actions": [{"type": "mul_res", "value": 2}]}],
+		"segments": [
+			[0.25, 0.05, 0.25, 0.95],
+			[0.75, 0.05, 0.75, 0.95],
+			[0.25, 0.05, 0.75, 0.95],
+			[0.75, 0.05, 0.25, 0.95]
+		]
+	},
+	{
+		"id": "othala",
+		"name": {"ro": "Othala", "en": "Othala"},
+		"glyph": "ᛟ",
+		"kin": "tiwaz",
+		"position": 8,
+		"base_power": 10,
+		"role": "target",
+		"phrase": {"ro": "în Săculeț", "en": "into the Bag"},
+		"meaning": {"ro": "moștenire, pământul și casa familiei", "en": "inheritance, the family land and home"},
+		"voice": {"ro": "Moștenirea: +2 Rezonanță pentru fiecare Talisman deținut.", "en": "Inheritance: +2 Resonance for each Talisman you own."},
+		"effects": [{"trigger": "on_score", "actions": [{"type": "add_res", "value": 2, "per": "talisman"}]}],
+		"segments": [
+			[0.50, 0.05, 0.78, 0.38],
+			[0.50, 0.05, 0.22, 0.38],
+			[0.78, 0.38, 0.25, 0.95],
+			[0.22, 0.38, 0.75, 0.95]
+		]
+	}
+]
