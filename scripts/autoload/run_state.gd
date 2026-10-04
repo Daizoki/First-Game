@@ -14,6 +14,10 @@ var parent_id: String = ""
 var trial_index: int = 0
 var round_index: int = 0
 var money: int = 0
+## What the exam screen should do when it opens (set by the Morning): go on with the saved
+## exam, or start a new one with this parent.
+var resume_requested: bool = false
+var next_parent: String = ""
 
 
 func reset() -> void:
@@ -24,6 +28,12 @@ func reset() -> void:
 	trial_index = 0
 	round_index = 0
 	money = 0
+
+
+## The Morning asks for an exam: a new one with this parent, or the saved one.
+func request_exam(parent: String, resume: bool) -> void:
+	next_parent = parent
+	resume_requested = resume
 
 
 ## Starts a new exam. A seed of 0 picks a random one.

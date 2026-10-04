@@ -205,8 +205,10 @@ func _pick_talismans(count: int, rare_first: bool) -> Array[String]:
 func _talismans_of(rarity: String, taken: Array[String]) -> Array[String]:
 	var pool: Array[String] = []
 	var table: Dictionary = _table("talismans")
+	var locked: bool = not exam.unlocked_talismans.is_empty()
 	for id: String in table:
-		if str(table[id].get("rarity", "")) == rarity and not taken.has(id):
+		if str(table[id].get("rarity", "")) == rarity and not taken.has(id) \
+				and (not locked or exam.unlocked_talismans.has(id)):
 			pool.append(id)
 	return pool
 

@@ -55,6 +55,8 @@ const ENUMS: Dictionary = {
 		"second_chance",
 	],
 	"rarity": ["common", "rare", "legendary"],
+	## How a divine parent becomes available (data/parents.json, DESIGN 3.10).
+	"parent_unlock": ["start", "attempts", "memories"],
 	## What an Engraving does to the stones in hand (scripts/core/round_state.gd, use_consumable).
 	"engraving_kind": ["material", "bind", "change_rune", "copy_stone", "remove_stones", "change_kin"],
 	"material": ["bone", "amber", "gold", "iron", "glass"],
@@ -175,6 +177,15 @@ const SCHEMAS: Dictionary = {
 	"engraving": {
 		"required": {"id": "id", "kind": "enum:engraving_kind", "name": "loc", "text": "loc"},
 		"optional": {"material": "enum:material", "value": "number", "chance": "number", "count": "int"},
+	},
+	## A divine parent: the starting bonus of an exam (data/parents.json); the id is a character id.
+	## "cost" is the number of finished exams ("attempts") or of Memories ("memories").
+	"parent": {
+		"required": {"id": "ref:characters", "unlock": "enum:parent_unlock", "cost": "int", "bonus": "loc", "line": "loc"},
+		"optional": {
+			"casts": "int", "swaps": "int", "hand": "int", "talisman_slots": "int", "start_engravings": "int",
+			"copies_per_rune": "int",
+		},
 	},
 	## One of the 8 trials of the exam (data/trials.json).
 	"trial": {

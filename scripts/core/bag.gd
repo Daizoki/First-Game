@@ -109,6 +109,26 @@ func remove(stone: Stone) -> void:
 	draw_pile.erase(stone)
 
 
+## The bag as plain data (the exam in progress is saved between rounds).
+func to_dict() -> Dictionary:
+	var saved: Array[Dictionary] = []
+	for stone: Stone in stones:
+		saved.append(stone.to_dict())
+	return {"stones": saved, "next_uid": _next_uid}
+
+
+## Restores the stones saved with to_dict(); the draw pile fills when the next round starts.
+func load_dict(saved: Dictionary) -> void:
+	stones.clear()
+	for entry: Variant in saved.get("stones", []):
+		if entry is Dictionary:
+			stones.append(Stone.from_dict(entry))
+	draw_pile.clear()
+	_next_uid = maxi(int(saved.get("next_uid", 1)), 1)
+	for stone: Stone in stones:
+		_next_uid = maxi(_next_uid, stone.uid + 1)
+
+
 func size() -> int:
 	return stones.size()
 

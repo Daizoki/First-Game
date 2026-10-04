@@ -8,7 +8,7 @@ static var _data: Dictionary = {}
 
 
 ## {"runes", "words", "spells", "spell_actions", "rules", "economy", "tutorial", "hints", "characters",
-## "trials", "examiners", "talismans", "lessons", "engravings"}
+## "trials", "examiners", "talismans", "lessons", "engravings", "parents"}
 ## from data/, loaded once per test run.
 static func data() -> Dictionary:
 	if _data.is_empty():
@@ -20,7 +20,7 @@ static func data() -> Dictionary:
 			"economy": game_data.economy, "tutorial": game_data.tutorial,
 			"hints": game_data.hints, "characters": game_data.characters, "trials": game_data.trials,
 			"examiners": game_data.examiners, "talismans": game_data.talismans,
-			"lessons": game_data.lessons, "engravings": game_data.engravings,
+			"lessons": game_data.lessons, "engravings": game_data.engravings, "parents": game_data.parents,
 		}
 		game_data.free()
 	return _data

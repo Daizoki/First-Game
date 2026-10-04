@@ -13,6 +13,8 @@ const Bag = preload("res://scripts/core/bag.gd")
 const TalismanRules = preload("res://scripts/core/talisman_rules.gd")
 
 const ROUND_KINDS: Array[String] = ["small", "big", "examiner"]
+## Bump when the saved exam's shape changes (an old save is then dropped, not misread).
+const SAVE_VERSION: int = 1
 
 var exam_seed: int = 0
 var rng: RandomNumberGenerator
@@ -37,19 +39,26 @@ var consumables: Array = []
 var lessons_used: int = 0
 ## Spells on/off for the rounds (the simulator compares both).
 var spells_enabled: bool = true
+## The divine parent chosen for this exam (data/parents.json; "" = none, the standard Bag).
+var parent_id: String = ""
+## Talismans the Night Market may offer (unlocked with Memories); empty = every Talisman.
+var unlocked_talismans: Array[String] = []
 
 var _data: Dictionary
 
 
 ## data: the GameData tables (runes, words, spells, spell_actions, rules, economy, trials,
-## examiners). The seed drives every random choice of the exam.
-func setup(data: Dictionary, seed_value: int) -> void:
+## examiners, talismans, lessons, engravings, parents). The seed drives every random choice of
+## the exam; the parent (DESIGN 3.10) gives the exam its starting bonus.
+func setup(data: Dictionary, seed_value: int, parent: String = "") -> void:
 	_data = data
 	exam_seed = seed_value
+	parent_id = parent
 	rng = RandomNumberGenerator.new()
 	rng.seed = seed_value
 	bag = Bag.new(rng)
-	bag.fill_with_runes(data["runes"], int((data["rules"] as Dictionary).get("copies_per_rune", 2)))
+	var copies: int = int((data["rules"] as Dictionary).get("copies_per_rune", 2))
+	bag.fill_with_runes(data["runes"], int(parent_entry().get("copies_per_rune", copies)))
 	carry = RoundState.new_carry()
 	money = int(_economy("start_money", 0))
 	word_levels = {}
@@ -63,6 +72,12 @@ func setup(data: Dictionary, seed_value: int) -> void:
 	finished = false
 	passed = false
 	_pick_examiners()
+	_give_start_engravings()
+
+
+## The chosen parent's entry ({} for none).
+func parent_entry() -> Dictionary:
+	return (_data.get("parents", {}) as Dictionary).get(parent_id, {})
 
 
 func trial_count() -> int:
@@ -110,6 +125,8 @@ func round_options() -> Dictionary:
 	return {
 		"bag": bag, "carry": carry, "money": money, "word_levels": word_levels, "rule": rule(),
 		"spells": spells_enabled, "talismans": talismans, "consumables": consumables, "lessons_used": lessons_used,
+		"bonus_casts": int(parent_entry().get("casts", 0)), "bonus_swaps": int(parent_entry().get("swaps", 0)),
+		"bonus_hand": int(parent_entry().get("hand", 0)), "unlocked_talismans": unlocked_talismans,
 	}
 
 
@@ -213,7 +230,7 @@ func sell_talisman(slot: int) -> int:
 
 
 func talisman_slots() -> int:
-	return int(_economy("talisman_slots", 5))
+	return int(_economy("talisman_slots", 5)) + int(parent_entry().get("talisman_slots", 0))
 
 
 func talisman_price(id: String) -> int:
@@ -251,6 +268,71 @@ func _advance() -> void:
 		round_index = ROUND_KINDS.size() - 1
 		finished = true
 		passed = true
+
+
+## Ignar's child starts with random Engravings (different ones while there are enough).
+func _give_start_engravings() -> void:
+	var pool: Array = (_data.get("engravings", {}) as Dictionary).keys()
+	for i: int in int(parent_entry().get("start_engravings", 0)):
+		if pool.is_empty():
+			break
+		add_consumable("engraving", str(pool.pop_at(rng.randi_range(0, pool.size() - 1))))
+
+
+# --- Saving the exam in progress -------------------------------------------------------------
+
+## Everything needed to go on with this exam later, between two rounds, as plain data
+## (JSON.from_native keeps the types, so it can go straight into save.json).
+func to_dict() -> Dictionary:
+	return JSON.from_native({
+		"version": SAVE_VERSION, "seed": exam_seed, "rng_state": rng.state, "parent": parent_id,
+		"bag": bag.to_dict(), "carry": carry, "money": money, "word_levels": word_levels,
+		"trial": trial_index, "round": round_index, "examiners": examiners, "defeated": defeated,
+		"rounds_won": rounds_won, "talismans": talismans, "consumables": consumables, "lessons_used": lessons_used,
+		"unlocked_talismans": unlocked_talismans,
+	})
+
+
+## Restores an exam saved with to_dict(). Returns false (and changes nothing useful) when the
+## save does not fit the current data: then the exam cannot go on.
+func load_dict(data: Dictionary, saved: Dictionary) -> bool:
+	if not saved.has("type"):
+		return false
+	var native: Variant = JSON.to_native(saved)
+	if not (native is Dictionary):
+		return false
+	var state: Dictionary = native
+	if int(state.get("version", 0)) != SAVE_VERSION:
+		return false
+	var saved_examiners: Array = state.get("examiners", [])
+	for id: Variant in saved_examiners:
+		if not (data["examiners"] as Dictionary).has(str(id)):
+			return false
+	if saved_examiners.size() != (data["trials"] as Dictionary).size():
+		return false
+	setup(data, int(state.get("seed", 1)), str(state.get("parent", "")))
+	rng.state = int(state.get("rng_state", rng.state))
+	bag.load_dict(state.get("bag", {}))
+	carry = RoundState.new_carry()
+	carry.merge(state.get("carry", {}), true)
+	money = int(state.get("money", 0))
+	word_levels = (state.get("word_levels", {}) as Dictionary).duplicate(true)
+	trial_index = clampi(int(state.get("trial", 0)), 0, trial_count() - 1)
+	round_index = clampi(int(state.get("round", 0)), 0, ROUND_KINDS.size() - 1)
+	examiners.assign(saved_examiners.map(func(id: Variant) -> String: return str(id)))
+	defeated.assign((state.get("defeated", []) as Array).map(func(id: Variant) -> String: return str(id)))
+	rounds_won = int(state.get("rounds_won", 0))
+	talismans = []
+	for item: Variant in state.get("talismans", []):
+		if item is Dictionary and _talisman_table().has(str((item as Dictionary).get("id", ""))):
+			talismans.append(item)
+	consumables = []
+	for item: Variant in state.get("consumables", []):
+		if item is Dictionary:
+			consumables.append(item)
+	lessons_used = int(state.get("lessons_used", 0))
+	unlocked_talismans.assign((state.get("unlocked_talismans", []) as Array).map(func(id: Variant) -> String: return str(id)))
+	return true
 
 
 ## Trials 1..n-1 get different examiners in a random order; the final one is always last.

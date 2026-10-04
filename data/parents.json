@@ -1,0 +1,27 @@
+[
+	{
+		"id": "varr", "unlock": "start", "cost": 0, "casts": 1,
+		"bonus": {"ro": "+1 Rostire în fiecare rundă.", "en": "+1 Cast every round."},
+		"line": {"ro": "Fulgerul nu întârzie niciodată. Eu da. Tu nu. Hai.", "en": "Lightning is never late. I am. You won't be. Go."}
+	},
+	{
+		"id": "selvia", "unlock": "attempts", "cost": 1, "swaps": 1,
+		"bonus": {"ro": "+1 Schimbare în fiecare rundă.", "en": "+1 Swap every round."},
+		"line": {"ro": "Dacă un val nu-ți place, mai vine unul. Așa și cu pietrele.", "en": "If you don't like a wave, another one comes. Same with stones."}
+	},
+	{
+		"id": "ignar", "unlock": "memories", "cost": 15, "start_engravings": 2,
+		"bonus": {"ro": "Începi examenul cu 2 Gravuri aleatorii.", "en": "You start the exam with 2 random Engravings."},
+		"line": {"ro": "Ți-am gravat două pietre. Și ți-am pus o shaorma în ghiozdan.", "en": "I engraved two stones for you. And put a shawarma in your bag."}
+	},
+	{
+		"id": "gronn", "unlock": "memories", "cost": 30, "talisman_slots": 1, "hand": -1,
+		"bonus": {"ro": "+1 loc de Talisman, dar −1 piatră în mână.", "en": "+1 Talisman slot, but −1 stone in hand."},
+		"line": {"ro": "Mai puțin în mâini. Mai mult pe umeri. Construiește.", "en": "Less in your hands. More on your shoulders. Build."}
+	},
+	{
+		"id": "morrah", "unlock": "memories", "cost": 50, "copies_per_rune": 1,
+		"bonus": {"ro": "Săculeț de doar 24 de pietre, câte una din fiecare rună. Mai greu, dar fiecare piatră contează.", "en": "A Bag of only 24 stones, one of each rune. Harder, but every stone matters."},
+		"line": {"ro": "Fiecare piatră își amintește de tine. Ai grijă de ele.", "en": "Every stone remembers you. Take care of them."}
+	}
+]

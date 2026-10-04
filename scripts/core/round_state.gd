@@ -68,6 +68,8 @@ var consumables: Array = []
 
 var _data: Dictionary
 var _hand_size: int = 8
+## Talismans a spell may turn another one into (the exam's unlocks); empty = every Talisman.
+var unlocked_talismans: Array[String] = []
 var _money_at_round_end: int = 0
 var _once_used: Array[String] = []
 ## Rune ids drawn first, in this order (a fixed tutorial hand, then its next stones).
@@ -89,7 +91,8 @@ static func new_carry() -> Dictionary:
 ## "spells" (false: no spells this round), "carry" (the exam's carry, see new_carry()),
 ## "bag" (the exam's Bag, kept between rounds), "money", "word_levels" (the exam's, shared),
 ## "rule" (the examiner's entry; its "casts" / "swaps" override the others),
-## "talismans" (the exam's owned Talismans, shared).
+## "talismans" (the exam's owned Talismans, shared), "bonus_casts" / "bonus_swaps" / "bonus_hand"
+## (the divine parent's bonus).
 func setup(data: Dictionary, round_rng: RandomNumberGenerator, round_target: float, options: Dictionary = {}) -> void:
 	_data = data
 	rng = round_rng
@@ -107,9 +110,14 @@ func setup(data: Dictionary, round_rng: RandomNumberGenerator, round_target: flo
 	talismans = options.get("talismans", [])
 	consumables = options.get("consumables", [])
 	lessons_used = int(options.get("lessons_used", 0))
-	_hand_size = int(rules.get("hand_size", 8))
-	casts_left = int(rule.get("casts", options.get("casts", rules.get("casts_per_round", 4))))
-	swaps_left = int(rule.get("swaps", options.get("swaps", rules.get("swaps_per_round", 3))))
+	unlocked_talismans.assign(options.get("unlocked_talismans", []))
+	# The divine parent's bonus (bonus_casts / bonus_swaps / bonus_hand) adds to the rules; an
+	# examiner's own Casts or Swaps (Aeva) replace both.
+	_hand_size = maxi(1, int(rules.get("hand_size", 8)) + int(options.get("bonus_hand", 0)))
+	casts_left = int(rule.get("casts", int(options.get("casts", rules.get("casts_per_round", 4)))
+		+ int(options.get("bonus_casts", 0))))
+	swaps_left = int(rule.get("swaps", int(options.get("swaps", rules.get("swaps_per_round", 3)))
+		+ int(options.get("bonus_swaps", 0))))
 	spells_enabled = bool(options.get("spells", true))
 	carry = options.get("carry", new_carry())
 	_stacked.clear()
@@ -1009,7 +1017,8 @@ func talisman_spell(kind: String, slot: int, op: Dictionary, share: float = 1.0)
 			var rarity: String = str(table.get(owned["id"], {}).get("rarity", ""))
 			var pool: Array[String] = []
 			for id: String in table:
-				if str(table[id].get("rarity", "")) == rarity and id != str(owned["id"]):
+				if str(table[id].get("rarity", "")) == rarity and id != str(owned["id"]) \
+						and (unlocked_talismans.is_empty() or unlocked_talismans.has(id)):
 					pool.append(id)
 			if not pool.is_empty():
 				talismans[slot] = TalismanRules.make(pool[rng.randi_range(0, pool.size() - 1)], table)

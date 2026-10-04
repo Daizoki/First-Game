@@ -62,4 +62,21 @@ func to_dict() -> Dictionary:
 	return {
 		"uid": uid, "rune": rune_id, "kin": kin, "position": position,
 		"base_power": base_power, "bonus_power": bonus_power, "material": material, "bound_rune": bound_rune,
+		"bound_kin": bound_kin, "bound_position": bound_position,
 	}
+
+
+## A stone saved with to_dict() (the exam in progress).
+static func from_dict(saved: Dictionary) -> RefCounted:
+	var stone: RefCounted = load("res://scripts/core/stone.gd").new()
+	stone.uid = int(saved.get("uid", 0))
+	stone.rune_id = str(saved.get("rune", ""))
+	stone.kin = str(saved.get("kin", ""))
+	stone.position = int(saved.get("position", 0))
+	stone.base_power = int(saved.get("base_power", 0))
+	stone.bonus_power = int(saved.get("bonus_power", 0))
+	stone.material = str(saved.get("material", ""))
+	stone.bound_rune = str(saved.get("bound_rune", ""))
+	stone.bound_kin = str(saved.get("bound_kin", ""))
+	stone.bound_position = int(saved.get("bound_position", 0))
+	return stone

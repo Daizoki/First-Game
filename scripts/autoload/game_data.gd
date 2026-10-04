@@ -29,6 +29,7 @@ const COLLECTIONS: Dictionary = {
 	"talismans": ["talismans.json", "talisman"],
 	"lessons": ["lessons.json", "lesson"],
 	"engravings": ["engravings.json", "engraving"],
+	"parents": ["parents.json", "parent"],
 }
 
 var errors: Array[String] = []
@@ -58,6 +59,8 @@ var talismans: Dictionary = {}
 ## The Lessons (one per Word) and the Engravings (data/lessons.json, data/engravings.json).
 var lessons: Dictionary = {}
 var engravings: Dictionary = {}
+## The divine parents a player can pick for an exam (data/parents.json).
+var parents: Dictionary = {}
 ## Round rules (hand size, casts, swaps, ...).
 var rules: Dictionary = {}
 ## Prices and safety limits (data/economy.json).
@@ -116,6 +119,7 @@ func load_all(data_dir: String) -> bool:
 	talismans = loaded["talismans"]
 	lessons = loaded["lessons"]
 	engravings = loaded["engravings"]
+	parents = loaded["parents"]
 	errors = validator.errors
 
 	for message: String in errors:

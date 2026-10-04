@@ -16,6 +16,8 @@ const MAIN_MENU_SCENE: String = "res://scenes/main_menu.tscn"
 const ROUND_END_PAUSE: float = 1.6
 const MONEY_COLOR: Color = Color("#ebaa3c")
 const RULE_COLOR: Color = Color("#ffb347")
+const PHASE_BOARD: String = "board"
+const PHASE_SHOP: String = "shop"
 
 var exam: ExamState
 
@@ -31,21 +33,52 @@ var _waiting_for_round: bool = false
 func _ready() -> void:
 	EventBus.round_won.connect(_on_round_over)
 	EventBus.round_lost.connect(_on_round_over)
-	start_exam()
+	var resume: bool = RunState.resume_requested
+	RunState.resume_requested = false
+	if not (resume and resume_exam()):
+		start_exam(RunState.next_parent)
 
 
 func _exit_tree() -> void:
 	RunState.end_exam(exam != null and exam.passed)
 
 
-## A new exam with a random seed (or the given one).
-func start_exam(seed_value: int = 0) -> void:
+## A new exam with this parent and a random seed (or the given one).
+func start_exam(parent: String = "", seed_value: int = 0) -> void:
 	exam = ExamState.new()
-	exam.setup(tables(), seed_value if seed_value != 0 else randi())
-	RunState.start_exam("", exam.exam_seed)
+	exam.setup(tables(), seed_value if seed_value != 0 else randi(), parent)
+	RunState.start_exam(parent, exam.exam_seed)
 	SaveManager.data["attempts"] = int(SaveManager.data.get("attempts", 0)) + 1
-	SaveManager.save_game()
+	_save_exam(PHASE_BOARD)
 	_show_intro()
+
+
+## Goes on with the exam saved after the last round (or the last Market). False if there is
+## none, or it does not fit the current data.
+func resume_exam() -> bool:
+	var saved: Dictionary = SaveManager.data.get("current_exam", {})
+	var loaded: ExamState = ExamState.new()
+	if saved.is_empty() or not (saved.get("state") is Dictionary) or not loaded.load_dict(tables(), saved["state"]):
+		return false
+	exam = loaded
+	RunState.start_exam(exam.parent_id, exam.exam_seed)
+	if str(saved.get("phase", "")) == PHASE_SHOP:
+		_open_shop()
+	else:
+		_show_intro()
+	return true
+
+
+## The exam in progress is saved between rounds: before the board ("board") or before the
+## Market ("shop"). Quitting in the middle of a round goes back to the last save.
+func _save_exam(phase: String) -> void:
+	SaveManager.data["current_exam"] = {"phase": phase, "state": exam.to_dict()}
+	SaveManager.save_game()
+
+
+func _clear_saved_exam() -> void:
+	SaveManager.data["current_exam"] = {}
+	SaveManager.save_game()
 
 
 ## The GameData tables the exam logic needs.
@@ -54,7 +87,7 @@ static func tables() -> Dictionary:
 		"runes": GameData.runes, "words": GameData.words, "spells": GameData.spells,
 		"spell_actions": GameData.spell_actions, "rules": GameData.rules, "economy": GameData.economy,
 		"trials": GameData.trials, "examiners": GameData.examiners, "talismans": GameData.talismans,
-		"lessons": GameData.lessons, "engravings": GameData.engravings,
+		"lessons": GameData.lessons, "engravings": GameData.engravings, "parents": GameData.parents,
 	}
 
 
@@ -138,10 +171,13 @@ func _on_round_over() -> void:
 	_round_screen.queue_free()
 	_round_screen = null
 	if bool(summary["exam_over"]):
+		_clear_saved_exam()
 		_show_result(summary)
 	elif bool(summary.get("second_chance", false)):
+		_save_exam(PHASE_BOARD)
 		_show_second_chance()
 	else:
+		_save_exam(PHASE_SHOP)
 		_show_reward(summary)
 
 
@@ -180,6 +216,7 @@ func _open_shop() -> void:
 	screen.open(logic)
 	screen.closed.connect(func() -> void:
 		screen.queue_free()
+		_save_exam(PHASE_BOARD)
 		_show_intro())
 
 
@@ -212,7 +249,7 @@ func _show_result(summary: Dictionary) -> void:
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.add_theme_constant_override("separation", 20)
 	_box.add_child(row)
-	_button(Loc.t("exam_again"), func() -> void: start_exam(), true, row)
+	_button(Loc.t("exam_again"), func() -> void: start_exam(exam.parent_id), true, row)
 	_button(Loc.t("result_menu"), _go_to_menu, false, row)
 
 

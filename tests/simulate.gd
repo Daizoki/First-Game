@@ -11,7 +11,8 @@ extends SceneTree
 ## Part 4 (Stage 3): whole exams of 8 trials with the Night Market in between, played by a
 ## simple player (greedy Words, spells by chance, buys what it can afford). Reports how far
 ## the exams get, which examiners stop them, and Coins / Talismans along the way.
-##   part=4 runs only Part 4 (exams=100 by default).
+##   part=4 runs only Part 4 (exams=100 by default); parent=<id> plays every exam as that
+##   parent's child (data/parents.json).
 
 const Fixtures = preload("res://tests/fixtures.gd")
 const Stone = preload("res://scripts/core/stone.gd")
@@ -33,13 +34,13 @@ func _initialize() -> void:
 	if part.is_empty() or part == "3":
 		_spell_balance(data, int(options.get("seed", 1)), int(options.get("exams", 150)))
 	if part.is_empty() or part == "4":
-		_full_exams(data, int(options.get("seed", 1)), int(options.get("exams", 100)))
+		_full_exams(data, int(options.get("seed", 1)), int(options.get("exams", 100)), str(options.get("parent", "")))
 	quit()
 
 
 # --- Part 4: whole exams --------------------------------------------------------------------
 
-func _full_exams(data: Dictionary, seed_value: int, exams: int) -> void:
+func _full_exams(data: Dictionary, seed_value: int, exams: int, parent: String) -> void:
 	var trials: int = (data["trials"] as Dictionary).size()
 	var reached: Array[int] = []
 	reached.resize(trials + 1)
@@ -53,7 +54,7 @@ func _full_exams(data: Dictionary, seed_value: int, exams: int) -> void:
 	var passed: int = 0
 	for e: int in exams:
 		var exam: ExamState = ExamState.new()
-		exam.setup(data, seed_value * 100003 + e)
+		exam.setup(data, seed_value * 100003 + e, parent)
 		while not exam.is_over():
 			var trial: int = exam.trial_index
 			var kind: String = exam.round_kind()
@@ -76,7 +77,8 @@ func _full_exams(data: Dictionary, seed_value: int, exams: int) -> void:
 		if exam.passed:
 			passed += 1
 	print("")
-	print("== Whole exams (%d exams, a simple player with the Night Market) ==" % exams)
+	print("== Whole exams (%d exams, a simple player with the Night Market, parent: %s) ==" % [
+		exams, parent if not parent.is_empty() else "none"])
 	var targets: PackedStringArray = []
 	for id: String in data["trials"]:
 		targets.append(str(data["trials"][id]["base_target"]))
