@@ -560,4 +560,45 @@ Un efect = **declanșator** + **condiții** + **acțiuni**.
   - Indiciile nu mai apar peste animația mare de descoperire. EventBus are acum `overlay_opened`/`overlay_closed`, iar
     indiciile se ascund cât e ceva peste joc.
   - Lecția 4: pașii 4 și 7 luminează propoziția de sub cerc (`sentence`), nu cercul.
+- **Etapa 2b, pasul C — balansul Gramaticii (simulatorul, `godot --headless --script tests/simulate.gd -- part=3`):**
+  - Partea 3 a simulatorului joacă 150 de examene de câte 3 runde (450 de runde). Ținta e 1 800 pe rundă, aleasă ca
+    jocul fără vrăji să piardă cam o rundă din patru. Vrăjile care țin mai mult de o rundă se moștenesc între runde.
+  - Patru strategii:
+    - **off**: fără vrăji;
+    - **greedy**: cel mai bun Cuvânt, vrăjile doar din întâmplare;
+    - **seek**: rostește o vrajă dacă Cuvântul ei valorează cel puțin jumătate din cel mai bun;
+    - **seek2**: la fel, dar cel mult 2 vrăji pe rundă.
+
+    | strategia | runde câștigate | scor final / țintă (median) | Rostiri cu vrajă | runde la limita de 40% |
+    |---|---|---|---|---|
+    | off | 74,9% | 1,11× | 0% | 0% |
+    | greedy | 80,2% | 1,15× | 34% | 0,7% |
+    | seek | 80,2% | 1,24× | 80% | 2,0% |
+    | seek2 | 78,0% | 1,19× | 60% | 2,4% |
+  - **Concluzii:**
+    - Vrăjile apar ușor: o treime din Rostiri au una din întâmplare, 80% dacă le cauți.
+    - Totuși **nu fac jocul prea ușor**: +5 puncte procentuale de runde câștigate și +12% scor median.
+    - Limita de 40% la țintă se atinge rar (2% din runde).
+    - Varianta „cel mult 2 vrăji pe rundă” nu e necesară acum: dă un rezultat puțin mai slab, iar jocul nu e prea ușor.
+    - Nu propun nici vrăji simple mai slabe.
+  - **Vrăji prea puternice** (pe Rostirea lor, comparat cu o Rostire fără vrajă, care urcă scorul cu ~0,48 din țintă):
+    - Rana (×3 Rezonanță, sparge o piatră): 5,3×;
+    - Revărsarea (Cuvântul urcă un rang): 3,9×;
+    - Văpaia (×1,5): 2,4×;
+    - Lumina plină (×2 cu 5 pietre): 2,4×;
+    - Răbdarea (+3 Rez. pentru fiecare piatră din mână): 2,2×;
+    - Bâlbâiala (punctează de două ori, Cuvântul −1 nivel): 2,1×.
+    Toate sunt vrăji „înainte”, pe Cuvânt, firești ca cele mai tari. **Propunere:**
+    - Rana ×3 → ×2,5;
+    - Revărsarea rămâne, dar o urmărim în Etapa 3 (cu Lecțiile poate deveni prea bună);
+    - celelalte rămân.
+  - **Vrăji slabe acum:**
+    - **Asaltul** (ținta scade cu Puterea Rostirii) scade ținta doar cu ~3,6%, fiindcă Puterea e mică față de țintă.
+      **Propunere:** ținta scade cu de 3 ori Puterea (`percent` 100 → 300).
+    - Încurajarea, Ziua lungă, Merindea, Avântul și Cămara cântăresc puțin pe Rostirea lor. Rostirea în plus,
+      Monedele și runda următoare se văd abia în examenul complet. **Propunere:** le judecăm în Etapa 3, cu Piața și
+      țintele reale.
+    - Vrăjile cu Monede (Târgul, Ciobul, Izvorul, Camăta) dau 5–14 Monede. Încă nu au pe ce le cheltui, deci se pot
+      judeca abia în Etapa 3.
+  - **Nicio valoare nu e schimbată până nu decide Relax.**
 

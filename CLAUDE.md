@@ -14,7 +14,7 @@ Artă: `docs/ARTA.md`.
 > pașii A–D** — EventBus, stratul de instruire (lumină, bulă, săgeată), intro + Lecțiile 1–5 în `data/tutorial.json`,
 > mâini fixe, blocarea acțiunilor, numele jucătorului, pauza, Setările, fișa pietrei, fișa cercului, Cartea Cuvintelor
 > (buton + tasta C), Cartea de rune (din pauză), indiciile contextuale (`data/hints.json`). Așteaptă testul final al
-> lui Relax. **Etapa 2b (Gramatica runelor, `docs/GRAMATICA.md`) e în lucru: pașii A și B făcuți** — rolurile runelor,
+> lui Relax. **Etapa 2b (Gramatica runelor, `docs/GRAMATICA.md`) e în lucru: pașii A, B și C făcuți** — rolurile runelor,
 > cele 64 de vrăji Element → Țintă, cele 8 Acțiuni, `SentenceParser` + `SpellResolver`, Lecția 4 nouă; interfața:
 > semnul rolului, numerele de ordine, propoziția sub cerc, panoul de alegeri, Pergamentul, Tabla Vrăjilor.
 > Verificat cu Godot 4.7.2: 121 de teste trec (inclusiv parcurgerea fiecărei lecții).
@@ -132,7 +132,8 @@ ecran se fac cu `xvfb-run` + `--rendering-driver opengl3`. Pe calculatorul lui R
 godot --headless --editor --quit          # prima dată pe un clone nou: importă proiectul (.godot/)
 godot --headless --path . --quit          # prinde erorile de parsare
 godot --headless --script tests/run_tests.gd   # testele logice; cod de ieșire 0 = ok
-godot --headless --script tests/simulate.gd    # simulatorul (din Etapa 2): frecvența Cuvintelor, apoi balans
+godot --headless --script tests/simulate.gd    # simulatorul: frecvența Cuvintelor, rundele, balansul vrăjilor
+godot --headless --script tests/simulate.gd -- part=3 exams=150   # doar balansul Gramaticii runelor
 ```
 Teste noi: fișier `tests/test_<ceva>.gd` care `extends "res://tests/test_case.gd"`, metode `test_*`,
 adăugat în lista `TEST_FILES` din `tests/run_tests.gd`.
@@ -171,7 +172,7 @@ tests/       run_tests.gd, test_case.gd, fixtures.gd, test_data/loc/save/words/s
 | 1 | Scheletul: Compatibility + 1920×1080, foldere, autoload-uri, JSON + validare, meniu, setări cu limba, docs, **scena de verificare a celor 24 de rune desenate din cod** | făcută |
 | 2 | Miezul — o rundă: săculețul de 48, mâna de 8, Rostire/Schimbare, sortare/rearanjare, recunoașterea Cuvintelor (cu Laguz și ordinea), Putere × Rezonanță animat, cele 24 de Glasuri, rundă de test; teste; simulatorul + tabelul de probabilități; **primele 8 Vrăji** (detectare, efecte, descoperire, animație simplă); ecranul de rundă așezat ca în 3.16 | făcută (așteaptă testul lui Relax) |
 | 2½ | Instruirea „Seara dinaintea examenului” (`docs/INSTRUIRE.md`): A sistemul, B lecțiile 1–5, C ajutorul permanent + indiciile, D documentele | făcută (așteaptă testul final al lui Relax) |
-| 2b | Gramatica runelor (`docs/GRAMATICA.md`): A datele și logica, B interfața, C balansul, D instruirea și documentele | A, B făcuți |
+| 2b | Gramatica runelor (`docs/GRAMATICA.md`): A datele și logica, B interfața, C balansul, D instruirea și documentele | A, B, C făcuți |
 | 3 | Examenul complet: 8 Probe × 3 runde, Examinatorii, Monede, Piața de noapte, primele 15 Talismane, Lecții, Gravuri, materiale, legături runice, Săculețe, Picat / Examen trecut | — |
 | 4 | Bucla Aevei: Dimineața, alegerea părintelui, Amintiri, deblocări, salvare (inclusiv examenul în curs), Cartea de rune (cu Vrăjile descoperite), Colecția, numele jucătorului, Paginile rupte în Piață | — |
 | 5 | Povestea și conținutul: intro, replici, final, restul Talismanelor (~30), restul Vrăjilor (30–40, cu blestemele), Cuvintele vechi (ALU, LAÞU, AUJA), balans cu simulatorul | — |
