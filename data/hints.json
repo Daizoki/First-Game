@@ -18,7 +18,7 @@
 		"enabled": false,
 		"speaker": "vera",
 		"trigger": {"event": "shop_opened"},
-		"text": {"ro": "Bună seara, puiule. Aici cumperi ce te ține în viață la examen.", "en": "Good evening, dear. Here you buy what keeps you alive at the exam."}
+		"text": {"ro": "Bună seara, puiule. Aici cumperi ce te ține în viață la examen.", "en": "Good evening, dear. Here you buy what keeps you alive in the exam."}
 	},
 	{
 		"id": "first_shop_2",

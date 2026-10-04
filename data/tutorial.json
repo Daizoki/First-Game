@@ -21,7 +21,7 @@
 		},
 		"skip": {
 			"ro": "Mă descurc singur",
-			"en": "I'll manage alone"
+			"en": "I'll manage on my own"
 		},
 		"confirm": {
 			"ro": "Sigur? Kaldor nu explică nimic.",
@@ -75,7 +75,7 @@
 				{
 					"text": {
 						"ro": "Ține mouse-ul pe o piatră ca să afli ce e.",
-						"en": "Hold the mouse over a stone to find out what it is."
+						"en": "Hover over a stone to find out what it is."
 					},
 					"spotlight": [
 						"hand"
@@ -87,7 +87,7 @@
 				{
 					"text": {
 						"ro": "Cifra din colț e Poziția. Culoarea e Neamul. Restul îl citești singur.",
-						"en": "The number in the corner is the Position. The colour is the Kin. The rest you can read yourself."
+						"en": "The number in the corner is the Position. The color is the Kin. The rest you can read yourself."
 					}
 				},
 				{
@@ -343,7 +343,7 @@
 				{
 					"text": {
 						"ro": "Ține mouse-ul pe Hagalaz.",
-						"en": "Hold the mouse over Hagalaz."
+						"en": "Hover over Hagalaz."
 					},
 					"spotlight": [
 						"stone:hagalaz"
@@ -356,7 +356,7 @@
 				{
 					"text": {
 						"ro": "Hagalaz e grindina și lovește de două ori. Fehu e avuția și îți aduce o monedă.",
-						"en": "Hagalaz is hail and strikes twice. Fehu is wealth and brings you a coin."
+						"en": "Hagalaz is hail and strikes twice. Fehu is wealth and brings you a Coin."
 					},
 					"spotlight": [
 						"stone:hagalaz",

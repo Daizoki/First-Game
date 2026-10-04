@@ -344,6 +344,60 @@ albastru/roșu ale Balatro. Paleta și fonturile: `docs/ARTA.md`.
 - **Sunet** (placeholder-uri acum): fiecare piatră punctată are un sunet care urcă în ton. Muzica: atmosferă de noapte
   cu instrumente populare (nai, țambal, cobză), ca identitate proprie.
 
+## 3.17 Instruirea și indiciile
+Specificația completă e în `docs/INSTRUIRE.md`; aici e ce s-a construit și regulile pentru etapele viitoare.
+
+**Instruirea — „Seara dinaintea examenului”** (Maestra Ilinca, sala de curs a Școlii de Rune):
+- Pornește singură la prima pornire, după nume. Intro cu două butoane: **Învață-mă** → Lecția 1;
+  **Mă descurc singur** → „Sigur? Kaldor nu explică nimic.” [Da, sar] [Nu, rămân].
+- Se poate relua din meniu („Instruire”) și din Setări („Reia instruirea”); se poate sări din pauză. La final (sau la
+  sărit) se salvează `tutorial_done`.
+- Cinci lecții, fiecare o mini-rundă. Valorile stau în `data/tutorial.json`:
+
+  | # | Lecția | Ce înveți | Mână | Ținta | Rostiri / Schimbări |
+  |---|---|---|---|---|---|
+  | 1 | Pietrele și Rostirea | fișa pietrei, Poziția, Neamul, Perechea, cercul, scorul încetinit, lumânările | fixă | 250 | 3 / 0 |
+  | 2 | Schimbarea și Cuvintele mari | Schimbarea, maximum 5 pietre, Familia, Cartea Cuvintelor | fixă (+ 2 pietre fixe în săculeț) | 3 000 | 2 / 1 |
+  | 3 | Glasul runelor | Glasurile: Hagalaz lovește de două ori, Fehu dă o Monedă | fixă | 240 | 2 / 0 |
+  | 4 | Vrăjile | Iarna (Isaz + Hagalaz + Naudiz), cercul care „se trezește”, Vrajă + Treime | fixă | 140 | 2 / 0 |
+  | 5 | Singur | joc liber cu săculețul întreg (seed fix); după 25 s fără acțiune, un singur indiciu | trasă | 280 | 4 / 3 |
+
+- Pașii unei lecții: bulă de citit (clic), sau „așteaptă” o acțiune (mouse pe o piatră, o selecție anume, Rostire,
+  Schimbare, carte deschisă / închisă). Lumina (`spotlight`) arată elementul; restul ecranului se întunecă.
+- Doar acțiunile care ar strica lecția se blochează (butoanele se sting); mouse-ul pe pietre merge mereu. O selecție
+  greșită nu se blochează: Ilinca spune `wrong_text`. Scorul lecției 1 se joacă încetinit, cu bule pe faze.
+- Pierzi o lecție → o iei de la capăt („Nu se notează.”). Lecția 5 câștigată → instruirea e gata → meniul principal
+  (până apare Dimineața examenului, Etapa 4).
+
+**Ajutorul permanent** (merge mereu, și în instruire):
+- **Fișa pietrei** (mouse pe piatră): runa, Poziția și Neamul, sensul istoric, Puterea, Glasul.
+- **Fișa cercului** (mouse pe mijlocul cercului): Cuvântul, descrierea, câte pietre punctează (ele strălucesc în mână,
+  celelalte selectate se estompează), Putere × Rezonanță, Vrăjile găsite.
+- **Cartea Cuvintelor** (butonul „Cuvinte” lângă cerc sau tasta **C**): cele 10 Cuvinte de la cel mai puternic la cel
+  mai obișnuit, cu exemplu din pietre mici, nivel și valori; Cuvântul Vechi e „???” până îl descoperi.
+- **Cartea de rune** (din pauză): cele 24 de rune pe Neamuri, apoi Vrăjile; cele nedescoperite sunt „???”.
+
+**Indiciile contextuale** (`data/hints.json`, tot jocul):
+- Bulă mică cu portret în dreapta ecranului; apare **o singură dată**, pe rând, nu blochează nimic, se închide cu un
+  clic. Se trec la „văzute” (`hints_seen`) când apar.
+- Tăcute în instruire și când sunt oprite din Setări (`hints_enabled`); ascunse cât timp e deschisă pauza sau o carte.
+- Fiecare indiciu are fie `trigger` (un eveniment din `ENUMS["hint_event"]`, plus `rune` / `seconds` / `max_exams`),
+  fie `follows` (vine imediat după alt indiciu). Acum sunt pornite `first_laguz` și `idle_help`; celelalte 16 au
+  `"enabled": false` și așteaptă etapa lor (tabelul din `docs/INSTRUIRE.md`, secțiunea 4).
+
+**Cum se leagă de joc:** jocul doar emite evenimente pe `EventBus` și întreabă „poarta” (`allowed_actions`,
+`selectable_runes`); instruirea și indiciile doar ascultă. Elementele pe care lumina le poate găsi au metadata
+`tutorial_id` (lista în `ENUMS["ui_id"]`); pietrele sunt `stone:<rune_id>`.
+
+**Reguli pentru fiecare etapă viitoare** (sunt și în `CLAUDE.md`):
+1. Când construiești un element care are indicii în `hints.json`, îi pui `"enabled": true`, emiți evenimentul lui
+   (`Hints.fire(...)` sau un semnal nou pe `EventBus`) și adaugi un test în `tests/test_hints.gd`.
+2. Orice element nou pe care jucătorul îl vede (Talisman, consumabil, regula Examinatorului, marfa din Piață…)
+   primește **fișă la mouse**, în stilul fișei pietrei (`TooltipPanel`).
+3. Elementele noi pe care ar putea să le arate instruirea sau un indiciu primesc `tutorial_id` (și intră în
+   `ENUMS["ui_id"]`).
+4. Orice text nou are română și engleză; traducerea în engleză i-o arăt lui Relax la finalul etapei.
+
 ## Sistemul de efecte (2.2)
 Un efect = **declanșator** + **condiții** + **acțiuni**.
 - Declanșatori: `on_score` (piatra punctează), `on_held` (piatra stă în mână când rostești), `on_round_end`,
@@ -418,3 +472,11 @@ Un efect = **declanșator** + **condiții** + **acțiuni**.
     Rezonanță și Vrăjile; pietrele care punctează strălucesc, celelalte selectate se estompează.
   - Cartea de rune (din pauză): runele pe Neamuri (sens, Poziție, Putere, Glas), apoi Vrăjile. Vrăjile nedescoperite
     arată „???” și pietre goale — numărul pietrelor goale spune dacă Vraja are 2 sau 3 rune.
+- **Etapa 2½, pasul D — documentele (propuneri de verificat de Relax):**
+  - Secțiunea 3.17 „Instruirea și indiciile” rezumă ce s-a construit și regulile pentru etapele viitoare; aceleași
+    reguli, pe scurt, sunt în `CLAUDE.md`.
+  - Traducerile în engleză stau în `docs/TRADUCERI.md`, generat cu `python3 tools/export_translations.py` din
+    `data/` (instruirea, indiciile, textele interfeței). Se regenerează după orice text nou.
+  - Am corectat 5 rânduri în engleză: „Hold the mouse over” → „Hover over” (de 2 ori, ca în indiciul `idle_help`),
+    „I'll manage alone” → „I'll manage on my own”, „a coin” → „a Coin” (ca „Coins” din interfață), „colour” →
+    „color” (engleza americană, peste tot la fel), „alive at the exam” → „alive in the exam”.
