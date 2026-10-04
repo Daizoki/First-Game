@@ -34,6 +34,13 @@ Artă: `docs/ARTA.md`.
 > „Joacă” duce în Dimineață. Așteaptă testul lui Relax.
 > Verificat cu Godot 4.7.2: toate testele trec (inclusiv parcurgerea fiecărei lecții).
 
+## Etapa 5 — marea schimbare (citește întâi asta)
+- **`docs/PROMPT_ETAPA5.md` are prioritate** față de `docs/GRAMATICA.md`, `docs/INSTRUIRE.md` și promptul de start
+  acolo unde se contrazic: lupte cu monștri din folclorul românesc, dauna vine din vrăji, fără Cuvinte, Poziție și
+  Glasuri pe runele de bază, rune rare, Cercuri, stil gotic est-european, fonturile Cinzel + Alegreya.
+- Planul de migrare (pasul A) e în `docs/PLAN_ETAPA5.md`; imaginile de referință în `docs/referinte/`.
+- Până la OK-ul lui Relax pe plan, codul de mai jos descrie încă jocul din Etapa 4.
+
 ## Cum lucrăm
 - Utilizatorul e **Relax** (18 ani, Chișinău; desenează, TikTok/YouTube). **Scrie-i în română.**
   Codul, numele de fișiere și comentariile din cod sunt în **engleză**.
@@ -196,5 +203,5 @@ tests/       run_tests.gd, test_case.gd, fixtures.gd, test_data/loc/save/words/s
 | 2b | Gramatica runelor (`docs/GRAMATICA.md`): A datele și logica, B interfața, C balansul, D instruirea și documentele | făcută (așteaptă testul lui Relax) |
 | 3 | Examenul complet: 8 Probe × 3 runde, Examinatorii, Monede, Piața de noapte, primele 15 Talismane, Lecții, Gravuri, materiale, legături runice, Săculețe, Picat / Examen trecut | făcută (așteaptă testul lui Relax) |
 | 4 | Bucla Aevei: Dimineața, alegerea părintelui, Amintiri, deblocări, salvare (inclusiv examenul în curs), Cartea de rune (cu Vrăjile descoperite), Colecția, numele jucătorului, Paginile rupte în Piață | făcută (așteaptă testul lui Relax) |
-| 5 | Povestea și conținutul: intro, replici, final, restul Talismanelor (~30), blestemele (propoziții care se întorc împotriva ta), Cuvintele vechi (ALU, LAÞU, AUJA), balans cu simulatorul | — |
-| 6 | Șlefuire și export: efectele din 3.13 și 3.16 (linii care fierb, granulație, animația completă a Vrăjilor), fonturile Grenze (cu OK), arta lui Relax, ultimul balans, export Linux/Windows/Web | — |
+| 5 | Marea schimbare (`docs/PROMPT_ETAPA5.md`): A planul, B lupta și dauna, C runele, D lumea, E Piața și Cercurile, F UI Kit, G ecranele, H Examenul în 3 lecții, I balansul | A: planul scris (`docs/PLAN_ETAPA5.md`), așteaptă OK-ul lui Relax |
+| 6 | Șlefuire și export: povestea (intro, final), restul Talismanelor, arta lui Relax, sunetul, ultimul balans, export Linux/Windows/Web | — |
