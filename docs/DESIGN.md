@@ -264,51 +264,75 @@ interpretări moderne (secolul XX).
 - Primul examen complet reușit: după câteva ore de joc.
 - O partidă completă: 30–45 de minute.
 
-## 3.15 Vrăjile (combinații cu efecte complet diferite)
-> **Înlocuită de Gramatica runelor (Etapa 2b, `docs/GRAMATICA.md`):** fiecare rună are un rol (Element, Acțiune,
-> Țintă), iar vraja e o propoziție Element → (cel mult 2 Acțiuni) → Țintă, în ordinea de rostire. Textul de mai jos
-> descrie vechile Vrăji cu rețete fixe; Pasul D al Etapei 2b rescrie secțiunea.
+## 3.15 Gramatica runelor (Vrăjile)
+> Înlocuiește vechile Vrăji cu rețete fixe (Etapa 2b). Specificația completă e în `docs/GRAMATICA.md`; valorile sunt în
+> `data/spells_base.json`, `data/spell_actions.json` și `data/economy.json`.
 
-- O **Vrajă** = 2–3 rune anume, rostite în aceeași Rostire. Ordinea nu contează. Excepție fac Cuvintele vechi ascunse
-  (ALU, LAÞU, AUJA), unde ordinea contează.
-- Vrăjile se verifică pe **toate pietrele rostite**, nu doar pe cele care punctează în Cuvânt. Poți rosti un Cuvânt și
-  o Vrajă deodată. Exemplu: Hagalaz + Fehu + Tiwaz + Isaz + Naudiz = o **Treime** (trei pietre cu Poziția 1) **și**
-  Vraja **Iarna** (Isaz + Hagalaz + Naudiz).
-- **Decizia jucătorului:** runele unei Vrăji formează de obicei un Cuvânt slab. Alegi între scor mare acum și efectul Vrăjii.
-- O legătură runică contează ca ambele rune și pentru Vrăji. **Laguz nu e joker pentru Vrăji**, ci doar pentru Neam.
-- Dacă se potrivesc mai multe Vrăji, se activează toate, fiecare o singură dată pe Rostire.
-- Fiecare Vrajă are un **moment**: `before_score` (schimbă calculul), `after_score` sau `next_cast` (pentru următoarea Rostire).
-- Efectele sunt **de alt fel decât scorul**. Categorii: Țintă, Economie, Săculeț, Acțiuni, Talismane, Examinator, Risc,
-  Permanent, Scor. Pe lângă efect, Rostirea punctează normal.
-- **Regula de aur:** fiecare Vrajă trebuie să se poată **ghici din sensurile runelor** (gheață + grindină + nevoie = iarnă).
+**Ideea:** runele sunt cuvinte. Fiecare rună are un **rol**, ales după sensul ei, iar pietrele rostite una după alta
+formează o **propoziție**. Propoziția corectă devine vrajă. Altă ordine înseamnă altă vrajă sau nicio vrajă.
+
+- **Rolurile** (8 de fiecare; Neamul și Poziția rămân, pentru Cuvinte):
+  - **Elemente**, din ce e făcută vraja: Kenaz Focul, Uruz Forța, Thurisaz Spinul, Isaz Gheața, Hagalaz Grindina,
+    Sowilo Soarele, Laguz Apa, Dagaz Ziua;
+  - **Acțiuni**, cum lucrează: Raidho se întinde, Gebo se dăruiește, Naudiz cere un preț, Jera se coace, Eihwaz
+    durează, Perthro riscă, Berkanan crește, Ehwaz aleargă de două ori;
+  - **Ținte**, asupra a ce: Tiwaz peste Țintă, Fehu în Monede, Othala în Săculeț, Mannaz în Mână, Ansuz în Cuvânt,
+    Ingwaz în Viitor, Wunjo în Talismane, Algiz asupra Examinatorului (ultimele două pornesc în Etapa 3).
+  - Laguz e Apa, un Element, nu un joker pentru vrăji. Pentru Neam rămâne joker.
+- **Propoziția:** **Element → Țintă**, **Element → Acțiune → Țintă** sau **Element → Acțiune → Acțiune → Țintă**.
+  - Pietrele stau una după alta, în **ordinea de rostire** (ordinea în care le selectezi; pe piatră apare numărul
+    1–5).
+  - Contează doar **prima** propoziție completă.
+  - Pietrele din afara propoziției punctează normal, iar o piatră poate fi și în Cuvânt, și în vrajă.
+  - Ordine greșită (Ținta înaintea Elementului) = nicio vrajă.
+  - O propoziție întreruptă de altă piatră nu se leagă.
+- **Vrăjile de bază:** 8 Elemente × 8 Ținte = **64**, fiecare cu nume și efect (de ex. Gheața peste Țintă =
+  **Iarna**: ținta scade cu 15%).
+  - Momentul efectului: **înainte** (schimbă scorul Rostirii), **după** (după scor) sau **mai târziu** (următoarea
+    Rostire sau rundă).
+  - Cele 16 spre Talismane și Examinator au datele scrise, dar „dorm” (`enabled: false`) până în Etapa 3.
+- **Acțiunile** schimbă vraja de bază și se aplică în ordine:
+  - Raidho: valorile ×1,5; pe o vrajă care atinge o singură piatră, le atinge pe toate, la jumătate de putere;
+  - Ehwaz: de 2 ori;
+  - Eihwaz: se repetă la începutul următoarelor 2 runde, la jumătate;
+  - Berkanan: +50% pentru fiecare rostire anterioară a aceleiași vrăji în examen;
+  - Jera: vine la finalul rundei, dublu;
+  - Perthro: 50% ×3, 50% nimic;
+  - Naudiz: plătești pe loc 1 Rostire sau 4 Monede, efect ×2,5;
+  - Gebo: vraja nu se întâmplă acum, ci așteaptă pe **Pergament** (1 loc), până îl folosești.
+  O Acțiune care n-are ce schimba nu face nimic, iar previzualizarea spune asta.
+- **Limite** (în `economy.json`): ținta nu scade sub 40% din valoarea de la începutul rundei; cel mult +2 Rostiri pe
+  rundă din vrăji; un singur Pergament.
+- **Glasurile care țin de ordine** citesc ordinea de rostire:
+  - Gebo copiază Glasul pietrei rostite înaintea ei;
+  - Ehwaz face să mai puncteze o dată piatra de după ea;
+  - Tiwaz dă ×2 Rezonanță dacă e rostită prima.
+  Cu vrăjile oprite (Lecțiile 1–3), pietrele se citesc de la stânga la dreapta.
+- **Pe ecran:**
+  - semnul rolului în colțul pietrei (triunghi = Element, săgeată = Acțiune, cerc cu punct = Țintă);
+  - numerele de ordine pe pietrele selectate;
+  - **propoziția sub cerc**, în locașe care se umplu pe rând, cu mesajul de dedesubt:
+    - „???” cât timp vraja nu e descoperită;
+    - numele și efectul, după ce e descoperită;
+    - „propoziție neterminată”;
+    - „Ordinea e greșită: Elementul vine primul.”
+  - panoul de alegeri, pentru vrăjile care îți cer ceva (piatra de spart, Neamul nou, ordinea din săculeț, prețul
+    lui Naudiz…);
+  - locul de Pergament.
 - **Descoperirea:**
-  - la început toate Vrăjile sunt ascunse;
-  - când pietrele selectate conțin o Vrajă nedescoperită, cercul strălucește și scrie „ceva se trezește în cerc…”, fără să spună ce;
-  - prima rostire a unei Vrăji pornește o animație mare (3.16), făcută pentru clipuri pe TikTok;
-  - Vraja rămâne descoperită pentru totdeauna (în Cartea de rune) și dă +Amintiri.
-- **Indicii:** Tanti Vera vinde **Pagini rupte** (consumabil). O Pagină arată runele unei Vrăji nedescoperite, cu un vers ca indiciu.
-- **Blesteme:** 2–3 combinații care se întorc împotriva ta, dar cu o recompensă. Și ele se descoperă.
-- Prima versiune: **30–40 de Vrăji** în `data/spells.json` (8 în Etapa 2, restul în Etapa 5). Exemple:
-
-| Vrajă | Rune | Logica | Efect | Moment |
-|---|---|---|---|---|
-| Iarna | Isaz + Hagalaz + Naudiz | gheață + grindină + nevoie | ținta rundei scade cu 15% | după |
-| Târgul | Fehu + Gebo | avere + dar | +6 Monede | după |
-| Răsăritul | Dagaz + Sowilo | zi + soare | Rostirea asta nu se consumă | după |
-| Steaua | Tiwaz + Sowilo | stea călăuzitoare + soare | ×2 Rezonanță la următoarea Rostire | următoarea |
-| Lecția | Ansuz + Mannaz | zeu + om (zeii învață de la oameni) | Cuvântul rostit crește cu 1 nivel | după |
-| Moștenirea | Othala + Mannaz + Gebo | moștenire + om + dar | primești un Talisman aleatoriu (dacă ai loc) | după |
-| Hramul | Wunjo + Gebo + Mannaz | bucurie + dar + oameni = sărbătoare | la următoarea vizită în Piață, totul costă pe jumătate | după |
-| Drumul | Raidho + Ehwaz | călătorie + cal | tragi 3 pietre în plus (doar în runda asta) | după |
-| Făclia | Kenaz + Perthro | făclie + necunoscut | vezi și reordonezi următoarele 5 pietre din săculeț | după |
-| Uriașul | Thurisaz + Uruz | uriaș + bour | Putere ×2 pentru Rostirea asta | înainte |
-| Pădurea | Berkanan + Eihwaz + Ingwaz | mesteacăn + tisă + sămânță | pietrele din Cuvânt primesc +5 Putere permanent | după |
-| Sacrificiul | Tiwaz + Naudiz | dreptate + nevoie | distrugi o piatră aleasă din mână; ×3 Rezonanță acum | înainte |
-| Zarurile | Perthro + Fehu | joc + avere | 50%: îți dublezi Monedele (max +20); 50%: pierzi 5 | după |
-| Scutul | Algiz + Eihwaz | elan + tisă (rezistență) | regula Examinatorului e anulată tot restul rundei | după |
-| Potopul | Laguz + Uruz | apă + forță | schimbi toată mâna fără să consumi o Schimbare | după |
-| Focul | Kenaz + Thurisaz | făclie + spin | arzi până la 2 pietre din săculeț (le scoți definitiv); +2 Monede pentru fiecare | după |
-| Grindina pe recoltă *(blestem)* | Hagalaz + Jera | grindină + recoltă | −5 Monede, dar ×3 Rezonanță acum | înainte |
+  - Prima rostire a unei vrăji de bază pornește animația mare (3.16), făcută pentru clipuri.
+  - Prima folosire a unei Acțiuni are o animație mică: „Ai învățat: aleargă de două ori”.
+  - Vrăjile și Acțiunile descoperite rămân pentru totdeauna și dau +Amintiri.
+  - **Cartea de rune** are **Tabla Vrăjilor**: 8 × 8, Elementele pe coloane și Țintele pe rânduri, numele sau „?” în
+    fiecare căsuță, iar dedesubt cele 8 Acțiuni.
+- **Mai târziu:**
+  - Cuvintele vechi ascunse (ALU, LAÞU, AUJA) rămân separate de vrăji și se citesc tot în ordinea de rostire.
+  - Paginile rupte din Piață (Etapa 4) arată o căsuță nedescoperită a Tablei, cu un vers ca indiciu.
+  - Blestemele (Etapa 5) vor fi propoziții care se întorc împotriva ta, cu o recompensă.
+- **Balansul** (Etapa 2b, pasul C, jurnalul de mai jos):
+  - vrăjile apar în 34% din Rostiri din întâmplare și în 80% dacă le cauți;
+  - urcă rundele câștigate de la 75% la 80%;
+  - limita de 40% se atinge în 2% din runde.
 
 ## 3.16 Stilul vizual și senzația
 Luăm de la jocurile de gen doar **principiile**: totul reacționează, numerele cresc cu impact, fundalul trăiește, fiecare
@@ -374,20 +398,25 @@ Specificația completă e în `docs/INSTRUIRE.md`; aici e ce s-a construit și r
   (până apare Dimineața examenului, Etapa 4).
 
 **Ajutorul permanent** (merge mereu, și în instruire):
-- **Fișa pietrei** (mouse pe piatră): runa, Poziția și Neamul, sensul istoric, Puterea, Glasul.
+- **Fișa pietrei** (mouse pe piatră): runa, Poziția și Neamul, rolul în Gramatică („Element — Gheața”), sensul
+  istoric, Puterea, Glasul.
 - **Fișa cercului** (mouse pe mijlocul cercului): Cuvântul, descrierea, câte pietre punctează (ele strălucesc în mână,
-  celelalte selectate se estompează), Putere × Rezonanță, Vrăjile găsite.
+  celelalte selectate se estompează), Putere × Rezonanță, propoziția și vraja ei.
 - **Cartea Cuvintelor** (butonul „Cuvinte” lângă cerc sau tasta **C**): cele 10 Cuvinte de la cel mai puternic la cel
   mai obișnuit, cu exemplu din pietre mici, nivel și valori; Cuvântul Vechi e „???” până îl descoperi.
-- **Cartea de rune** (din pauză): cele 24 de rune pe Neamuri, apoi Vrăjile; cele nedescoperite sunt „???”.
+- **Cartea de rune** (din pauză), cu două file: „Runele” (cele 24 de rune pe Neamuri, cu rolul lor) și „Tabla
+  Vrăjilor” (grila 8 × 8 și cele 8 Acțiuni; ce n-ai descoperit e „?”).
+- **Propoziția sub cerc** și **fișa Pergamentului** (mouse pe Pergament), vezi 3.15.
 
 **Indiciile contextuale** (`data/hints.json`, tot jocul):
 - Bulă mică cu portret în dreapta ecranului; apare **o singură dată**, pe rând, nu blochează nimic, se închide cu un
   clic. Se trec la „văzute” (`hints_seen`) când apar.
 - Tăcute în instruire și când sunt oprite din Setări (`hints_enabled`); ascunse cât timp e deschisă pauza sau o carte.
 - Fiecare indiciu are fie `trigger` (un eveniment din `ENUMS["hint_event"]`, plus `rune` / `seconds` / `max_exams`),
-  fie `follows` (vine imediat după alt indiciu). Acum sunt pornite `first_laguz` și `idle_help`; celelalte 16 au
-  `"enabled": false` și așteaptă etapa lor (tabelul din `docs/INSTRUIRE.md`, secțiunea 4).
+  fie `follows` (vine imediat după alt indiciu). Acum sunt pornite `first_laguz`, `idle_help` și cele trei ale
+  Gramaticii: `first_wrong_order` (prima ordine greșită), `first_scroll` (primul Pergament), `first_two_actions` (prima
+  vrajă cu două Acțiuni). Celelalte 16 au `"enabled": false` și așteaptă etapa lor (tabelul din `docs/INSTRUIRE.md`,
+  secțiunea 4).
 
 **Cum se leagă de joc:** jocul doar emite evenimente pe `EventBus` și întreabă „poarta” (`allowed_actions`,
 `selectable_runes`); instruirea și indiciile doar ascultă. Elementele pe care lumina le poate găsi au metadata
@@ -601,4 +630,17 @@ Un efect = **declanșator** + **condiții** + **acțiuni**.
     - Vrăjile cu Monede (Târgul, Ciobul, Izvorul, Camăta) dau 5–14 Monede. Încă nu au pe ce le cheltui, deci se pot
       judeca abia în Etapa 3.
   - **Nicio valoare nu e schimbată până nu decide Relax.**
+- **Etapa 2b, pasul D — instruirea și documentele:**
+  - Lecția 4 e cea din `GRAMATICA.md` 6:
+    - pasul 2 luminează semnele de pe Isaz, Tiwaz și Ehwaz;
+    - pașii 4 și 7 luminează propoziția de sub cerc;
+    - pasul 8 aduce animația mică „Ai învățat: aleargă de două ori” și +8 Monede.
+    Pasul 8 din spec e împărțit în „alege” + „Rostește.” (10 pași în loc de 9), ca să poată fi verificată ordinea
+    înainte de Rostire.
+  - Indiciile `first_wrong_order`, `first_scroll` și `first_two_actions` sunt pornite. Vin din evenimentele EventBus
+    `sentence_read` (statusul `wrong_order`), `scroll_gained` și `spell_sentence_cast` (cu 2 Acțiuni). Ca toate
+    indiciile, tac în instruire.
+  - Secțiunea 3.15 e rescrisă ca „Gramatica runelor”; 3.17 are fișa cu rolul, Tabla Vrăjilor și indiciile noi.
+  - Traducerile în engleză (frazele runelor, cele 64 de nume și efecte, cele 8 Acțiuni, textele noi ale interfeței)
+    sunt în `docs/TRADUCERI.md`, generat cu `python3 tools/export_translations.py`.
 

@@ -2,7 +2,8 @@
 
 > Versiunea de design: **v4 — rune în stil Balatro + Vrăji + stil desenat.** Roguelike de construit scoruri: un Săculeț
 > cu pietre de rune (cele 24 de rune reale ale Futharkului vechi), Cuvinte rostite, scor = Putere × Rezonanță, plus
-> **Vrăji** (combinații secrete de 2–3 rune cu efecte unice, ghicibile din sensul runelor).
+> **Vrăji** după Gramatica runelor: fiecare rună e Element, Acțiune sau Țintă, iar pietrele rostite în ordine formează
+> o propoziție (Element → Acțiuni → Țintă) care devine vrajă.
 > Motto: „Puterea o moștenești. Runele le înveți.”
 
 Citește asta la începutul fiecărei sesiuni. Design: `docs/DESIGN.md`. Lume și personaje: `docs/UNIVERS.md`.
@@ -14,9 +15,11 @@ Artă: `docs/ARTA.md`.
 > pașii A–D** — EventBus, stratul de instruire (lumină, bulă, săgeată), intro + Lecțiile 1–5 în `data/tutorial.json`,
 > mâini fixe, blocarea acțiunilor, numele jucătorului, pauza, Setările, fișa pietrei, fișa cercului, Cartea Cuvintelor
 > (buton + tasta C), Cartea de rune (din pauză), indiciile contextuale (`data/hints.json`). Așteaptă testul final al
-> lui Relax. **Etapa 2b (Gramatica runelor, `docs/GRAMATICA.md`) e în lucru: pașii A, B și C făcuți** — rolurile runelor,
-> cele 64 de vrăji Element → Țintă, cele 8 Acțiuni, `SentenceParser` + `SpellResolver`, Lecția 4 nouă; interfața:
-> semnul rolului, numerele de ordine, propoziția sub cerc, panoul de alegeri, Pergamentul, Tabla Vrăjilor.
+> lui Relax. **Etapa 2b (Gramatica runelor, `docs/GRAMATICA.md`, rezumat în `docs/DESIGN.md` 3.15) e făcută,
+> pașii A–D** — rolurile runelor, cele 64 de vrăji Element → Țintă, cele 8 Acțiuni, `SentenceParser` +
+> `SpellResolver`, Lecția 4 nouă; interfața: semnul rolului, numerele de ordine, propoziția sub cerc, panoul de
+> alegeri, Pergamentul, Tabla Vrăjilor; balansul în simulator (`part=3`), indiciile Gramaticii. Așteaptă testul lui
+> Relax și deciziile de balans (jurnalul din DESIGN).
 > Verificat cu Godot 4.7.2: 121 de teste trec (inclusiv parcurgerea fiecărei lecții).
 
 ## Cum lucrăm
@@ -52,7 +55,7 @@ Artă: `docs/ARTA.md`.
 | nivelurile de dificultate | **Probele** examenului | `trial` |
 | rundele | **Întrebarea mică / mare**, **Examinatorul** | `small` / `big` / `examiner` |
 | banii | **Monede** | `money` |
-| *(nu există la Balatro)* | **Vrăjile** (combinații secrete de rune) | `spell` |
+| *(nu există la Balatro)* | **Vrăjile** (propoziții de rune: Element → Acțiuni → Țintă) | `spell` |
 
 ## Reguli tehnice
 - **Godot 4.x (Relax are 4.7.2 pe Windows), GDScript.** Renderer **Compatibility** de la început (exportul Web). Strălucirea și
@@ -172,8 +175,8 @@ tests/       run_tests.gd, test_case.gd, fixtures.gd, test_data/loc/save/words/s
 | 1 | Scheletul: Compatibility + 1920×1080, foldere, autoload-uri, JSON + validare, meniu, setări cu limba, docs, **scena de verificare a celor 24 de rune desenate din cod** | făcută |
 | 2 | Miezul — o rundă: săculețul de 48, mâna de 8, Rostire/Schimbare, sortare/rearanjare, recunoașterea Cuvintelor (cu Laguz și ordinea), Putere × Rezonanță animat, cele 24 de Glasuri, rundă de test; teste; simulatorul + tabelul de probabilități; **primele 8 Vrăji** (detectare, efecte, descoperire, animație simplă); ecranul de rundă așezat ca în 3.16 | făcută (așteaptă testul lui Relax) |
 | 2½ | Instruirea „Seara dinaintea examenului” (`docs/INSTRUIRE.md`): A sistemul, B lecțiile 1–5, C ajutorul permanent + indiciile, D documentele | făcută (așteaptă testul final al lui Relax) |
-| 2b | Gramatica runelor (`docs/GRAMATICA.md`): A datele și logica, B interfața, C balansul, D instruirea și documentele | A, B, C făcuți |
+| 2b | Gramatica runelor (`docs/GRAMATICA.md`): A datele și logica, B interfața, C balansul, D instruirea și documentele | făcută (așteaptă testul lui Relax) |
 | 3 | Examenul complet: 8 Probe × 3 runde, Examinatorii, Monede, Piața de noapte, primele 15 Talismane, Lecții, Gravuri, materiale, legături runice, Săculețe, Picat / Examen trecut | — |
 | 4 | Bucla Aevei: Dimineața, alegerea părintelui, Amintiri, deblocări, salvare (inclusiv examenul în curs), Cartea de rune (cu Vrăjile descoperite), Colecția, numele jucătorului, Paginile rupte în Piață | — |
-| 5 | Povestea și conținutul: intro, replici, final, restul Talismanelor (~30), restul Vrăjilor (30–40, cu blestemele), Cuvintele vechi (ALU, LAÞU, AUJA), balans cu simulatorul | — |
+| 5 | Povestea și conținutul: intro, replici, final, restul Talismanelor (~30), blestemele (propoziții care se întorc împotriva ta), Cuvintele vechi (ALU, LAÞU, AUJA), balans cu simulatorul | — |
 | 6 | Șlefuire și export: efectele din 3.13 și 3.16 (linii care fierb, granulație, animația completă a Vrăjilor), fonturile Grenze (cu OK), arta lui Relax, ultimul balans, export Linux/Windows/Web | — |
