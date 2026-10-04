@@ -11,6 +11,7 @@ const ShopLogic = preload("res://scripts/core/shop_logic.gd")
 const Portrait = preload("res://scripts/ui/portrait.gd")
 const TalismanRules = preload("res://scripts/core/talisman_rules.gd")
 const MiniStone = preload("res://scripts/ui/mini_stone.gd")
+const Progress = preload("res://scripts/core/progress.gd")
 
 const MONEY_COLOR: Color = Color("#ebaa3c")
 const CARD_SIZE: Vector2 = Vector2(330, 330)
@@ -108,6 +109,7 @@ func _refresh() -> void:
 		child.queue_free()
 	for i: int in shop.offer.size():
 		_stall.add_child(_offer_card(i))
+		_record_seen(shop.offer[i])
 	_refresh_owned()
 
 
@@ -279,6 +281,7 @@ func _show_pack() -> void:
 	var items: Array = _pack["items"]
 	for i: int in items.size():
 		row.add_child(_pack_card(items[i], i))
+		_record_seen(items[i])
 	var skip: Button = _button(_pack_box, Loc.t("pack_skip"), _close_pack)
 	skip.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	skip.custom_minimum_size = Vector2(300, 64)
@@ -348,6 +351,13 @@ func _close_pack() -> void:
 	_pack_layer.visible = false
 	_pack = {}
 	_refresh()
+
+
+## The Collection keeps every Talisman and Engraving the player has seen on the stall.
+func _record_seen(item: Dictionary) -> void:
+	var category: String = {"talisman": "talismans", "engraving": "engravings"}.get(str(item["type"]), "")
+	if not category.is_empty() and Progress.record_seen(SaveManager.data, category, str(item["id"])):
+		SaveManager.save_game()
 
 
 func _label(parent: Control, text: String, font_size: int, variation: StringName) -> Label:

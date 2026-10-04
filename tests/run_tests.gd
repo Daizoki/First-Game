@@ -20,6 +20,7 @@ const TEST_FILES: Array = [
 	"res://tests/test_consumables.gd",
 	"res://tests/test_shop.gd",
 	"res://tests/test_parents.gd",
+	"res://tests/test_progress.gd",
 ]
 
 

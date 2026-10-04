@@ -166,7 +166,10 @@ const SCHEMAS: Dictionary = {
 		"required": {
 			"id": "id", "rarity": "enum:rarity", "kind": "enum:talisman_kind", "name": "loc", "description": "loc",
 		},
-		"optional": {"owner": "ref:characters", "value": "number", "kin": "ref:kins", "word": "ref:words", "step": "number"},
+		"optional": {
+			"owner": "ref:characters", "value": "number", "kin": "ref:kins", "word": "ref:words", "step": "number",
+			"unlock": "int",
+		},
 	},
 	## A Lesson raises one Word by a level (data/lessons.json).
 	"lesson": {
@@ -273,7 +276,8 @@ const SCHEMAS: Dictionary = {
 			"hand_size": "int", "casts_per_round": "int", "swaps_per_round": "int",
 			"max_stones_per_action": "int", "copies_per_rune": "int", "rune_voices_start_awake": "bool",
 			"test_round_target": "int", "test_round_examiner": "ref:characters", "memories_per_spell": "int",
-			"scoring_speed": "int",
+			"scoring_speed": "int", "memories_per_round": "int", "memories_per_examiner": "int",
+			"memories_exam_passed": "int", "memories_per_word": "int",
 		},
 		"optional": {},
 	},

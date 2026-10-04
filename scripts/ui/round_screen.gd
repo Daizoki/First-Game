@@ -697,7 +697,9 @@ func _announce(result: Dictionary) -> void:
 	var word_id: String = result["word"]
 	var word: Dictionary = GameData.words[word_id]
 	if bool(word.get("hidden", false)) and SaveManager.add_discovery("words", word_id):
-		await _show_toast(Loc.t("word_discovered", {"name": Loc.text(word["name"])}))
+		SaveManager.data["memories"] = int(SaveManager.data.get("memories", 0)) + int(GameData.rule("memories_per_word", 3))
+		SaveManager.save_game()
+		await _show_toast(Loc.t("word_discovered", {"name": Loc.text(word["name"]), "n": GameData.rule("memories_per_word", 3)}))
 	if word_id == "chant" and _spells_out(result["cast_stones"]) == FUTHARK:
 		await _show_toast(Loc.t("futhark_message"))
 	for gone: String in result.get("talismans_gone", []):

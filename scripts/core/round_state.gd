@@ -68,6 +68,8 @@ var consumables: Array = []
 
 var _data: Dictionary
 var _hand_size: int = 8
+## The highest score of a single Cast this round (the player's records).
+var best_cast_score: float = 0.0
 ## Talismans a spell may turn another one into (the exam's unlocks); empty = every Talisman.
 var unlocked_talismans: Array[String] = []
 var _money_at_round_end: int = 0
@@ -131,6 +133,7 @@ func setup(data: Dictionary, round_rng: RandomNumberGenerator, round_target: flo
 
 func start() -> void:
 	score = 0.0
+	best_cast_score = 0.0
 	casts_used = 0
 	extra_casts = 0
 	peek_bonus = 0
@@ -382,6 +385,7 @@ func cast(selection: Array[int]) -> Dictionary:
 	})
 	_once_used.assign(result["once_used"])
 	score += float(result["score"])
+	best_cast_score = maxf(best_cast_score, float(result["score"]))
 	money += int(result["money"])
 	_money_at_round_end += int(result["money_at_round_end"])
 	swaps_left += int(result["swaps"])

@@ -9,6 +9,7 @@ const RoundState = preload("res://scripts/core/round_state.gd")
 const Portrait = preload("res://scripts/ui/portrait.gd")
 const ShopLogic = preload("res://scripts/core/shop_logic.gd")
 const ShopScreen = preload("res://scripts/ui/shop_screen.gd")
+const Progress = preload("res://scripts/core/progress.gd")
 
 const ROUND_SCENE: PackedScene = preload("res://scenes/round.tscn")
 const MAIN_MENU_SCENE: String = "res://scenes/main_menu.tscn"
@@ -47,6 +48,9 @@ func _exit_tree() -> void:
 func start_exam(parent: String = "", seed_value: int = 0) -> void:
 	exam = ExamState.new()
 	exam.setup(tables(), seed_value if seed_value != 0 else randi(), parent)
+	exam.unlocked_talismans = Progress.unlocked_talismans(SaveManager.data, GameData.talismans)
+	for item: Dictionary in exam.consumables:
+		Progress.record_seen(SaveManager.data, "engravings", str(item["id"]))
 	RunState.start_exam(parent, exam.exam_seed)
 	SaveManager.data["attempts"] = int(SaveManager.data.get("attempts", 0)) + 1
 	_save_exam(PHASE_BOARD)
@@ -97,6 +101,8 @@ func _show_intro() -> void:
 	_clear_board()
 	var examiner: Dictionary = exam.examiner()
 	var character: Dictionary = GameData.characters.get(exam.examiner_id(), {})
+	if Progress.record_seen(SaveManager.data, "examiners", exam.examiner_id()):
+		SaveManager.save_game()
 	_label(Loc.t("exam_trial", {"n": exam.trial_index + 1, "total": exam.trial_count()}), 30, &"SecondaryLabel")
 	_label(Loc.t("exam_round_" + exam.round_kind()), 64, &"TitleLabel")
 	var row: HBoxContainer = HBoxContainer.new()
@@ -167,6 +173,7 @@ func _on_round_over() -> void:
 		return
 	_waiting_for_round = false
 	await get_tree().create_timer(ROUND_END_PAUSE).timeout
+	Progress.record_round(SaveManager.data, _state.best_cast_score, exam.word_levels)
 	var summary: Dictionary = exam.finish_round(_state)
 	_round_screen.queue_free()
 	_round_screen = null
