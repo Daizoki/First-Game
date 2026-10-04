@@ -22,5 +22,18 @@
 	"sell_share_pct": 50,
 	"consumable_slots": 2,
 	"price_lesson": 3,
-	"price_engraving": 4
+	"price_engraving": 4,
+	"shop_talismans": 2,
+	"shop_consumables": 2,
+	"shop_packs": 2,
+	"rarity_weights_pct": [
+		70,
+		25,
+		5
+	],
+	"price_pack": 4,
+	"price_pack_big": 7,
+	"reroll_base": 2,
+	"reroll_step": 1,
+	"pack_stone_material_pct": 30
 }

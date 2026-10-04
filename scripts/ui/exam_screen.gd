@@ -7,6 +7,8 @@ extends Control
 const ExamState = preload("res://scripts/core/exam_state.gd")
 const RoundState = preload("res://scripts/core/round_state.gd")
 const Portrait = preload("res://scripts/ui/portrait.gd")
+const ShopLogic = preload("res://scripts/core/shop_logic.gd")
+const ShopScreen = preload("res://scripts/ui/shop_screen.gd")
 
 const ROUND_SCENE: PackedScene = preload("res://scenes/round.tscn")
 const MAIN_MENU_SCENE: String = "res://scenes/main_menu.tscn"
@@ -162,7 +164,23 @@ func _show_reward(summary: Dictionary) -> void:
 		_label(Loc.t("exam_reward_interest", {"n": reward["interest"]}), 28, &"")
 	_label(Loc.t("exam_reward_total", {"n": reward["total"], "money": exam.money}), 34, &"").add_theme_color_override(
 		"font_color", MONEY_COLOR)
-	_button(Loc.t("exam_continue"), _show_intro, true)
+	_button(Loc.t("exam_continue"), _open_shop, true)
+
+
+## The Night Market between two rounds.
+func _open_shop() -> void:
+	_board.visible = false
+	var known: Array[String] = []
+	for word_id: Variant in (SaveManager.data.get("discoveries", {}) as Dictionary).get("words", []):
+		known.append(str(word_id))
+	var logic: ShopLogic = ShopLogic.new()
+	logic.setup(exam, tables(), known)
+	var screen: ShopScreen = ShopScreen.new()
+	_round_slot.add_child(screen)
+	screen.open(logic)
+	screen.closed.connect(func() -> void:
+		screen.queue_free()
+		_show_intro())
 
 
 ## Aeva's Hourglass broke: the same round once more.

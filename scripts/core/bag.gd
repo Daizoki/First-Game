@@ -92,6 +92,11 @@ func add_copy_of(stone: Stone) -> Stone:
 	return copy
 
 
+## A new stone with this rune and a fresh uid, not in the bag yet (a Stones pack).
+func make_stone(rune: Dictionary) -> Stone:
+	return Stone.from_rune(rune, _take_uid())
+
+
 ## Puts an owned stone back into the draw pile at a random place (The Return, The Choice).
 func put_back(stone: Stone) -> void:
 	if not draw_pile.has(stone):

@@ -36,35 +36,35 @@
 	},
 	{
 		"id": "first_shop_1",
-		"enabled": false,
+		"enabled": true,
 		"speaker": "vera",
 		"trigger": {"event": "shop_opened"},
 		"text": {"ro": "Bună seara, puiule. Aici cumperi ce te ține în viață la examen.", "en": "Good evening, dear. Here you buy what keeps you alive in the exam."}
 	},
 	{
 		"id": "first_shop_2",
-		"enabled": false,
+		"enabled": true,
 		"speaker": "vera",
 		"follows": "first_shop_1",
 		"text": {"ro": "Talismanele lucrează singure, de la stânga la dreapta. Ai cinci locuri.", "en": "Talismans work on their own, from left to right. You have five slots."}
 	},
 	{
 		"id": "first_shop_3",
-		"enabled": false,
+		"enabled": true,
 		"speaker": "vera",
 		"follows": "first_shop_2",
 		"text": {"ro": "Lecțiile cresc un Cuvânt. Gravurile schimbă pietrele. Săculețele… surpriză.", "en": "Lessons raise a Word. Engravings change stones. Bags… a surprise."}
 	},
 	{
 		"id": "first_reroll",
-		"enabled": false,
+		"enabled": true,
 		"speaker": "vera",
 		"trigger": {"event": "reroll_available"},
 		"text": {"ro": "Nu-ți place marfa? Rearanjez taraba, dar nu gratis.", "en": "Don't like the goods? I'll rearrange the stall, but not for free."}
 	},
 	{
 		"id": "first_talisman",
-		"enabled": false,
+		"enabled": true,
 		"speaker": "vera",
 		"trigger": {"event": "talisman_bought"},
 		"text": {"ro": "Trage Talismanele ca să le schimbi ordinea. Ordinea contează.", "en": "Drag the Talismans to change their order. Order matters."}
@@ -85,21 +85,21 @@
 	},
 	{
 		"id": "first_lesson",
-		"enabled": false,
+		"enabled": true,
 		"speaker": "ilinca",
 		"trigger": {"event": "lesson_gained"},
 		"text": {"ro": "O Lecție crește nivelul unui Cuvânt pentru tot examenul.", "en": "A Lesson raises a Word's level for the whole exam."}
 	},
 	{
 		"id": "first_engraving",
-		"enabled": false,
+		"enabled": true,
 		"speaker": "ilinca",
 		"trigger": {"event": "engraving_gained"},
-		"text": {"ro": "O Gravură schimbă o piatră. Alege piatra din mână, apoi folosește Gravura.", "en": "An Engraving changes a stone. Pick the stone in your hand, then use the Engraving."}
+		"text": {"ro": "O Gravură schimbă o piatră. În rundă, apasă pe Gravură, apoi alege piatra din mână.", "en": "An Engraving changes a stone. In a round, click the Engraving, then pick the stone in your hand."}
 	},
 	{
 		"id": "first_bindrune",
-		"enabled": false,
+		"enabled": true,
 		"speaker": "ilinca",
 		"trigger": {"event": "bindrune_gained"},
 		"text": {"ro": "O legătură e o piatră cu două rune. Contează ca oricare dintre ele, iar Glasurile se aud amândouă.", "en": "A bind-rune is a stone with two runes. It counts as either of them, and both Voices are heard."}
