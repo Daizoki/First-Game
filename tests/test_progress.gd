@@ -70,10 +70,10 @@ func test_parents_open_up() -> void:
 	check(Progress.parent_available(save, _parent("selvia")), "Selvia after the first exam")
 	check(not Progress.parent_available(save, _parent("ignar")), "Ignar costs Memories")
 	check(not Progress.buy_parent(save, _parent("ignar")), "not enough Memories")
-	save["memories"] = 20
+	save["memories"] = int(_parent("ignar")["cost"]) + 5
 	check(Progress.can_buy_parent(save, _parent("ignar")), "affordable")
 	check(Progress.buy_parent(save, _parent("ignar")), "bought")
-	check_eq(Progress.memories(save), 20 - int(_parent("ignar")["cost"]), "Memories spent:")
+	check_eq(Progress.memories(save), 5, "Memories spent:")
 	check(Progress.parent_available(save, _parent("ignar")), "Ignar now")
 	check(not Progress.buy_parent(save, _parent("ignar")), "not twice")
 	check(not Progress.can_buy_parent(save, _parent("varr")), "Varr is not for sale")

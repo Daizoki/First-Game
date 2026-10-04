@@ -294,7 +294,10 @@ static func _state_op(round_state: RoundState, op: Dictionary, ctx: Dictionary) 
 			for stone: Stone in round_state.hand:
 				stone.round_power += int(op["amount"])
 		"redraw_hand":
+			# The whole hand goes; a new one comes at once (also when Eihwaz repeats the Storm
+			# at the start of a round, where no Cast refills the hand afterwards).
 			round_state.hand.clear()
+			round_state.refill()
 		"add_swap":
 			round_state.swaps_left += int(op["count"])
 		"word_level_up":

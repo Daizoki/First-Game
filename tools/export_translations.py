@@ -68,14 +68,16 @@ def spells_section():
         where = spell["id"] + ("" if spell["enabled"] else " (doarme)")
         rows.append((where, spell["name"]["ro"], spell["name"]["en"]))
         rows.append((where + " · efect", spell["effect"]["ro"], spell["effect"]["en"]))
-    out += ["### Cele 64 de vrăji (nume și efect)", ""] + table(rows, "Vraja") + [""]
+        rows.append((where + " · vers", spell["verse"]["ro"], spell["verse"]["en"]))
+    out += ["### Cele 64 de vrăji (nume, efect și versul de pe Pagina ruptă)", ""] + table(rows, "Vraja") + [""]
     rows = [(action["id"], action["effect"]["ro"], action["effect"]["en"]) for action in load("spell_actions.json")]
     out += ["### Cele 8 Acțiuni", ""] + table(rows, "Acțiune") + [""]
     return out
 
 
 def exam_section():
-    out = ["## Examenul (`data/examiners.json`, `talismans.json`, `lessons.json`, `engravings.json`, `dialogs.json`)", ""]
+    out = ["## Examenul (`data/examiners.json`, `talismans.json`, `lessons.json`, `engravings.json`, `dialogs.json`,",
+           "`parents.json`)", ""]
     rows = []
     for ex in load("examiners.json"):
         for field in ["title", "text", "intro", "defeated", "won"]:
@@ -96,7 +98,12 @@ def exam_section():
     for dialog in load("dialogs.json"):
         for i, line in enumerate(dialog["lines"]):
             rows.append((f"{dialog['id']} {i + 1}", line["text"]["ro"], line["text"]["en"]))
-    out += ["### Replicile Tantei Vera", ""] + table(rows, "Replică") + [""]
+    out += ["### Replicile (Tanti Vera, Aeva în Dimineață)", ""] + table(rows, "Replică") + [""]
+    rows = []
+    for parent in load("parents.json"):
+        rows.append((parent["id"] + " · bonus", parent["bonus"]["ro"], parent["bonus"]["en"]))
+        rows.append((parent["id"] + " · replică", parent["line"]["ro"], parent["line"]["en"]))
+    out += ["### Părinții (`data/parents.json`)", ""] + table(rows, "Părinte") + [""]
     return out
 
 

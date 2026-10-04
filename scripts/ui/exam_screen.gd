@@ -337,5 +337,12 @@ func _button(text: String, callback: Callable, main: bool, parent: Control = nul
 	button.pressed.connect(callback)
 	(parent if parent != null else _box).add_child(button)
 	if main:
-		button.call_deferred("grab_focus")
+		_grab_focus_if_alive.call_deferred(weakref(button))
 	return button
+
+
+## Focus after this frame, unless the button is gone by then.
+func _grab_focus_if_alive(ref: WeakRef) -> void:
+	var button: Button = ref.get_ref() as Button
+	if button != null and button.is_inside_tree():
+		button.grab_focus()

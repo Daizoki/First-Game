@@ -296,5 +296,6 @@
 	"rune_book_tab_words": {"ro": "Cuvintele", "en": "Words"},
 	"rune_book_word_best": {"ro": "Cel mai mare nivel: {n}", "en": "Highest level: {n}"},
 	"rune_book_word_values": {"ro": "Putere {power} × Rezonanță {res} (la nivelul 1)", "en": "Power {power} × Resonance {res} (at level 1)"},
-	"rune_book_word_hidden": {"ro": "Încă nu l-ai rostit. Poate că nici nu există.", "en": "You haven't cast it yet. Maybe it doesn't even exist."}
+	"rune_book_word_hidden": {"ro": "Încă nu l-ai rostit. Poate că nici nu există.", "en": "You haven't cast it yet. Maybe it doesn't even exist."},
+	"round_won_at_start": {"ro": "Ce ai adus din runda trecută ajunge: runda e câștigată din start!", "en": "What you carried from the last round is enough: the round is won from the start!"}
 }

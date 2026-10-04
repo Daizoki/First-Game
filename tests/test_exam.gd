@@ -235,3 +235,12 @@ func test_water_against_the_examiner_swaps_the_rule() -> void:
 		"never the same one, never the final")
 	check(state.answer({"rule": choice["rules"][1]}), "picked")
 	check_eq(str(state.rule["id"]), str(choice["rules"][1]), "the new rule:")
+
+
+func test_a_round_can_start_already_won() -> void:
+	# Provisions carried more score than the new target: the screen ends such a round at once.
+	var exam: ExamState = _exam()
+	exam.carry["next_round"] = {"overflow": exam.target() * 2.0}
+	var state: RoundState = exam.new_round()
+	check(state.is_won(), "won before the first Cast")
+	check_eq(state.casts_left, 4, "no Cast used:")

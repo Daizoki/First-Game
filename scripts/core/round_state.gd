@@ -958,6 +958,9 @@ func _apply_lasting() -> void:
 		entry["rounds_left"] = int(entry["rounds_left"]) - 1
 		if int(entry["rounds_left"]) <= 0:
 			lasting.erase(entry)
+	# A lasting spell may have taken stones from the hand (no Cast follows to refill it).
+	if pending.is_empty():
+		refill()
 
 
 func _take_next_cast_mods() -> Dictionary:

@@ -25,7 +25,13 @@ Artă: `docs/ARTA.md`.
 > - 10 Lecții, 10 Gravuri, materiale și legături runice (`lessons.json`, `engravings.json`);
 > - Piața de noapte cu Săculețe (`shop_logic.gd`, `shop_screen.gd`);
 > - balansul cu simulatorul (`part=4`).
-> „Joacă” pornește examenul (`scenes/exam.tscn`). Așteaptă testul lui Relax.
+> Așteaptă testul lui Relax. **Etapa 4 (bucla Aevei) e făcută, pașii A–E**:
+> - părinții divini (`parents.json`) și examenul în curs salvat după fiecare rundă și Piață (`ExamState.to_dict`);
+> - Amintirile, deblocările, recordurile și Colecția (`scripts/core/progress.gd`);
+> - Dimineața examenului (`scenes/morning.tscn`), alegerea părintelui, ecranul Amintirilor, „Aeva întoarce timpul”;
+> - Cartea de rune cu pagina Cuvintelor, Colecția (`scenes/collection.tscn`), Paginile rupte din Piață (versurile
+>   din `spells_base.json`), numele schimbat din Setări.
+> „Joacă” duce în Dimineață. Așteaptă testul lui Relax.
 > Verificat cu Godot 4.7.2: toate testele trec (inclusiv parcurgerea fiecărei lecții).
 
 ## Cum lucrăm
@@ -127,9 +133,11 @@ Artă: `docs/ARTA.md`.
 ## Autoload-uri (ordinea contează)
 1. `GameData` — `scripts/autoload/game_data.gd` — date din `data/`, `errors`.
 2. `SaveManager` — `scripts/autoload/save_manager.gd` — `user://save.json` (nume, Amintiri, deblocări, colecție,
-   descoperiri, statistici, setări, **examenul în curs salvat după fiecare rundă**).
+   descoperiri, Pagini rupte, statistici, setări, **examenul în curs salvat după fiecare rundă**). Regulile
+   Amintirilor și ale deblocărilor sunt în `scripts/core/progress.gd`.
 3. `Loc` — `scripts/autoload/loc.gd` — limba curentă, semnalul `language_changed`.
-4. `RunState` — `scripts/autoload/run_state.gd` — examenul în curs.
+4. `RunState` — `scripts/autoload/run_state.gd` — examenul în curs și ce cere Dimineața (părintele ales, continuarea
+   examenului salvat).
 5. `EventBus` — `scripts/autoload/event_bus.gd` — evenimentele jocului (`round_started`/`closed`, `hand_changed`,
    `stone_hovered`, `selection_changed`, `cast`, `swap`, `scoring_phase`, `spell_discovered`, `sentence_read`,
    `scroll_gained`, `overlay_opened`/`closed`, `round_won`/`lost`, `book_opened`/`closed` …) și „poarta” de acțiuni (`allowed_actions`, `selectable_runes`). Jocul doar emite și
@@ -148,6 +156,7 @@ godot --headless --script tests/run_tests.gd   # testele logice; cod de ieșire 
 godot --headless --script tests/simulate.gd    # simulatorul: frecvența Cuvintelor, rundele, balansul vrăjilor
 godot --headless --script tests/simulate.gd -- part=3 exams=150   # doar balansul Gramaticii runelor
 godot --headless --script tests/simulate.gd -- part=4 exams=100   # doar examenele complete (Etapa 3)
+godot --headless --script tests/simulate.gd -- part=4 exams=100 parent=varr   # examenele ca copil al unui părinte
 ```
 Teste noi: fișier `tests/test_<ceva>.gd` care `extends "res://tests/test_case.gd"`, metode `test_*`,
 adăugat în lista `TEST_FILES` din `tests/run_tests.gd`.
@@ -156,26 +165,26 @@ adăugat în lista `TEST_FILES` din `tests/run_tests.gd`.
 ```
 docs/        UNIVERS.md, DESIGN.md, ARTA.md, INSTRUIRE.md, GRAMATICA.md, TRADUCERI.md (generat)
 data/        kins, runes, words, spells_base, spell_actions, economy, characters, rules, dialogs, tutorial, hints,
-             ui_text, trials, examiners, talismans, lessons, engravings (.json) — există deja
-             parents — vine în Etapa 4
+             ui_text, trials, examiners, talismans, lessons, engravings, parents (.json) — există deja
 fonts/       Grenze, Grenze Gotisch + licențe OFL
 art/         stones/ runes/ talismans/ lessons/ engravings/ examiners/ portraits/ backgrounds/ ui/
 scenes/      boot, name_entry, main_menu, rune_check, settings, round, spell_reveal, tutorial, tutorial_overlay,
              exam (Probele, Piața și rezultatul; Piața și Săculețele sunt construite din cod),
-             theme/main_theme.tres — există deja
-             morning (hub), parent_select, collection, intro, dialog — vin în etapele lor
+             morning (Dimineața), parent_select, collection, theme/main_theme.tres — există deja
+             intro, dialog — vin în Etapa 5
 scripts/     autoload/ (game_data, run_state, save_manager, loc, event_bus, hints)
              core/ (stone, bag, word_detector, sentence_parser, spell_resolver, scorer, round_state, exam_state,
-                    talisman_rules, shop_logic, tutorial_flow, hint_rules, data_validator)
+                    talisman_rules, shop_logic, progress, tutorial_flow, hint_rules, data_validator)
              ui/ (ecrane + componente: rune_glyph, stone_view, hand_view, rune_circle, candle_row, portrait,
                   talisman_string, night_backdrop, classroom_backdrop, float_layer, scoring_player, spell_reveal,
                   stone_card, word_card, word_book, rune_book, mini_stone, hint_bubble, spell_text, role_sign,
                   sentence_bar, choice_panel, scroll_slot, action_learned, round_screen, exam_screen, shop_screen,
+                  morning, morning_backdrop, parent_select, memories_shop, collection, time_rewind,
                   tutorial, tutorial_overlay, boot, name_entry)
 shaders/     spotlight.gdshader (lumina instruirii)
 tools/       gen_round.py (generează scenes/round.tscn), export_translations.py (generează docs/TRADUCERI.md)
 tests/       run_tests.gd, test_case.gd, fixtures.gd, test_data/loc/save/words/sentence/spells/scoring/tutorial/hints/
-             exam/talismans/consumables/shop.gd, simulate.gd
+             exam/talismans/consumables/shop/parents/progress.gd, simulate.gd
 ```
 
 ## Etapele
@@ -186,6 +195,6 @@ tests/       run_tests.gd, test_case.gd, fixtures.gd, test_data/loc/save/words/s
 | 2½ | Instruirea „Seara dinaintea examenului” (`docs/INSTRUIRE.md`): A sistemul, B lecțiile 1–5, C ajutorul permanent + indiciile, D documentele | făcută (așteaptă testul final al lui Relax) |
 | 2b | Gramatica runelor (`docs/GRAMATICA.md`): A datele și logica, B interfața, C balansul, D instruirea și documentele | făcută (așteaptă testul lui Relax) |
 | 3 | Examenul complet: 8 Probe × 3 runde, Examinatorii, Monede, Piața de noapte, primele 15 Talismane, Lecții, Gravuri, materiale, legături runice, Săculețe, Picat / Examen trecut | făcută (așteaptă testul lui Relax) |
-| 4 | Bucla Aevei: Dimineața, alegerea părintelui, Amintiri, deblocări, salvare (inclusiv examenul în curs), Cartea de rune (cu Vrăjile descoperite), Colecția, numele jucătorului, Paginile rupte în Piață | — |
+| 4 | Bucla Aevei: Dimineața, alegerea părintelui, Amintiri, deblocări, salvare (inclusiv examenul în curs), Cartea de rune (cu Vrăjile descoperite), Colecția, numele jucătorului, Paginile rupte în Piață | făcută (așteaptă testul lui Relax) |
 | 5 | Povestea și conținutul: intro, replici, final, restul Talismanelor (~30), blestemele (propoziții care se întorc împotriva ta), Cuvintele vechi (ALU, LAÞU, AUJA), balans cu simulatorul | — |
 | 6 | Șlefuire și export: efectele din 3.13 și 3.16 (linii care fierb, granulație, animația completă a Vrăjilor), fonturile Grenze (cu OK), arta lui Relax, ultimul balans, export Linux/Windows/Web | — |

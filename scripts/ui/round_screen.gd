@@ -585,16 +585,26 @@ func _on_cast_pressed() -> void:
 		_finish_round()
 
 
-## Picks waiting when the round starts (The Tide: put the extra stones back).
+## Picks waiting when the round starts (The Tide: put the extra stones back). A round can
+## also start already won (Provisions carried more score than the new target), or with no stone
+## to draw: then it ends at once.
 func _resolve_start_picks() -> void:
-	if _round.pending.is_empty():
-		return
-	_busy = true
-	_refresh_state()
-	await _resolve_picks()
-	_busy = false
-	_show_hand()
-	_on_selection_changed()
+	if not _round.pending.is_empty():
+		_busy = true
+		_refresh_state()
+		await _resolve_picks()
+		_busy = false
+		_show_hand()
+		_on_selection_changed()
+	if _round.is_won():
+		_busy = true
+		_refresh_state()
+		await _show_toast(Loc.t("round_won_at_start"))
+		_busy = false
+		_finish_round()
+	elif _round.is_lost():
+		# No stone left to draw: nothing can be cast.
+		_finish_round()
 
 
 ## The spells' picks, one after another. Stones are picked in the hand; where the player may

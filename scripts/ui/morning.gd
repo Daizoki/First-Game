@@ -192,7 +192,18 @@ func _refresh_memories() -> void:
 
 func _focus_first() -> void:
 	if _buttons != null and _buttons.get_child_count() > 0:
-		(_buttons.get_child(0) as Button).call_deferred("grab_focus")
+		_focus_later(_buttons.get_child(0) as Button)
+
+
+## Focus after this frame, unless the screen is gone by then (a button already changed scene).
+func _focus_later(button: Button) -> void:
+	_grab_focus_if_alive.call_deferred(weakref(button))
+
+
+func _grab_focus_if_alive(ref: WeakRef) -> void:
+	var button: Button = ref.get_ref() as Button
+	if button != null and button.is_inside_tree():
+		button.grab_focus()
 
 
 # --- Actions -------------------------------------------------------------------------------
@@ -266,7 +277,7 @@ func _build_confirm() -> Control:
 	row.add_child(no)
 	layer.visibility_changed.connect(func() -> void:
 		if layer.visible:
-			no.call_deferred("grab_focus"))
+			_focus_later(no))
 	return layer
 
 
